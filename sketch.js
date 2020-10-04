@@ -13,7 +13,6 @@ const enemyOptions = ['Attack'];
 function preload() {
   battleBackground = loadImage('assets/BattleOcean.png');
   placeholder = loadImage('assets/PlaceholderShipgirlNonWeeb.png');
-  placeholder1 = loadImage('assets/PlaceholderShipgirl.png');
   Highlite = loadImage('assets/Highlight.png');
   pointer = loadImage('assets/Pointer.png');
   spritesheet = loadImage('assets/IslandGenerationFastereFade.png');
