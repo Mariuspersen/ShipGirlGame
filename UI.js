@@ -1,6 +1,8 @@
-function UI(startingActions) {
+function UI(startingActions,startingActionsEnemy) {
   this.baseActions = startingActions;
+  this.baseActionsEnemy = startingActionsEnemy;
   let offSet = 50;
+  this.EnemyActions = this.baseActionsEnemy || 6;
   this.Actions = this.baseActions || 6;
   this.Turn = 0;
   this.currentInfo = '';

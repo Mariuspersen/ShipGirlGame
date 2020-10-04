@@ -14,6 +14,12 @@ function Node(x, y, xsize, ysize,xcord,ycord) {
     this.isLand = false;
     this.texture = undefined;
     this.unNavigable = false;
+    //AStar Specific
+    this.f = 0;
+    this.g = 0;
+    this.h = 0;
+    this.Neighbours = [];
+    this.previous = undefined;
   
     this.Draw = function() {
       if(this.isLand) {
@@ -78,6 +84,14 @@ function Node(x, y, xsize, ysize,xcord,ycord) {
       this.isLand = true;
       this.texture = IslandGeneration[texture] || IslandGeneration[0];
       this.unNavigable = true;
+    }
+    this.ResetAstar = function()
+    {
+      this.f = 0;
+      this.h = 0;
+      this.g = 0;
+      this.previous = undefined;
+      this.Neighbours = [];
     }
   }
   

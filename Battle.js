@@ -9,8 +9,11 @@ function Battle(Fleet1, Fleet2, MapSize) {
   this.yOffsetMultiplier = (height / this.ySize);
   this.Nodes = [];
   this.LineofBattle = false;
-  this.startingActions = Math.floor(Math.min(...this.PlayerFleet.map(x => x.Speed))*(this.xSize*.02))
-  this.HUD = new UI(this.startingActions);
+  this.LoBEnemy = false;
+  this.CalculateBaseActions = (fleet) => Math.floor(Math.min(...fleet.map(x => x.Speed))*(this.xSize*.02))
+  this.startingActionsPlayerFleet = this.CalculateBaseActions(this.PlayerFleet)
+  this.startingActionsEnemyFleet = this.CalculateBaseActions(this.EnemyFleet)
+  this.HUD = new UI(this.startingActionsPlayerFleet,this.startingActionsEnemyFleet);
   this.highlightedNode = undefined;
   this.coords = new Array(2).fill();
   this.state = 0;
@@ -71,6 +74,7 @@ function Battle(Fleet1, Fleet2, MapSize) {
       this.EnemyFleet[i].yCord = i+spawnOffset;
       this.Nodes[this.Nodes.length -1][i+spawnOffset].Update(this.EnemyFleet[i]);
     }
+    this.EnemyAI = new AI(this.EnemyFleet,this.Nodes,this.PlayerFleet);
   }
   this.Draw = function() {
     image(battleBackground, 0, 0, width, height);
@@ -110,7 +114,7 @@ function Battle(Fleet1, Fleet2, MapSize) {
   this.FleetUpdatePosition = function (keyCodePressed,fleet) {
     let moveSuccsess = true;
     let tempPos = fleet.map(x => JSON.parse(JSON.stringify([x.xCord, x.yCord])));
-    switch (this.LineofBattle) {
+    switch (this.LineofBattle||this.LoBEnemy) {
       case false:
         let reverseNeeded = false;
         if (fleet[0].xCord > fleet[1].xCord || fleet[0].yCord > fleet[1].yCord) {
@@ -232,13 +236,13 @@ function Battle(Fleet1, Fleet2, MapSize) {
     return moveSuccsess;
   }
 
-  this.isFormationChangePossible = function () {
+  this.isFormationChangePossible = function(fleet) {
     let fleetInLineColumns = true;
     let fleetInLineRows = true;
-    for (let i = 1; i < this.PlayerFleet.length; i++) {
-      if (this.PlayerFleet[0].xCord != this.PlayerFleet[i].xCord)
+    for (let i = 1; i < fleet.length; i++) {
+      if (fleet[0].xCord != fleet[i].xCord)
         fleetInLineColumns = false;
-      if (this.PlayerFleet[0].yCord != this.PlayerFleet[i].yCord)
+      if (fleet[0].yCord != fleet[i].yCord)
         fleetInLineRows = false;
     }
     if (fleetInLineColumns || fleetInLineRows)
@@ -303,8 +307,9 @@ function Battle(Fleet1, Fleet2, MapSize) {
             push()
             fill(255,0,0)
             translate(nodePoint.x,nodePoint.y)
-            this.angle = Math.atan2(pointerVector.y,pointerVector.x) + HALF_PI;
-            rotate(this.angle) 
+            this.angle = Math.atan2(pointerVector.y,pointerVector.x);
+            console.log(this.angle)
+            rotate(this.angle + HALF_PI) 
             imageMode(CENTER)
             image(pointer, 0, 0 - 50)
             pop()
@@ -366,15 +371,15 @@ function Battle(Fleet1, Fleet2, MapSize) {
                 break;
               case 5:
                 let direction;
-                this.angle = this.angle - PI + QUARTER_PI
-                if (this.angle > -PI && this.angle < -HALF_PI)
-                  direction = UP_ARROW;
-                else if (this.angle > -HALF_PI && this.angle < 0)
+                if (this.angle > -QUARTER_PI && this.angle < QUARTER_PI)
                   direction = RIGHT_ARROW;
-                else if (this.angle > 0 && this.angle < HALF_PI)
+                else if (this.angle > QUARTER_PI && this.angle < HALF_PI + QUARTER_PI)
                   direction = DOWN_ARROW;
-                else if (this.angle > HALF_PI && this.angle < PI)
-                  direction = LEFT_ARROW;
+                else if (this.angle > - HALF_PI - QUARTER_PI && this.angle < -QUARTER_PI)
+                  direction = UP_ARROW;
+                else direction = LEFT_ARROW
+
+                console.log(direction)
                 if (direction)
                   if(this.FleetUpdatePosition(direction,this.PlayerFleet))
                     this.HUD.Actions--;
@@ -385,12 +390,25 @@ function Battle(Fleet1, Fleet2, MapSize) {
         break;
       case 2:
          if (keyCode === UP_ARROW || keyCode === DOWN_ARROW || keyCode === LEFT_ARROW || keyCode === RIGHT_ARROW) {
-            console.log("here")
+            /*console.log("here")
             this.FleetUpdatePosition(keyCode,this.EnemyFleet);
+            this.Draw();
+            */
+           if(this.FleetUpdatePosition(this.EnemyAI.DoTurn(this.Nodes[this.EnemyFleet[0].xCord][this.EnemyFleet[0].yCord],this.Nodes[this.PlayerFleet[0].xCord][this.PlayerFleet[0].yCord]),this.EnemyFleet)) {
+             this.HUD.baseActionsEnemy--
+           }
+           else {
+             console.log(this.isFormationChangePossible(this.EnemyFleet))
+             if (this.isFormationChangePossible(this.EnemyFleet))
+              this.LoBEnemy = !this.LoBEnemy
+             this.FleetUpdatePosition(this.EnemyAI.DoTurn(this.Nodes[this.EnemyFleet[0].xCord][this.EnemyFleet[0].yCord],this.Nodes[this.PlayerFleet[0].xCord][this.PlayerFleet[0].yCord],this.EnemyFleet),this.EnemyFleet);
+             if (this.isFormationChangePossible(this.EnemyFleet))
+              this.LoBEnemy = !this.LoBEnemy
+           }
             this.Draw();
           }
         if (keyCode === ENTER) {
-          if (this.isFormationChangePossible()) {
+          if (this.isFormationChangePossible(this.PlayerFleet)) {
             this.LineofBattle = !this.LineofBattle;
             this.HUD.currentInfo = `Line of Battle: ${this.LineofBattle ? "Enabled" : "Disabled"}`
           } else {
