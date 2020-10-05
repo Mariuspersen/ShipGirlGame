@@ -301,9 +301,10 @@ function Battle(Fleet1, Fleet2, MapSize) {
             break;
           case 5:
             this.Draw();
-            let nodePoint = this.highlightedNode.CenterPoint.copy();
+            let nodePoint = this.Nodes[this.PlayerFleet[0].xCord][this.PlayerFleet[0].yCord].CenterPoint.copy();
             let mousePoint = createVector(mouseX, mouseY);
             let pointerVector = p5.Vector.sub(mousePoint,nodePoint)
+            this.highlightedNode.Ship.turnUsed = true;
             push()
             fill(255,0,0)
             translate(nodePoint.x,nodePoint.y)
