@@ -27,7 +27,6 @@ function AI(_controlFleet,_Nodes,_opposingFleet,_xOffsetMult) {
             translate(this.Nodes[this.Fleet[0].xCord][this.Fleet[0].yCord].CenterPoint.x, this.Nodes[this.Fleet[0].xCord][this.Fleet[0].yCord].CenterPoint.y)
             let Angle = Math.atan2(pointerVector.y,pointerVector.x)
             pop()
-            console.log(Angle)
             if (Angle > -QUARTER_PI && Angle < QUARTER_PI)
                   direction = RIGHT_ARROW;
                 else if (Angle >QUARTER_PI && Angle < HALF_PI + QUARTER_PI)
@@ -35,8 +34,6 @@ function AI(_controlFleet,_Nodes,_opposingFleet,_xOffsetMult) {
                 else if (Angle > -HALF_PI - QUARTER_PI && Angle < -QUARTER_PI)
                   direction = UP_ARROW;
                 else direction = LEFT_ARROW
-
-            console.log(direction,this.Nodes[this.Fleet[0].xCord][this.Fleet[0].yCord].CenterPoint)
             if (direction)
                 return direction;
         }

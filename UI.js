@@ -44,7 +44,7 @@ function UI(startingActions,startingActionsEnemy) {
     this.disableOptions = disable || false
     let menuOptions = this.tempOptions.map(x => {
       let currentIndex = this.tempOptions.indexOf(x);
-      return new this.menuOption(x, (currentIndex + 1) * 30, currentIndex,givenNode.Ship.turnUsed || this.disableOptions || x == 'Launch Torpedoes' && givenNode.Ship.TorpedoPower == 0)
+      return new this.menuOption(x, (currentIndex + 1) * 30, currentIndex,givenNode.Ship.turnUsed && !givenNode.Ship.isFlagship || (givenNode.Ship.isFlagship && x != 'Move' && givenNode.Ship.turnUsed) || this.disableOptions || x == 'Launch Torpedoes' && givenNode.Ship.TorpedoPower == 0 || x == 'Move' && !givenNode.Ship.isFlagship)
     })
     if (givenNode.Ship) {
       let adjX = givenNode.CenterPoint.x + ((givenNode.CenterPoint.x + 100 > width) * -200);

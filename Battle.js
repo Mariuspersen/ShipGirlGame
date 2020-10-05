@@ -27,7 +27,7 @@ function Battle(Fleet1, Fleet2, MapSize) {
   for (let i = 0; this.ySize < this.PlayerFleet.length; i++) {
     this.PlayerFleet.pop();
   }
-
+  this.PlayerFleet[0].isFlagship = true;
   this.PlayerFleet = this.PlayerFleet.map(x => {
     x.isEnemy = false;
     return x;
@@ -114,7 +114,7 @@ function Battle(Fleet1, Fleet2, MapSize) {
   this.FleetUpdatePosition = function (keyCodePressed,fleet) {
     let moveSuccsess = true;
     let tempPos = fleet.map(x => JSON.parse(JSON.stringify([x.xCord, x.yCord])));
-    switch (this.LineofBattle||this.LoBEnemy) {
+    switch (this.LineofBattle||this.LoBEnemy&&fleet[0].isEnemy) {
       case false:
         let reverseNeeded = false;
         if (fleet[0].xCord > fleet[1].xCord || fleet[0].yCord > fleet[1].yCord) {
@@ -352,7 +352,7 @@ function Battle(Fleet1, Fleet2, MapSize) {
               }
               break;
             case 3:
-              switch (this.HUD.Menu(this.highlightedNode, true, playerOptions)) {
+              switch (this.HUD.Menu(this.highlightedNode, true, enemyOptions)) {
                 case 0:
                   let dealtDamage = selectedNode.Ship.FireGuns(this.highlightedNode.Ship, rangeMap[this.coords[0]][this.coords[1]])
                   this.HUD.Actions--;
@@ -378,9 +378,9 @@ function Battle(Fleet1, Fleet2, MapSize) {
                   direction = UP_ARROW;
                 else direction = LEFT_ARROW
                 if (direction) {
-                  let indx = this.PlayerFleet.indexOf(this.highlightedNode.Ship);
+                  //let indx = this.PlayerFleet.indexOf(this.highlightedNode.Ship);
                   if (this.FleetUpdatePosition(direction, this.PlayerFleet)) {
-                    this.PlayerFleet[indx].turnUsed = true;
+                    //this.PlayerFleet[indx].turnUsed = true;
                     this.HUD.Actions--;
                   }
                   this.state = 0;
@@ -400,6 +400,7 @@ function Battle(Fleet1, Fleet2, MapSize) {
              this.FleetUpdatePosition(this.EnemyAI.DoTurn(this.Nodes[this.EnemyFleet[0].xCord][this.EnemyFleet[0].yCord],this.Nodes[this.PlayerFleet[0].xCord][this.PlayerFleet[0].yCord],this.EnemyFleet),this.EnemyFleet);
            }
             this.Draw();
+            console.log(this.LineofBattle)
           }
         if (keyCode === ENTER) {
           if (this.isFormationChangePossible(this.PlayerFleet)) {
