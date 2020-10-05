@@ -41,7 +41,7 @@ function UI(startingActions,startingActionsEnemy) {
     this.tempOptions = options;
     let menuOptions = this.tempOptions.map(x => {
       let currentIndex = this.tempOptions.indexOf(x);
-      return new this.menuOption(x, (currentIndex + 1) * 30, currentIndex)
+      return new this.menuOption(x, (currentIndex + 1) * 30, currentIndex,givenNode.Ship.turnUsed)
     })
     if (givenNode.Ship) {
       let adjX = givenNode.CenterPoint.x + ((givenNode.CenterPoint.x + 200 > width) * -200);
@@ -63,21 +63,23 @@ function UI(startingActions,startingActionsEnemy) {
     }
   }
 
-  this.menuOption = function (name, pos, index) {
+  this.menuOption = function (name, pos, index,_disabled) {
     this.Index = index
     this.Name = name;
     this.Pos = createVector(10, pos - 20);
     this.Size = createVector(180, 30)
     this.isHighlighted = false;
+    this.Disabled = _disabled;
+    console.log(this.Disabled)
 
     this.Draw = function () {
-      if (this.isHighlighted) {
+      if (this.isHighlighted && !this.Disabled) {
         strokeWeight(1);
         fill(172, 110, 96, 200);
         rect(this.Pos.x, this.Pos.y, this.Size.x, this.Size.y);
       }
       strokeWeight(1)
-      fill(0)
+      this.Disabled ? fill(100) : fill(0);
       textSize(20)
       text(this.Name, 15, this.Pos.y + 22);
     }

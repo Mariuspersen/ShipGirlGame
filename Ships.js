@@ -21,6 +21,7 @@ function Shipgirl(Shipname, Displacement, Guns, Armour, Speed, Beam, Torpedoes,C
   this.xCord = undefined;
   this.yCord = undefined;
   this.isEnemy = undefined;
+  this.turnUsed = false;
 
 
   this.Info = function(){
@@ -32,6 +33,7 @@ function Shipgirl(Shipname, Displacement, Guns, Armour, Speed, Beam, Torpedoes,C
     {
     let DamageDealt = this.Firepower + Enemy.Armour;
     Enemy.combatHP = Enemy.combatHP - DamageDealt;
+    this.turnUsed = true;
     return [DamageDealt,`${this.Name} inflicted ${DamageDealt} damage to ${Enemy.Name}! `];
     }
     else return `${Enemy.Name} is out of range!`;

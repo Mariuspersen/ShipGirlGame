@@ -69,8 +69,8 @@ function AI(_controlFleet,_Nodes,_opposingFleet,_xOffsetMult) {
                     
                     
                 }
-                stroke(0,255,0)
-                point(this.Nodes[path[path.length -2].xCord][path[path.length -2].yCord].CenterPoint)
+                //stroke(0,255,0)
+                //point(this.Nodes[path[path.length -2]?.xCord][path[path.length -2]?.yCord]?.CenterPoint)
                 pop();
                 this.openSet = [];
                 this.Nodes.forEach(x => {x.forEach ( y => y.ResetAstar())});

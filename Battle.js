@@ -308,7 +308,6 @@ function Battle(Fleet1, Fleet2, MapSize) {
             fill(255,0,0)
             translate(nodePoint.x,nodePoint.y)
             this.angle = Math.atan2(pointerVector.y,pointerVector.x);
-            console.log(this.angle)
             rotate(this.angle + HALF_PI) 
             imageMode(CENTER)
             image(pointer, 0, 0 - 50)
@@ -378,8 +377,6 @@ function Battle(Fleet1, Fleet2, MapSize) {
                 else if (this.angle > - HALF_PI - QUARTER_PI && this.angle < -QUARTER_PI)
                   direction = UP_ARROW;
                 else direction = LEFT_ARROW
-
-                console.log(direction)
                 if (direction)
                   if(this.FleetUpdatePosition(direction,this.PlayerFleet))
                     this.HUD.Actions--;
@@ -390,20 +387,13 @@ function Battle(Fleet1, Fleet2, MapSize) {
         break;
       case 2:
          if (keyCode === UP_ARROW || keyCode === DOWN_ARROW || keyCode === LEFT_ARROW || keyCode === RIGHT_ARROW) {
-            /*console.log("here")
-            this.FleetUpdatePosition(keyCode,this.EnemyFleet);
-            this.Draw();
-            */
            if(this.FleetUpdatePosition(this.EnemyAI.DoTurn(this.Nodes[this.EnemyFleet[0].xCord][this.EnemyFleet[0].yCord],this.Nodes[this.PlayerFleet[0].xCord][this.PlayerFleet[0].yCord]),this.EnemyFleet)) {
              this.HUD.baseActionsEnemy--
            }
            else {
-             console.log(this.isFormationChangePossible(this.EnemyFleet))
              if (this.isFormationChangePossible(this.EnemyFleet))
               this.LoBEnemy = !this.LoBEnemy
              this.FleetUpdatePosition(this.EnemyAI.DoTurn(this.Nodes[this.EnemyFleet[0].xCord][this.EnemyFleet[0].yCord],this.Nodes[this.PlayerFleet[0].xCord][this.PlayerFleet[0].yCord],this.EnemyFleet),this.EnemyFleet);
-             if (this.isFormationChangePossible(this.EnemyFleet))
-              this.LoBEnemy = !this.LoBEnemy
            }
             this.Draw();
           }
@@ -422,6 +412,7 @@ function Battle(Fleet1, Fleet2, MapSize) {
         else if(keyCode === 32 && this.HUD.Actions <= 0)
         {
           this.HUD.Actions = ++this.HUD.baseActions;
+          this.PlayerFleet.map(x => x.turnUsed = false);
           this.Draw();
         }
         else if(keyCode === ESCAPE)
