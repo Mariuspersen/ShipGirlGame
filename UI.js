@@ -6,6 +6,7 @@ function UI(startingActions,startingActionsEnemy) {
   this.Actions = this.baseActions || 6;
   this.Turn = 0;
   this.currentInfo = '';
+  this.turnFinishText = "Press SPACEBAR to finish turn";
 
   this.Draw = function () {
     let cirlceText;
@@ -28,7 +29,8 @@ function UI(startingActions,startingActionsEnemy) {
       strokeWeight(2)
       textSize(20)
       textAlign(CENTER, CENTER)
-      text("Press SPACEBAR to finish turn",width/2,height -20)
+      this.currentInfo = '';
+      text(this.turnFinishText,width/2,height -20)
     }
     strokeWeight(2)
     textSize(20)
@@ -37,15 +39,16 @@ function UI(startingActions,startingActionsEnemy) {
     pop()
   }
 
-  this.Menu = function (givenNode, mouseClick, options) {
+  this.Menu = function (givenNode, mouseClick, options,disable) {
     this.tempOptions = options;
+    this.disableOptions = disable || false
     let menuOptions = this.tempOptions.map(x => {
       let currentIndex = this.tempOptions.indexOf(x);
-      return new this.menuOption(x, (currentIndex + 1) * 30, currentIndex,givenNode.Ship.turnUsed)
+      return new this.menuOption(x, (currentIndex + 1) * 30, currentIndex,givenNode.Ship.turnUsed || this.disableOptions || x == 'Launch Torpedoes' && givenNode.Ship.TorpedoPower == 0)
     })
     if (givenNode.Ship) {
-      let adjX = givenNode.CenterPoint.x + ((givenNode.CenterPoint.x + 200 > width) * -200);
-      let adjY = givenNode.CenterPoint.y + ((givenNode.CenterPoint.y + 200 > height) * -200);
+      let adjX = givenNode.CenterPoint.x + ((givenNode.CenterPoint.x + 100 > width) * -200);
+      let adjY = givenNode.CenterPoint.y + ((givenNode.CenterPoint.y + menuOptions[0].Size.y * menuOptions.length > height) * -(givenNode.CenterPoint.y + menuOptions[0].Size.y * menuOptions.length - height + (givenNode.CenterPoint.y - givenNode.yPos)))
       push()
       translate(adjX, adjY);
       strokeWeight(10)
@@ -58,7 +61,7 @@ function UI(startingActions,startingActionsEnemy) {
       menuOptions.forEach((x, i) => x.Draw());
       pop()
     }
-    if (mouseClick && menuOptions.reduce((a, x) => a.isHighlighted ? a : x).isHighlighted) {
+    if (mouseClick && menuOptions.reduce((a, x) => a.isHighlighted && !a.Disabled ? a : x).isHighlighted) {
       return menuOptions.reduce((a, x) => a.isHighlighted ? a : x).Index;
     }
   }
@@ -69,8 +72,7 @@ function UI(startingActions,startingActionsEnemy) {
     this.Pos = createVector(10, pos - 20);
     this.Size = createVector(180, 30)
     this.isHighlighted = false;
-    this.Disabled = _disabled;
-    console.log(this.Disabled)
+    this.Disabled = this.Name === "Info" ? false : _disabled;
 
     this.Draw = function () {
       if (this.isHighlighted && !this.Disabled) {

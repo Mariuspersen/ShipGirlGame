@@ -297,14 +297,13 @@ function Battle(Fleet1, Fleet2, MapSize) {
             this.HUD.Menu(this.highlightedNode, false, enemyOptions);
             break;
           case 4:
-            this.HUD.Menu(this.highlightedNode, false, this.highlightedNode.Ship.Info());
+            this.HUD.Menu(this.highlightedNode, false, this.highlightedNode.Ship.Info(),true);
             break;
           case 5:
             this.Draw();
             let nodePoint = this.Nodes[this.PlayerFleet[0].xCord][this.PlayerFleet[0].yCord].CenterPoint.copy();
             let mousePoint = createVector(mouseX, mouseY);
             let pointerVector = p5.Vector.sub(mousePoint,nodePoint)
-            this.highlightedNode.Ship.turnUsed = true;
             push()
             fill(255,0,0)
             translate(nodePoint.x,nodePoint.y)
@@ -337,7 +336,7 @@ function Battle(Fleet1, Fleet2, MapSize) {
                   break;
                 case 3:
                   if (this.highlightedNode.Ship)
-                    this.HUD.Menu(this.highlightedNode, false, this.highlightedNode.Ship.Info());
+                    this.HUD.Menu(this.highlightedNode, false, this.highlightedNode.Ship.Info(),true);
                   this.state = 4;
                   break;
                 default:
@@ -378,11 +377,15 @@ function Battle(Fleet1, Fleet2, MapSize) {
                 else if (this.angle > - HALF_PI - QUARTER_PI && this.angle < -QUARTER_PI)
                   direction = UP_ARROW;
                 else direction = LEFT_ARROW
-                if (direction)
-                  if(this.FleetUpdatePosition(direction,this.PlayerFleet))
+                if (direction) {
+                  let indx = this.PlayerFleet.indexOf(this.highlightedNode.Ship);
+                  if (this.FleetUpdatePosition(direction, this.PlayerFleet)) {
+                    this.PlayerFleet[indx].turnUsed = true;
                     this.HUD.Actions--;
-                this.Draw();
-                this.state = 0;
+                  }
+                  this.state = 0;
+                  this.Draw();
+                }
                 break;
           }
         break;
