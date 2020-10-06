@@ -11,33 +11,47 @@ function AI(_controlFleet,_Nodes,_opposingFleet,_xOffsetMult) {
     this.end = this.Nodes[this.Target[0].xCord][this.Target[0].yCord];
     this.path;
 
-    this.DoTurn = function (_updateStart,_updateEnd) {
+    this.DoTurn = function (_updateStart, _updateEnd,_Target) {
         if (_updateEnd)
             this.end = _updateEnd;
         if (_updateStart)
             this.start = _updateStart;
+        if(_Target)
+            this.Target = _Target;
         ResetVisability(this.Nodes, false, true, false);
         SetRange(this.Nodes, this.Fleet, this.xOffsetMult);
-
+        let rangemap = this.Nodes.map(x => x.map(x => x.inRange))
+        let _randTarget = random(this.Target)
+        let notShot = this.Fleet.filter(x => !x.turnUsed)
+        let damageDealt = random(notShot)?.FireGuns(_randTarget, rangemap[_randTarget.xCord][_randTarget.yCord])
+        ResetVisability(this.Nodes, false, true, false);
+        if(damageDealt === undefined) {
+            return this.Move();
+        }
+        else if (typeof damageDealt[0] == 'number') {
+        } else {
+            return this.Move();          
+        }
+    }
+    this.Move = function() {
         let moveTo = this.Astar(this.end);
         if (moveTo) {
             let direction;
-            let pointerVector = p5.Vector.sub(moveTo.CenterPoint,this.Nodes[this.Fleet[0].xCord][this.Fleet[0].yCord].CenterPoint)
+            let pointerVector = p5.Vector.sub(moveTo.CenterPoint, this.Nodes[this.Fleet[0].xCord][this.Fleet[0].yCord].CenterPoint)
             push()
             translate(this.Nodes[this.Fleet[0].xCord][this.Fleet[0].yCord].CenterPoint.x, this.Nodes[this.Fleet[0].xCord][this.Fleet[0].yCord].CenterPoint.y)
-            let Angle = Math.atan2(pointerVector.y,pointerVector.x)
+            let Angle = Math.atan2(pointerVector.y, pointerVector.x)
             pop()
             if (Angle > -QUARTER_PI && Angle < QUARTER_PI)
-                  direction = RIGHT_ARROW;
-                else if (Angle >QUARTER_PI && Angle < HALF_PI + QUARTER_PI)
-                  direction = DOWN_ARROW;
-                else if (Angle > -HALF_PI - QUARTER_PI && Angle < -QUARTER_PI)
-                  direction = UP_ARROW;
-                else direction = LEFT_ARROW
+                direction = RIGHT_ARROW;
+            else if (Angle > QUARTER_PI && Angle < HALF_PI + QUARTER_PI)
+                direction = DOWN_ARROW;
+            else if (Angle > -HALF_PI - QUARTER_PI && Angle < -QUARTER_PI)
+                direction = UP_ARROW;
+            else direction = LEFT_ARROW
             if (direction)
                 return direction;
-        }
-        else console.log("no Path")
+        } else console.log("no Path")
     }
 
     this.Astar = function(_endGoal) {

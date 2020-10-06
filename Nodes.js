@@ -42,16 +42,16 @@ function Node(x, y, xsize, ysize,xcord,ycord) {
         if (this.Ship != null) {
   
           if (!this.Ship.isEnemy) {
-            image(this.Ship.Chibi, this.xPos, this.yPos, this.xSize, this.ySize);
+            image(placeholder, this.xPos, this.yPos, this.xSize, this.ySize);
             tint(0, 0, 255, 200);
-            image(this.Ship.Chibi, this.xPos, this.yPos, this.xSize, this.ySize);
+            image(placeholder, this.xPos, this.yPos, this.xSize, this.ySize);
             noTint();
           } else {
             push();
             scale(-1, 1);
-            image(this.Ship.Chibi, -this.xPos, this.yPos, -this.xSize, this.ySize);
+            image(placeholder, -this.xPos, this.yPos, -this.xSize, this.ySize);
             tint(255, 0, 0, 150);
-            image(this.Ship.Chibi, -this.xPos, this.yPos, -this.xSize, this.ySize);
+            image(placeholder, -this.xPos, this.yPos, -this.xSize, this.ySize);
             noTint();
             pop();
           }
@@ -92,6 +92,10 @@ function Node(x, y, xsize, ysize,xcord,ycord) {
       this.g = 0;
       this.previous = undefined;
       this.Neighbours = [];
+    }
+    this.ClearNode = function() {
+      this.Ship = undefined
+      this.unNavigable = false;
     }
   }
   
