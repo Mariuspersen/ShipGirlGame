@@ -58,7 +58,8 @@ function UI(startingActions,startingActionsEnemy) {
       menuOptions.map(x => {
         x.isHighlighted = (adjX + x.Pos.x < mouseX && adjY + x.Pos.y < mouseY && mouseX < adjX + x.Pos.x + x.Size.x && mouseY < adjY + x.Pos.y + x.Size.y);
       })
-      menuOptions.forEach((x, i) => x.Draw());
+      textAlign(LEFT)
+      menuOptions.forEach(x => x.Draw());
       pop()
     }
     if (mouseClick && menuOptions.reduce((a, x) => a.isHighlighted && !a.Disabled ? a : x).isHighlighted) {

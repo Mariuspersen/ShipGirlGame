@@ -88,7 +88,6 @@ function Battle(Fleet1, Fleet2, MapSize) {
   this.Draw = function() {
     image(battleBackground, 0, 0, width, height);
     //Find which nodes are visable to the player fleet
-    //ResetVisability(true,true,true)
     for (let i = 0; i < this.Nodes.length; i++) {
       for (let j = 0; j < this.Nodes[i].length; j++) {
         for (let k = 0; k < this.PlayerFleet.length; k++) {
@@ -106,7 +105,7 @@ function Battle(Fleet1, Fleet2, MapSize) {
       PlayerSunk.forEach(x => this.Nodes[x.xCord][x.yCord].ClearNode())
       if(this.PlayerFleet.length !== 0)
         this.PlayerFleet[0].isFlagship = true;
-        
+
       if (this.PlayerFleet.length === 0){
         this.Outcome = false;
       }
@@ -117,7 +116,7 @@ function Battle(Fleet1, Fleet2, MapSize) {
     }
     //Draw nodes
     this.Nodes.forEach(x => x.forEach(x  => x.Draw()));
-    this.HUD.Draw();
+    this.HUD?.Draw();
     if(this.count > 0)
     {
       fill(255,0,0)
@@ -327,22 +326,22 @@ function Battle(Fleet1, Fleet2, MapSize) {
             this.HUD.Menu(this.highlightedNode, false, enemyOptions);
             break;
           case 4:
-            this.HUD.Menu(this.highlightedNode, false, this.highlightedNode.Ship.Info(),true);
+            this.HUD.Menu(this.highlightedNode, false, this.highlightedNode.Ship.Info(), true);
             break;
           case 5:
             this.Draw();
             let nodePoint = this.Nodes[this.PlayerFleet[0].xCord][this.PlayerFleet[0].yCord].CenterPoint.copy();
             let mousePoint = createVector(mouseX, mouseY);
-            let pointerVector = p5.Vector.sub(mousePoint,nodePoint)
+            let pointerVector = p5.Vector.sub(mousePoint, nodePoint)
             push()
-            fill(255,0,0)
-            translate(nodePoint.x,nodePoint.y)
-            this.angle = Math.atan2(pointerVector.y,pointerVector.x);
-            rotate(this.angle + HALF_PI) 
+            fill(255, 0, 0)
+            translate(nodePoint.x, nodePoint.y)
+            this.angle = Math.atan2(pointerVector.y, pointerVector.x);
+            rotate(this.angle + HALF_PI)
             imageMode(CENTER)
             image(pointer, 0, 0 - 50)
             pop()
-          break;
+            break;
         }
         break;
       case 1:
@@ -366,7 +365,7 @@ function Battle(Fleet1, Fleet2, MapSize) {
                   break;
                 case 3:
                   if (this.highlightedNode.Ship)
-                    this.HUD.Menu(this.highlightedNode, false, this.highlightedNode.Ship.Info(),true);
+                    this.HUD.Menu(this.highlightedNode, false, this.highlightedNode.Ship.Info(), true);
                   this.state = 4;
                   break;
                 default:
@@ -384,14 +383,14 @@ function Battle(Fleet1, Fleet2, MapSize) {
             case 3:
               switch (this.HUD.Menu(this.highlightedNode, true, enemyOptions)) {
                 case 0:
-                  let dealtDamage = selectedNode.Ship.FireGuns(this.highlightedNode.Ship, rangeMap[this.coords[0]][this.coords[1]])        
+                  let dealtDamage = selectedNode.Ship.FireGuns(this.highlightedNode.Ship, rangeMap[this.coords[0]][this.coords[1]])
                   this.state = 0;
                   this.Draw();
                   if (typeof dealtDamage[0] == 'number') {
                     this.updateDisplayDamage(dealtDamage[0], this.highlightedNode.CenterPoint)
                     this.HUD.Actions--;
                   } else this.HUD.currentInfo = dealtDamage;
-                  if(dealtDamage.length > 1 && typeof dealtDamage !== 'string')
+                  if (dealtDamage.length > 1 && typeof dealtDamage !== 'string')
                     this.HUD.currentInfo = dealtDamage[1];
                   else
                     this.HUD.currentInfo = dealtDamage;
@@ -407,13 +406,13 @@ function Battle(Fleet1, Fleet2, MapSize) {
                   direction = RIGHT_ARROW;
                 else if (this.angle > QUARTER_PI && this.angle < HALF_PI + QUARTER_PI)
                   direction = DOWN_ARROW;
-                else if (this.angle > - HALF_PI - QUARTER_PI && this.angle < -QUARTER_PI)
+                else if (this.angle > -HALF_PI - QUARTER_PI && this.angle < -QUARTER_PI)
                   direction = UP_ARROW;
                 else direction = LEFT_ARROW
                 if (direction) {
                   if (this.FleetUpdatePosition(direction, this.PlayerFleet)) {
                     this.HUD.Actions--;
-                    ResetVisability(this.Nodes,true,true,true)
+                    ResetVisability(this.Nodes, true, true, true)
                   }
                   this.state = 0;
                   this.Draw();
@@ -422,8 +421,7 @@ function Battle(Fleet1, Fleet2, MapSize) {
           }
         break;
       case 2:
-         if (keyCode === UP_ARROW || keyCode === DOWN_ARROW || keyCode === LEFT_ARROW || keyCode === RIGHT_ARROW) {
-          }
+        if (keyCode === UP_ARROW || keyCode === DOWN_ARROW || keyCode === LEFT_ARROW || keyCode === RIGHT_ARROW) {}
         if (keyCode === ENTER) {
           if (this.isFormationChangePossible(this.PlayerFleet)) {
             this.LineofBattle = !this.LineofBattle;
@@ -435,32 +433,25 @@ function Battle(Fleet1, Fleet2, MapSize) {
             text('Fleet needs to be in a single line to change formation', width / 2, height / 2)
           }
           this.Draw();
-        }
-        else if(keyCode === 32 && this.HUD.Actions <= 0)
-        {
-          
+        } else if (keyCode === 32 && this.HUD.Actions <= 0) {
+
           this.Draw();
           while (this.HUD.EnemyActions >= 0 && this.PlayerFleet.length !== 0 && this.EnemyFleet.length !== 0) {
-              //await timeout(1000);
-              if(this.FleetUpdatePosition(this.EnemyAI.DoTurn(this.Nodes[this.EnemyFleet[0].xCord][this.EnemyFleet[0].yCord],this.Nodes[this.PlayerFleet[0].xCord][this.PlayerFleet[0].yCord],this.PlayerFleet,this.EnemyFleet),this.EnemyFleet)) {
-              }
-              else {
-                if (this.isFormationChangePossible(this.EnemyFleet))
-                 this.LoBEnemy = !this.LoBEnemy
-                this.FleetUpdatePosition(this.EnemyAI.DoTurn(this.Nodes[this.EnemyFleet[0].xCord][this.EnemyFleet[0].yCord],this.Nodes[this.PlayerFleet[0].xCord][this.PlayerFleet[0].yCord],this.PlayerFleet,this.EnemyFleet),this.EnemyFleet);
-              }
-               this.Draw();
-               this.HUD.EnemyActions--;
-              
+            if (this.FleetUpdatePosition(this.EnemyAI.DoTurn(this.Nodes[this.EnemyFleet[0].xCord][this.EnemyFleet[0].yCord], this.Nodes[this.PlayerFleet[0].xCord][this.PlayerFleet[0].yCord], this.PlayerFleet, this.EnemyFleet), this.EnemyFleet)) {} else {
+              if (this.isFormationChangePossible(this.EnemyFleet))
+                this.LoBEnemy = !this.LoBEnemy
+              this.FleetUpdatePosition(this.EnemyAI.DoTurn(this.Nodes[this.EnemyFleet[0].xCord][this.EnemyFleet[0].yCord], this.Nodes[this.PlayerFleet[0].xCord][this.PlayerFleet[0].yCord], this.PlayerFleet, this.EnemyFleet), this.EnemyFleet);
+            }
+            this.Draw();
+            this.HUD.EnemyActions--;
+
           }
           this.EnemyFleet.map(x => x.turnUsed = false);
           this.HUD.EnemyActions = ++this.HUD.baseActionsEnemy;
           this.EnemyAI.Target = this.PlayerFleet;
           this.HUD.Actions = ++this.HUD.baseActions;
           this.PlayerFleet.map(x => x.turnUsed = false);
-        }
-        else if(keyCode === ESCAPE)
-        {
+        } else if (keyCode === ESCAPE) {
           this.state = 0;
           this.Draw();
         }
@@ -469,8 +460,4 @@ function Battle(Fleet1, Fleet2, MapSize) {
         break;
     }
   }
-}
-
-function timeout(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
 }

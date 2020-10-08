@@ -25,7 +25,6 @@ function AI(_controlFleet,_Nodes,_opposingFleet,_xOffsetMult) {
         let rangemap = this.Nodes.map(x => x.map(x => x.inRange))
         let _randTarget = random(this.Target)
         let notShot = this.Fleet.filter(x => !x.turnUsed)
-        console.log(notShot.length)
         let damageDealt = random(notShot)?.FireGuns(_randTarget, rangemap[_randTarget.xCord][_randTarget.yCord])
         if(damageDealt === undefined || typeof damageDealt[0] !== 'number') {
             return this.Move();
@@ -49,7 +48,7 @@ function AI(_controlFleet,_Nodes,_opposingFleet,_xOffsetMult) {
             else direction = LEFT_ARROW
             if (direction)
                 return direction;
-        } else console.log("no Path")
+        }
     }
 
     this.Astar = function(_endGoal) {
@@ -71,19 +70,13 @@ function AI(_controlFleet,_Nodes,_opposingFleet,_xOffsetMult) {
                 while (temp.previous) {
                     path.push(temp.previous);
                     temp = temp.previous;
-                    
                     strokeWeight(12)
                     stroke(255,0,0)
                     point(this.Nodes[temp.xCord][temp.yCord].CenterPoint);
-                    
-                    
                 }
-                //stroke(0,255,0)
-                //point(this.Nodes[path[path.length -2]?.xCord][path[path.length -2]?.yCord]?.CenterPoint)
                 pop();
                 this.openSet = [];
                 this.Nodes.forEach(x => {x.forEach ( y => y.ResetAstar())});
-                //console.log(path[path.length -1])
                 return path[path.length -2]
             }
             this.openSet.remove(current);
@@ -117,18 +110,15 @@ function AI(_controlFleet,_Nodes,_opposingFleet,_xOffsetMult) {
                     if(betterPath) {
                         neighbour.h = this.Distance(neighbour,_endGoal)
                         neighbour.f = neighbour.g + neighbour.h;
-                        //console.log(current)
                         neighbour.previous = current;
                     }
                 }
             }            
         }
         this.Nodes.forEach(x => {x.forEach ( y => y.ResetAstar())});
-                //console.log(path.length)
                 return path[path.length -1]
     }
     this.Distance = function(a,b) {
-        //console.log(Math.abs(a.xCord - b.xCord) + Math.abs(a.yCord - b.yCord))
         return Math.abs(a.xCord - b.xCord) + Math.abs(a.yCord - b.yCord)
     }
 }

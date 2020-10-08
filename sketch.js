@@ -31,7 +31,6 @@ function setup() {
   let Fleet1 = new Array(6).fill().map(x => new Shipgirl(random(Ships)))
   let Fleet2 = new Array(6).fill().map(x => new Shipgirl(random(Ships)))
   this.TestBattle = new Battle(Fleet1,Fleet2,random([2,3,4]));
-  //console.log(Ships)
 }
 
 function draw() {

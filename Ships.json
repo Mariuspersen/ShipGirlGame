@@ -19,16 +19,6 @@
   "Range": 16,
   "combatHP": 4301
 }, {
-  "Name": "Tordenskjold",
-  "Healthpoints": 4301,
-  "Firepower": 1818,
-  "TorpedoPower": 900,
-  "Armour": 203,
-  "Speed": 17,
-  "LineofSight": 16,
-  "Range": 16,
-  "combatHP": 4301
-}, {
   "Name": "Harald Haarfagre",
   "Healthpoints": 4239,
   "Firepower": 1818,
@@ -138,4 +128,74 @@
   "LineofSight": 11,
   "Range": 5,
   "combatHP": 606
+}, {
+  "Name": "Nassau",
+  "Healthpoints": 22170,
+  "Firepower": 6568,
+  "TorpedoPower": 2700,
+  "Armour": 400,
+  "Speed": 20.2,
+  "LineofSight": 22,
+  "Range": 21,
+  "combatHP": 22170
+}, {
+  "Name": "Radetzky",
+  "Healthpoints": 17252,
+  "Firepower": 5608,
+  "TorpedoPower": 1350,
+  "Armour": 250,
+  "Speed": 20.5,
+  "LineofSight": 21,
+  "Range": 23,
+  "combatHP": 17252
+}, {
+  "Name": "Giulio Cesare",
+  "Healthpoints": 26569,
+  "Firepower": 7191,
+  "TorpedoPower": 1350,
+  "Armour": 280,
+  "Speed": 21.5,
+  "LineofSight": 23,
+  "Range": 23,
+  "combatHP": 26569
+}, {
+  "Name": "Regina Elena",
+  "Healthpoints": 14767,
+  "Firepower": 4262,
+  "TorpedoPower": 900,
+  "Armour": 250,
+  "Speed": 20.8,
+  "LineofSight": 20,
+  "Range": 23,
+  "combatHP": 14767
+}, {
+  "Name": "Satsuma",
+  "Healthpoints": 20854,
+  "Firepower": 6316,
+  "TorpedoPower": 3656,
+  "Armour": 229,
+  "Speed": 18.25,
+  "LineofSight": 22,
+  "Range": 23,
+  "combatHP": 20854
+}, {
+  "Name": "Fusō",
+  "Healthpoints": 37791,
+  "Firepower": 6704,
+  "TorpedoPower": 3198,
+  "Armour": 351,
+  "Speed": 23,
+  "LineofSight": 23,
+  "Range": 27,
+  "combatHP": 37791
+}, {
+  "Name": "Bretagne",
+  "Healthpoints": 27246,
+  "Firepower": 6530,
+  "TorpedoPower": 1800,
+  "Armour": 300,
+  "Speed": 20.6,
+  "LineofSight": 22,
+  "Range": 25,
+  "combatHP": 27246
 }]
