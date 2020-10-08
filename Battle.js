@@ -23,7 +23,7 @@ function Battle(Fleet1, Fleet2, MapSize) {
   this.selectedNode = undefined;
   this.tempNodes = undefined;
   this.angle = undefined;
-  this.DefeatCondition = false;
+  this.Outcome = undefined;
 
   for (let i = 0; this.ySize < this.PlayerFleet.length; i++) {
     this.PlayerFleet.pop();
@@ -31,14 +31,19 @@ function Battle(Fleet1, Fleet2, MapSize) {
   for (let i = 0; this.ySize < this.EnemyFleet.length; i++) {
     this.EnemyFleet.pop();
   }
-  this.PlayerFleet[0].isFlagship = true;
+  
   this.PlayerFleet = this.PlayerFleet.map(x => {
     x.isEnemy = false;
+    x.isFlagship = false;
+    x.turnUsed = false;
     return x;
   })
+  this.PlayerFleet[0].isFlagship = true;
 
   this.EnemyFleet = this.EnemyFleet.map(x => {
     x.isEnemy = true;
+    x.isFlagship = false;
+    x.turnUsed = false;
     return x;
   })
 
@@ -64,7 +69,7 @@ function Battle(Fleet1, Fleet2, MapSize) {
     CreateIsland(0,this.Nodes);
 
     //Fill in nodes with the player ships
-    let spawnOffset = Math.ceil((this.ySize / 2) - (this.PlayerFleet.length / 2));
+    let spawnOffset = Math.floor((this.ySize / 2) - (this.PlayerFleet.length / 2));
     for (let i = 0; i < this.PlayerFleet.length; i++) {
       this.PlayerFleet[i].xCord = 0;
       this.PlayerFleet[i].yCord = i+spawnOffset;
@@ -72,7 +77,7 @@ function Battle(Fleet1, Fleet2, MapSize) {
     }
 
     //Fill in mirrored enemy ships
-    spawnOffset = Math.ceil(this.ySize / 2 - this.EnemyFleet.length / 2);
+    spawnOffset = Math.floor(this.ySize / 2 - this.EnemyFleet.length / 2);
     for (i = 0; i < this.EnemyFleet.length; i++) {
       this.EnemyFleet[i].xCord = this.Nodes.length -1;
       this.EnemyFleet[i].yCord = i+spawnOffset;
@@ -83,6 +88,7 @@ function Battle(Fleet1, Fleet2, MapSize) {
   this.Draw = function() {
     image(battleBackground, 0, 0, width, height);
     //Find which nodes are visable to the player fleet
+    //ResetVisability(true,true,true)
     for (let i = 0; i < this.Nodes.length; i++) {
       for (let j = 0; j < this.Nodes[i].length; j++) {
         for (let k = 0; k < this.PlayerFleet.length; k++) {
@@ -100,9 +106,14 @@ function Battle(Fleet1, Fleet2, MapSize) {
       PlayerSunk.forEach(x => this.Nodes[x.xCord][x.yCord].ClearNode())
       if(this.PlayerFleet.length !== 0)
         this.PlayerFleet[0].isFlagship = true;
-      else {
-        this.DefeatCondition = true;
+        
+      if (this.PlayerFleet.length === 0){
+        this.Outcome = false;
       }
+      else if(this.EnemyFleet.length === 0) {
+        this.Outcome = true;
+      }
+      
     }
     //Draw nodes
     this.Nodes.forEach(x => x.forEach(x  => x.Draw()));
@@ -116,11 +127,11 @@ function Battle(Fleet1, Fleet2, MapSize) {
       textAlign(LEFT)
       this.count--
     }
-    if(this.DefeatCondition) {
-      fill(255,0,0)
+    if(this.Outcome !== undefined) {
+      this.Outcome ? fill(0,255,0) : fill(255,0,0)
       textSize(72)
       textAlign(CENTER)
-      text("YOU LOST",width / 2,height / 2)
+      text(this.Outcome ? "YOU WON!" : "YOU LOST",width / 2,height / 2)
     }
   }
 
@@ -296,7 +307,7 @@ function Battle(Fleet1, Fleet2, MapSize) {
     }
   }
 
-  this.stateManager = async function (event) {
+  this.stateManager = function (event) {
     //0 = mouseMoved,1 = mouseClicked, 2 = keyPressed
     switch (event) {
       case 0:
@@ -384,6 +395,7 @@ function Battle(Fleet1, Fleet2, MapSize) {
                     this.HUD.currentInfo = dealtDamage[1];
                   else
                     this.HUD.currentInfo = dealtDamage;
+                  break;
               }
               case 4:
                 this.Draw();
@@ -401,6 +413,7 @@ function Battle(Fleet1, Fleet2, MapSize) {
                 if (direction) {
                   if (this.FleetUpdatePosition(direction, this.PlayerFleet)) {
                     this.HUD.Actions--;
+                    ResetVisability(this.Nodes,true,true,true)
                   }
                   this.state = 0;
                   this.Draw();
@@ -427,17 +440,16 @@ function Battle(Fleet1, Fleet2, MapSize) {
         {
           
           this.Draw();
-          while (this.HUD.EnemyActions >= 0) {
-              await timeout(1000);
-              if(this.FleetUpdatePosition(this.EnemyAI.DoTurn(this.Nodes[this.EnemyFleet[0].xCord][this.EnemyFleet[0].yCord],this.Nodes[this.PlayerFleet[0].xCord][this.PlayerFleet[0].yCord],this.PlayerFleet),this.EnemyFleet)) {
+          while (this.HUD.EnemyActions >= 0 && this.PlayerFleet.length !== 0 && this.EnemyFleet.length !== 0) {
+              //await timeout(1000);
+              if(this.FleetUpdatePosition(this.EnemyAI.DoTurn(this.Nodes[this.EnemyFleet[0].xCord][this.EnemyFleet[0].yCord],this.Nodes[this.PlayerFleet[0].xCord][this.PlayerFleet[0].yCord],this.PlayerFleet,this.EnemyFleet),this.EnemyFleet)) {
               }
               else {
                 if (this.isFormationChangePossible(this.EnemyFleet))
                  this.LoBEnemy = !this.LoBEnemy
-                this.FleetUpdatePosition(this.EnemyAI.DoTurn(this.Nodes[this.EnemyFleet[0].xCord][this.EnemyFleet[0].yCord],this.Nodes[this.PlayerFleet[0].xCord][this.PlayerFleet[0].yCord],this.PlayerFleet),this.EnemyFleet);
+                this.FleetUpdatePosition(this.EnemyAI.DoTurn(this.Nodes[this.EnemyFleet[0].xCord][this.EnemyFleet[0].yCord],this.Nodes[this.PlayerFleet[0].xCord][this.PlayerFleet[0].yCord],this.PlayerFleet,this.EnemyFleet),this.EnemyFleet);
               }
                this.Draw();
-               console.log(this.HUD.EnemyActions)
                this.HUD.EnemyActions--;
               
           }

@@ -19,8 +19,8 @@ function Shipgirl(Shipname, Displacement, Guns, Armour, Speed, Beam, Torpedoes) 
   this.xCord = undefined;
   this.yCord = undefined;
   this.isEnemy = undefined;
-  this.turnUsed = false;
-  this.isFlagship = false;
+  this.turnUsed = undefined;
+  this.isFlagship = undefined;
 
 
   this.Info = function(){

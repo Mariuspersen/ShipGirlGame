@@ -11,26 +11,24 @@ function AI(_controlFleet,_Nodes,_opposingFleet,_xOffsetMult) {
     this.end = this.Nodes[this.Target[0].xCord][this.Target[0].yCord];
     this.path;
 
-    this.DoTurn = function (_updateStart, _updateEnd,_Target) {
+    this.DoTurn = function (_updateStart, _updateEnd,_updateTarget,_updateFleet) {
         if (_updateEnd)
             this.end = _updateEnd;
         if (_updateStart)
             this.start = _updateStart;
-        if(_Target)
-            this.Target = _Target;
+        if(_updateTarget)
+            this.Target = _updateTarget;
+        if(_updateFleet)
+            this.Fleet = _updateFleet;
         ResetVisability(this.Nodes, false, true, false);
         SetRange(this.Nodes, this.Fleet, this.xOffsetMult);
         let rangemap = this.Nodes.map(x => x.map(x => x.inRange))
         let _randTarget = random(this.Target)
         let notShot = this.Fleet.filter(x => !x.turnUsed)
+        console.log(notShot.length)
         let damageDealt = random(notShot)?.FireGuns(_randTarget, rangemap[_randTarget.xCord][_randTarget.yCord])
-        ResetVisability(this.Nodes, false, true, false);
-        if(damageDealt === undefined) {
+        if(damageDealt === undefined || typeof damageDealt[0] !== 'number') {
             return this.Move();
-        }
-        else if (typeof damageDealt[0] == 'number') {
-        } else {
-            return this.Move();          
         }
     }
     this.Move = function() {
