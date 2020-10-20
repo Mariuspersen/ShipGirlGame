@@ -9,8 +9,10 @@ function MainMenu() {
         this.options.map(x => {
             x.isHighlighted = (x.xPos < mouseX && x.yPos < mouseY && mouseX < x.xPos + x.xSize && mouseY < x.yPos + x.ySize);
           })
+          push()
           textAlign(CENTER, CENTER)
         this.options.forEach(x => x.draw())
+        pop()
         
     }
 
@@ -30,7 +32,7 @@ function MainMenu() {
                                 case 0:
                                     let Fleet1 = new Array(6).fill().map(x => new Shipgirl(random(Ships)))
                                     let Fleet2 = new Array(6).fill().map(x => new Shipgirl(random(Ships)))
-                                    this.currentBattle = new Battle(Fleet1,Fleet2,1)
+                                    this.currentBattle = new Battle(Fleet1,Fleet2,2)
                                     this.currentBattle.Draw();
                                     this.state = 1;
                                     break;
