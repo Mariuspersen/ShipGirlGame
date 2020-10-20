@@ -421,7 +421,16 @@ function Battle(Fleet1, Fleet2, MapSize) {
           }
         break;
       case 2:
-        if (keyCode === UP_ARROW || keyCode === DOWN_ARROW || keyCode === LEFT_ARROW || keyCode === RIGHT_ARROW) {}
+        if(this.Outcome != undefined)
+            return true;
+        if (keyCode === UP_ARROW || keyCode === DOWN_ARROW || keyCode === LEFT_ARROW || keyCode === RIGHT_ARROW) {
+          this.FleetUpdatePosition(keyCode, this.PlayerFleet) 
+          this.HUD.Actions--;
+          ResetVisability(this.Nodes, true, true, true)
+        
+        this.state = 0;
+        this.Draw();
+      }
         if (keyCode === ENTER) {
           if (this.isFormationChangePossible(this.PlayerFleet)) {
             this.LineofBattle = !this.LineofBattle;
@@ -433,9 +442,9 @@ function Battle(Fleet1, Fleet2, MapSize) {
             text('Fleet needs to be in a single line to change formation', width / 2, height / 2)
           }
           this.Draw();
-        } else if (keyCode === 32 && this.HUD.Actions <= 0) {
+        } else if (keyCode === 32) {
 
-          this.Draw();
+          
           while (this.HUD.EnemyActions >= 0 && this.PlayerFleet.length !== 0 && this.EnemyFleet.length !== 0) {
             if (this.FleetUpdatePosition(this.EnemyAI.DoTurn(this.Nodes[this.EnemyFleet[0].xCord][this.EnemyFleet[0].yCord], this.Nodes[this.PlayerFleet[0].xCord][this.PlayerFleet[0].yCord], this.PlayerFleet, this.EnemyFleet), this.EnemyFleet)) {} else {
               if (this.isFormationChangePossible(this.EnemyFleet))
@@ -451,7 +460,10 @@ function Battle(Fleet1, Fleet2, MapSize) {
           this.EnemyAI.Target = this.PlayerFleet;
           this.HUD.Actions = ++this.HUD.baseActions;
           this.PlayerFleet.map(x => x.turnUsed = false);
+          this.Draw();
         } else if (keyCode === ESCAPE) {
+          if(this.state == 0)
+            return true
           this.state = 0;
           this.Draw();
         }

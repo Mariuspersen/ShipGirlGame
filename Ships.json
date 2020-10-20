@@ -198,4 +198,14 @@
   "LineofSight": 22,
   "Range": 25,
   "combatHP": 27246
+}, {
+  "Name": "Thunderchild",
+  "Healthpoints": 9100,
+  "Firepower": 2667,
+  "TorpedoPower": 450,
+  "Armour": 200,
+  "Speed": 22,
+  "LineofSight": 20,
+  "Range": 23,
+  "combatHP": 9100
 }]

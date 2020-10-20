@@ -30,22 +30,28 @@ function setup() {
     }
   let Fleet1 = new Array(6).fill().map(x => new Shipgirl(random(Ships)))
   let Fleet2 = new Array(6).fill().map(x => new Shipgirl(random(Ships)))
-  this.TestBattle = new Battle(Fleet1,Fleet2,random([2,3,4]));
+  //this.TestBattle = new Battle(Fleet1,Fleet2,random([2,3,4]));
+  this.Main = new MainMenu();
+  this.Main.draw();
 }
 
 function draw() {
-  this.TestBattle.Draw();
+  //this.TestBattle.Draw();
+  //this.Main.draw();
 }
 
 function keyPressed() {
-  this.TestBattle.stateManager(2)
+  //this.TestBattle.stateManager(2)
+  this.Main.delegator(2);
 }
 
 function mouseMoved() {
-  this.TestBattle.stateManager(0);
+  //this.TestBattle.stateManager(0);
+  this.Main.delegator(0);
 }
 
 function mouseClicked() {
-  this.TestBattle.stateManager(1);
+  //this.TestBattle.stateManager(1);
+  this.Main.delegator(1);
 }
 
