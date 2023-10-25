@@ -1,20 +1,22 @@
-html {
-  margin: 0;
-  padding: 0;
-}
+* { margin: 0; padding: 0;}
+body, html { height:100%; }
 
 canvas {
-  padding-left: 0;
-  padding-right: 0;
-  margin-left: auto;
-  margin-right: auto;
-  display: block;
-  width: 800px;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  -moz-user-select: none;
-  user-select: none;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.ui {
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-size: 40px;
+  border: 5px solid;
+  border-color: #555555;
+  background-color: #AAAAAA;
+}
+
+.ui:hover {
+  background-color: #888888;
 }
 
 body {
