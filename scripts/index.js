@@ -2,17 +2,23 @@ const mainbody = document.getElementById("mainbody")
 const canvas = document.getElementById("game")
 const context = canvas.getContext("2d")
 
+const grid = new Grid(canvas,30,20,200,200);
 
-
+let assets
 
 async function main() {
     canvas.height = window.innerHeight;
     canvas.width = window.innerWidth;
+    context.lineWidth = 2;
     
-    const assets = await load_assets()
-    context.drawImage(assets.background,0,0,canvas.width,canvas.height)
-    create_button(mainbody,"Start",(canvas.width / 2) - 250, (canvas.height / 2) - 100 ,500,200)
+    assets = await load_assets()
+    window.requestAnimationFrame(loop)
+}
 
+async function loop() {
+    context.drawImage(assets.background,0,0,canvas.width,canvas.height)
+    grid.draw(context);
+    window.requestAnimationFrame(loop)
 }
 
 function load_asset(path) {
