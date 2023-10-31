@@ -23,21 +23,29 @@ class Grid {
         this.ctx.lineWidth = 4
 
         for (let x = 0; x < tiles_in_x_direction; x++) {
+            this.tiles.push(new Array())
             for (let y = 0; y < tiles_in_y_direction; y++) {
-                this.tiles.push(new Tile(tile_size * x, tile_size * y, tile_size, tile_size,null));
+                this.tiles[x].push(new Tile(
+                    tile_size * x, 
+                    tile_size * y, 
+                    tile_size, 
+                    tile_size,
+                    island_tiles[15]
+                ))
             }
         }
-
-        wfc(this.tiles,this.tilecount_x,this.tilecount_y,island_tiles)
+        generate_island(this.tiles,island_tiles)
 
         let thickness_offset = (this.ctx.lineWidth / 2);
-        this.tiles.forEach(tile => tile.draw(this.ctx))
+
         this.ctx.strokeRect(
             thickness_offset,
             thickness_offset,
             this.canvas.width-(thickness_offset*2),
             this.canvas.height-(thickness_offset*2)
-        )
+            )
+        this.tiles.forEach(col => col.forEach(row => row.draw(this.ctx)))
+        this.tiles.forEach(col => col.forEach(tile => tile.draw_terrain(this.ctx)))
         this.main_canvas.addEventListener("mousedown", this.mousedown)
         this.main_canvas.addEventListener("mousemove", this.mousedrag)
         this.main_canvas.addEventListener("mouseup", this.mouseup)
@@ -62,12 +70,13 @@ class Grid {
     }
 
     mousewheel = (e) => {
-        context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         this.scale += e.deltaY / 10000
         this.ctx.lineWidth = this.scale*4
         let thickness_offset = (this.ctx.lineWidth / 2);
-        this.tiles.forEach(tile => tile.draw(this.ctx))
+        this.tiles.forEach(col => col.forEach(tile => tile.draw(this.ctx)))
+        this.tiles.forEach(col => col.forEach(tile => tile.draw_terrain(this.ctx)))
         this.ctx.strokeRect(
             thickness_offset,
             thickness_offset,
@@ -78,6 +87,6 @@ class Grid {
     }
 
     draw(ctx) {
-        ctx.drawImage(this.canvas, this.x, this.y,this.canvas.width*this.scale,this.canvas.height*this.scale)
+        ctx?.drawImage(this.canvas, this.x, this.y,this.canvas.width*this.scale,this.canvas.height*this.scale)
     }
 }

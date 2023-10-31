@@ -10,7 +10,7 @@ async function main() {
     canvas.width = window.innerWidth;
     
     assets = await load_assets()
-    grid = new Grid(canvas,assets.island_tiles,5,5,200,200);
+    grid = new Grid(canvas,assets.island_tiles,7,7,100);
     window.requestAnimationFrame(loop)
 }
 
@@ -36,6 +36,7 @@ async function load_assets() {
     assets.pointer = await load_asset("assets/Pointer.png")
     assets.island_tileset = await load_asset("assets/IslandTileset.png")
     assets.ship = await load_asset("assets/ship.png")
+    assets.islands = await (await fetch("assets/islands.json")).json()
     assets.island_tiles = new Array()
 
     const tile_size = 300
