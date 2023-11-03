@@ -13,7 +13,7 @@ class Grid {
     offset_y = 0
     scale = 1;
 
-    constructor(real_canvas,island_tiles, tiles_in_x_direction, tiles_in_y_direction, tile_size) {
+    constructor(real_canvas,island_tiles,island_layouts, tiles_in_x_direction, tiles_in_y_direction, tile_size) {
         this.canvas.width = tile_size * tiles_in_x_direction
         this.canvas.height = tile_size * tiles_in_y_direction
         this.main_canvas = real_canvas
@@ -34,7 +34,7 @@ class Grid {
                 ))
             }
         }
-        generate_island(this.tiles,island_tiles)
+        generate_island(this.tiles,island_tiles,island_layouts)
 
         let thickness_offset = (this.ctx.lineWidth / 2);
 
