@@ -1,3 +1,7 @@
+:root {
+
+}
+
 * { margin: 0; padding: 0;}
 body, html { height:100%; }
 
@@ -7,15 +11,34 @@ canvas {
   height: 100%;
 }
 
-.ui {
+.ui-titlebar {
   font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-size: 80%;
+  background-color: #555555;
+  color: #AAAAAA;
+  padding: 10px;
+}
+
+.ui-button {
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-size: 80%;
+  border: 5px solid;
+  border-color: #555555;
+  background-color: #AAAAAA;
+  margin: 5px;
+}
+
+.ui-menu {
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
   font-size: 40px;
   border: 5px solid;
   border-color: #555555;
   background-color: #AAAAAA;
 }
 
-.ui:hover {
+.ui-button:hover {
   background-color: #888888;
 }
 

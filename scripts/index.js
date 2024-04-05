@@ -10,7 +10,7 @@ async function main() {
     canvas.width = window.innerWidth;
     
     assets = await load_assets()
-    grid = new Grid(canvas,assets.island_tiles,assets.island_layouts,7,7,100);
+    grid = new Grid(canvas,assets.island_tiles,assets.island_layouts,50,50,100,1);
     window.requestAnimationFrame(loop)
 }
 

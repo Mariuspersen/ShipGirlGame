@@ -6,10 +6,24 @@ function window_resize(e) {
     canvas.width = window.innerWidth;
 }
 
+const b = {
+    text: "test",
+    callback: () => console.log("testing"),
+
+}
+
+const btns = [
+    b,
+    b,
+    b,
+]
+
 function context_menu(e) {
     e.preventDefault()
-    console.log(e)
-    create_button(mainbody,"Hello there",e.clientX,e.clientY,300,75)
+    const collection = [...document.getElementsByClassName('ui-menu')]
+    collection.forEach(e => e.remove())
+    create_dropdown(mainbody,btns,"haroo",e.clientX,e.clientY,100,300)
+    //create_button(mainbody,() => console.log("hello"),"Hello there",e.clientX,e.clientY,300,75)
     return false
 }
 

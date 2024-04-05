@@ -10,6 +10,12 @@ function generate_island(tiles, tileset,islands) {
 
 }
 
+function generate_islands(tiles, tileset, islands, n) {
+    for (let i = 0; i < n; i++) {
+        generate_island(tiles,tileset,islands);
+    }
+}
+
 function random_int(max) {
     return Math.floor(Math.random() * max);
 }
