@@ -2,6 +2,9 @@ const mainbody = document.getElementById("mainbody")
 const canvas = document.getElementById("game")
 const context = canvas.getContext("2d")
 
+const webglcanvas = document.createElement("canvas")
+const webgl = webglcanvas.getContext("webgl")
+
 let grid
 let assets
 
@@ -10,7 +13,7 @@ async function main() {
     canvas.width = window.innerWidth;
     
     assets = await load_assets()
-    grid = new Grid(canvas,assets.island_tiles,assets.island_layouts,50,50,100,1);
+    grid = new Grid(canvas,assets.island_tiles,assets.island_layouts,50,50,100,4);
     window.requestAnimationFrame(loop)
 }
 
@@ -34,12 +37,12 @@ async function load_assets() {
 
     assets.background = await load_asset("assets/BattleOcean.png")
     assets.pointer = await load_asset("assets/Pointer.png")
-    assets.island_tileset = await load_asset("assets/IslandTileset.png")
+    assets.island_tileset = await load_asset("assets/tileset.png")
     assets.ship = await load_asset("assets/ship.png")
     assets.island_layouts = await (await fetch("assets/islands.json")).json()
     assets.island_tiles = new Array()
 
-    const tile_size = 300
+    const tile_size = 256
 
     const tile = document.createElement("canvas")
     const tile_ctx = tile.getContext("2d")

@@ -15,7 +15,7 @@ class Grid {
 
     noise_generator
 
-    constructor(real_canvas,island_tiles,island_layouts, tiles_in_x_direction, tiles_in_y_direction, tile_size,island_count) {
+    constructor(real_canvas,island_tiles,island_layouts, tiles_in_x_direction, tiles_in_y_direction, tile_size,scale) {
         this.canvas.width = tile_size * tiles_in_x_direction
         this.canvas.height = tile_size * tiles_in_y_direction
         this.main_canvas = real_canvas
@@ -32,14 +32,13 @@ class Grid {
                     tile_size * y, 
                     tile_size, 
                     tile_size,
-                    island_tiles[15]
+                    island_tiles[5],
+                    map_range(perlin.get(x/tiles_in_x_direction*scale,y/tiles_in_y_direction*scale),-1,1,0,1)
                 ))
             }
         }
 
-        this.noise_generator = new PerlinNoise(this.tiles)
-        this.noise_generator.apply_noise(2)
-        generate_islands(this.tiles,island_tiles,island_layouts,island_count)
+        generate_islands(this.tiles,island_tiles)
 
         let thickness_offset = (this.ctx.lineWidth / 2);
 

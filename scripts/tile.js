@@ -1,17 +1,17 @@
 class Tile {
-    constructor(x,y,w,h,image) {
+    constructor(x,y,w,h,image,intensity) {
         this.x = x
         this.y = y
         this.width = w
         this.height = h
         this.image = image
         this.vector = undefined
-        this.intensity = undefined
+        this.intensity = intensity
     }
 
     draw(ctx) {
-        ctx.fillStyle = `rgba(255,255,255,${this.intensity})`
-        ctx.fillRect(this.x,this.y,this.width,this.height)
+        //ctx.fillStyle = `rgba(255,255,255,${this.intensity < .5 ? this.intensity : 0})`
+        //ctx.fillRect(this.x,this.y,this.width,this.height)
         ctx?.strokeRect(this.x,this.y,this.width,this.height)
     }
     draw_terrain(ctx) {
