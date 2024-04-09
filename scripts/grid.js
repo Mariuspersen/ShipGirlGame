@@ -11,19 +11,24 @@ class Grid {
     dragging = false
     offset_x = 0
     offset_y = 0
-    scale = 1;
+    scale = 0.25;
 
-    noise_generator
+    generator
+    perlin
 
-    constructor(real_canvas,island_tiles,island_layouts, tiles_in_x_direction, tiles_in_y_direction, tile_size,scale) {
+    constructor(real_canvas,island_tiles, tiles_in_x_direction, tiles_in_y_direction, tile_size,scale) {
         this.canvas.width = tile_size * tiles_in_x_direction
         this.canvas.height = tile_size * tiles_in_y_direction
         this.main_canvas = real_canvas
         this.tilecount_x = tiles_in_x_direction
         this.tilecount_y = tiles_in_y_direction
+        this.island_tiles = island_tiles
 
         this.ctx.lineWidth = 4
+        this.scale = tiles_in_x_direction/tiles_in_y_direction/scale
 
+        this.perlin = new Perlin();
+        
         for (let x = 0; x < tiles_in_x_direction; x++) {
             this.tiles.push(new Array())
             for (let y = 0; y < tiles_in_y_direction; y++) {
@@ -33,12 +38,13 @@ class Grid {
                     tile_size, 
                     tile_size,
                     island_tiles[5],
-                    map_range(perlin.get(x/tiles_in_x_direction*scale,y/tiles_in_y_direction*scale),-1,1,0,1)
+                    this.perlin.get(x/tiles_in_x_direction*scale,y/tiles_in_y_direction*scale)
                 ))
             }
         }
-
-        generate_islands(this.tiles,island_tiles)
+        
+        this.generator = new IslandGenerator(this.tiles,this.island_tiles,tile_size)
+        this.generator.generate()
 
         let thickness_offset = (this.ctx.lineWidth / 2);
 
@@ -91,6 +97,17 @@ class Grid {
     }
 
     draw(ctx) {
-        ctx?.drawImage(this.canvas, this.x, this.y,this.canvas.width*this.scale,this.canvas.height*this.scale)
+        ctx.drawImage(this.canvas, this.x, this.y,this.canvas.width*this.scale,this.canvas.height*this.scale)
+    }
+
+    new_map(scale) {
+        this.perlin.seed()
+        this.generator.remove()
+        for (let x = 0; x < this.tiles.length; x++)
+        for (let y = 0; y < this.tiles[x].length; y++) {
+            const element = this.tiles[x][y];
+            this.perlin.get(x/x.length*scale,y/y.length*scale)
+        }
+        this.generator.generate()
     }
 }

@@ -10,13 +10,9 @@ class Tile {
     }
 
     draw(ctx) {
-        //ctx.fillStyle = `rgba(255,255,255,${this.intensity < .5 ? this.intensity : 0})`
-        //ctx.fillRect(this.x,this.y,this.width,this.height)
-        ctx?.strokeRect(this.x,this.y,this.width,this.height)
+        ctx.strokeRect(this.x,this.y,this.width,this.height)
     }
     draw_terrain(ctx) {
-        if(this.image != null) {
-            ctx?.drawImage(this.image,this.x,this.y,this.width,this.height)
-        }
+        ctx.drawImage(this.image,this.x,this.y,this.width,this.height)
     }
 }
