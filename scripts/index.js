@@ -1,6 +1,7 @@
 const mainbody = document.getElementById("mainbody")
 const canvas = document.getElementById("game")
 const context = canvas.getContext("2d")
+const fps_counter = document.getElementById("fps-counter")
 
 const webglcanvas = document.createElement("canvas")
 const webgl = webglcanvas.getContext("webgl")
@@ -13,14 +14,27 @@ async function main() {
     canvas.width = window.innerWidth;
     
     assets = await load_assets()
-    grid = new Grid(canvas,assets.island_tiles,50,50,100,4);
+    grid = new Grid(canvas,assets.island_tiles,10,10,100,1);
     window.requestAnimationFrame(loop)
 }
 
+
 async function loop() {
+    calculate_fps()
     context.drawImage(assets.background,0,0,canvas.width,canvas.height)
     grid.draw(context);
     window.requestAnimationFrame(loop)
+}
+
+let last = performance.now()
+let frames = 0
+let fps = 0
+function calculate_fps() {
+    const current = performance.now()
+    const delta = current - last
+    last = current;
+    frames++
+    fps_counter.innerText = Math.round((1/delta)*1000)
 }
 
 function load_asset(path) {

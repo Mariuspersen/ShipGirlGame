@@ -11,6 +11,12 @@ canvas {
   height: 100%;
 }
 
+#fps-counter {
+  position: absolute;
+  z-index: 1;
+  color: #e5ff00;
+}
+
 .ui-titlebar {
   font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
   font-size: 80%;

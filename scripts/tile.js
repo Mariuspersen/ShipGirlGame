@@ -5,6 +5,7 @@ class Tile {
         this.width = w
         this.height = h
         this.image = image
+        this.fade = new Image()
         this.vector = undefined
         this.intensity = intensity
     }
@@ -14,5 +15,12 @@ class Tile {
     }
     draw_terrain(ctx) {
         ctx.drawImage(this.image,this.x,this.y,this.width,this.height)
+        ctx.drawImage(this.fade,this.x,this.y,this.width,this.height)
+    }
+    get_index() {
+        return {
+            x: this.x/this.width,
+            y: this.y/this.height
+        }
     }
 }

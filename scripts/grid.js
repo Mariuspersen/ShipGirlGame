@@ -46,6 +46,7 @@ class Grid {
         this.generator = new IslandGenerator(this.tiles,this.island_tiles,tile_size)
         this.generator.generate()
 
+
         let thickness_offset = (this.ctx.lineWidth / 2);
 
         this.ctx.strokeRect(

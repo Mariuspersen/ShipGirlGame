@@ -41,294 +41,229 @@ class IslandGenerator {
         webgl_canvas.width = this.tilesize
         const gl = webgl_canvas.getContext("webgl")
 
-        const texture = this.loadTexture(gl,this.tileset[0])
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true)
+        gl.enable(gl.BLEND)
+        gl.blendFunc(gl.ONE, gl.CONSTANT_ALPHA)
 
-        gl.clearColor(1.0, .0, .0, 1.0)
-        gl.clear(gl.COLOR_BUFFER_BIT)
+        const grass_tiles = this.tiles.map(x => x.filter(y => y.image == this.tileset[5]))
+        
+        grass_tiles.forEach(x => x.forEach(y => {
+            const index = y.get_index()
+            const north = this.tiles[index.x]?.[index.y - 1]
+            const south = this.tiles[index.x]?.[index.y + 1]
+            const west = this.tiles[index.x - 1]?.[index.y]
+            const east = this.tiles[index.x + 1]?.[index.y]
 
-        const shaderProgram = this.initShaderProgram(gl, assets.vert, assets.frag)
-        const programInfo = {
-            program: shaderProgram,
-            attribLocations: {
-                vertexPosition: gl.getAttribLocation(shaderProgram, "aVertexPosition"),
-                textureCoord: gl.getAttribLocation(shaderProgram, "aTextureCoord"),
-            },
-            uniformLocations: {
-                uSampler: gl.getUniformLocation(shaderProgram, "uSampler"),
-            },
-        };
+            gl.clearColor(.0, .0, .0, .0)
+            gl.clear(gl.COLOR_BUFFER_BIT)
+            this.render(gl,
+                north?.image || this.tileset[4],
+                south?.image || this.tileset[4],
+                west?.image || this.tileset[4],
+                east?.image || this.tileset[4],
+                this.tilesize
+            )
+            y.fade.src = webgl_canvas.toDataURL()
+        }))
 
-        const buffers = this.initBuffers(gl)
-        this.drawScene(gl, programInfo, buffers,texture)
-
-        for (let x = 0; x < this.tiles.length; x++)
+        /*for (let x = 0; x < this.tiles.length; x++)
             for (let y = 0; y < this.tiles[x].length; y++) {
                 const north = this.tiles[x]?.[y - 1]
                 const south = this.tiles[x]?.[y + 1]
                 const west = this.tiles[x - 1]?.[y]
                 const east = this.tiles[x + 1]?.[y]
                 const current = this.tiles[x][y]
-                current.image.src = webgl_canvas.toDataURL()
+
+                gl.clearColor(.0, .0, .0, .0)
+                gl.clear(gl.COLOR_BUFFER_BIT)
+
+                this.render(gl,
+                    north?.image || this.tileset[5],
+                    south?.image || this.tileset[5],
+                    west?.image || this.tileset[5],
+                    east?.image || this.tileset[5],
+                    this.tilesize
+                )
+                current.fade.src = webgl_canvas.toDataURL()
             }
+        */
+    }
+    //Stolen from https://webglfundamentals.org/webgl/lessons/webgl-2-textures.html
+    render(gl, north, south, west, east) {
+
+        // setup GLSL program
+        var program = this.createProgram(gl, assets.vert, assets.frag)
+        gl.useProgram(program);
+
+        // look up where the vertex data needs to go.
+        var positionLocation = gl.getAttribLocation(program, "a_position");
+        var texcoordLocation = gl.getAttribLocation(program, "a_texCoord");
+
+        // Create a buffer to put three 2d clip space points in
+        var positionBuffer = gl.createBuffer();
+
+        // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        // Set a rectangle the same size as the image.
+        this.setRectangle(gl, 0, 0,this.tilesize, this.tilesize);
+
+        // provide texture coordinates for the rectangle.
+        var texcoordBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+            0.0, 0.0,
+            1.0, 0.0,
+            0.0, 1.0,
+            0.0, 1.0,
+            1.0, 0.0,
+            1.0, 1.0,
+        ]), gl.STATIC_DRAW);
+
+        var textures = [north, south, west, east].map(image => {
+            var texture = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+
+            // Set the parameters so we can render any size image.
+            // gl.NEAREST is also allowed, instead of gl.LINEAR, as neither mipmap.
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            // Prevents s-coordinate wrapping (repeating).
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            // Prevents t-coordinate wrapping (repeating).
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+            // Upload the image into the texture.
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+
+            // add the texture to the array of textures.
+            return texture
+        })
+
+        // lookup uniforms
+        var resolutionLocation = gl.getUniformLocation(program, "u_resolution");
+
+        // lookup the sampler locations.
+        var northLocation = gl.getUniformLocation(program, "north");
+        var southLocation = gl.getUniformLocation(program, "south");
+        var westLocation = gl.getUniformLocation(program, "west");
+        var eastLocation = gl.getUniformLocation(program, "east");
+
+        gl.viewport(0, 0, this.tilesize, this.tilesize);
+
+        // Clear the canvas
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
+        // Tell it to use our program (pair of shaders)
+        gl.useProgram(program);
+
+        // Turn on the position attribute
+        gl.enableVertexAttribArray(positionLocation);
+
+        // Bind the position buffer.
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+
+        // Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+        var size = 2;          // 2 components per iteration
+        var type = gl.FLOAT;   // the data is 32bit floats
+        var normalize = false; // don't normalize the data
+        var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+        var offset = 0;        // start at the beginning of the buffer
+        gl.vertexAttribPointer(
+            positionLocation, size, type, normalize, stride, offset);
+
+        // Turn on the texcoord attribute
+        gl.enableVertexAttribArray(texcoordLocation);
+
+        // bind the texcoord buffer.
+        gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer);
+
+        // Tell the texcoord attribute how to get data out of texcoordBuffer (ARRAY_BUFFER)
+        var size = 2;          // 2 components per iteration
+        var type = gl.FLOAT;   // the data is 32bit floats
+        var normalize = false; // don't normalize the data
+        var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+        var offset = 0;        // start at the beginning of the buffer
+        gl.vertexAttribPointer(
+            texcoordLocation, size, type, normalize, stride, offset);
+
+        // set the resolution
+        gl.uniform2f(resolutionLocation, this.tilesize, this.tilesize);
+
+        // set which texture units to render with.
+        gl.uniform1i(northLocation, 0);  // texture unit 0
+        gl.uniform1i(southLocation, 1);  // texture unit 1
+        gl.uniform1i(westLocation, 2);  // texture unit 2
+        gl.uniform1i(eastLocation, 3);  // texture unit 3
+        // Set each texture unit to use a particular texture.
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, textures[0]);
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, textures[1]);
+        gl.activeTexture(gl.TEXTURE2);
+        gl.bindTexture(gl.TEXTURE_2D, textures[2]);
+        gl.activeTexture(gl.TEXTURE3);
+        gl.bindTexture(gl.TEXTURE_2D, textures[3]);
+
+        // Draw the rectangle.
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
     }
 
-    initShaderProgram(gl, vsSource, fsSource) {
-        const vertexShader = this.loadShader(gl, gl.VERTEX_SHADER, vsSource);
-        const fragmentShader = this.loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
+    randomInt(range) {
+        return Math.floor(Math.random() * range);
+    }
 
-        // Create the shader program
+    setRectangle(gl, x, y, width, height) {
+        var x1 = x;
+        var x2 = x + width;
+        var y1 = y;
+        var y2 = y + height;
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+            x1, y1,
+            x2, y1,
+            x1, y2,
+            x1, y2,
+            x2, y1,
+            x2, y2,
+        ]), gl.STATIC_DRAW);
+    }
+    createProgram(gl, vertex_src, frag_src) {
+        const vertexShader = this.compileShader(gl, vertex_src, gl.VERTEX_SHADER)
+        const fragmentShader = this.compileShader(gl, frag_src, gl.FRAGMENT_SHADER)
+        // create a program.
+        var program = gl.createProgram();
+        // attach the shaders.
+        gl.attachShader(program, vertexShader);
+        gl.attachShader(program, fragmentShader);
 
-        const shaderProgram = gl.createProgram();
-        gl.attachShader(shaderProgram, vertexShader);
-        gl.attachShader(shaderProgram, fragmentShader);
-        gl.linkProgram(shaderProgram);
+        // link the program.
+        gl.linkProgram(program);
 
-        // If creating the shader program failed, alert
-
-        if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-            alert(
-                `Unable to initialize the shader program: ${gl.getProgramInfoLog(
-                    shaderProgram,
-                )}`,
-            );
-            return null;
+        // Check if it linked.
+        var success = gl.getProgramParameter(program, gl.LINK_STATUS);
+        if (!success) {
+            // something went wrong with the link
+            console.error("program failed to link:" + gl.getProgramInfoLog(program));
         }
 
-        return shaderProgram;
-    }
+        return program;
+    };
+    compileShader(gl, shaderSource, shaderType) {
+        // Create the shader object
+        var shader = gl.createShader(shaderType);
 
-    loadShader(gl, type, source) {
-        const shader = gl.createShader(type);
+        // Set the shader source code.
+        gl.shaderSource(shader, shaderSource);
 
-        // Send the source to the shader object
-
-        gl.shaderSource(shader, source);
-
-        // Compile the shader program
-
+        // Compile the shader
         gl.compileShader(shader);
 
-        // See if it compiled successfully
-
-        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-            alert(
-                `An error occurred compiling the shaders: ${gl.getShaderInfoLog(shader)}`,
-            );
-            gl.deleteShader(shader);
-            return null;
+        // Check if it compiled
+        var success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+        if (!success) {
+            // Something went wrong during compilation; get the error
+            console.error("could not compile shader:" + gl.getShaderInfoLog(shader));
         }
 
         return shader;
     }
 
-    initBuffers(gl) {
-        const positionBuffer = this.initPositionBuffer(gl);
-        const colorBuffer = this.initColorBuffer(gl);
-        const textureCoordBuffer = this.initTextureBuffer(gl);
-
-        return {
-            position: positionBuffer,
-            textureCoord: textureCoordBuffer,
-            color: colorBuffer,
-        };
-    }
-    initPositionBuffer(gl) {
-        // Create a buffer for the square's positions.
-        const positionBuffer = gl.createBuffer();
-
-        // Select the positionBuffer as the one to apply buffer
-        // operations to from here out.
-        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-
-        // Now create an array of positions for the square.
-        const positions = [1.0, 1.0, -1.0, 1.0, 1.0, -1.0, -1.0, -1.0];
-
-        // Now pass the list of positions into WebGL to build the
-        // shape. We do this by creating a Float32Array from the
-        // JavaScript array, then use it to fill the current buffer.
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
-
-        return positionBuffer;
-    }
-    drawScene(gl, programInfo, buffers,texture) {
-        gl.clearColor(0.0, 0.0, 0.0, 0.0); // Clear to black, fully opaque
-        gl.clearDepth(1.0); // Clear everything
-        gl.enable(gl.DEPTH_TEST); // Enable depth testing
-        gl.depthFunc(gl.LEQUAL); // Near things obscure far things
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); // Clear the canvas before we start drawing on it.
-
-        this.setPositionAttribute(gl, buffers, programInfo);
-
-        //this.setColorAttribute(gl, buffers, programInfo)
-        this.setTextureAttribute(gl, buffers, programInfo);
-        // Tell WebGL we want to affect texture unit 0
-        gl.activeTexture(gl.TEXTURE0);
-
-        // Bind the texture to texture unit 0
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-
-        // Tell the shader we bound the texture to texture unit 0
-        gl.uniform1i(programInfo.uniformLocations.uSampler, 0);
-        // Tell WebGL to use our program when drawing
-        gl.useProgram(programInfo.program);
-
-        {
-            const offset = 0;
-            const vertexCount = 4;
-            gl.drawArrays(gl.TRIANGLE_STRIP, offset, vertexCount);
-        }
-    }
-    setPositionAttribute(gl, buffers, programInfo) {
-        const numComponents = 2; // pull out 2 values per iteration
-        const type = gl.FLOAT; // the data in the buffer is 32bit floats
-        const normalize = false; // don't normalize
-        const stride = 0; // how many bytes to get from one set of values to the next
-        // 0 = use type and numComponents above
-        const offset = 0; // how many bytes inside the buffer to start from
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
-        gl.vertexAttribPointer(
-            programInfo.attribLocations.vertexPosition,
-            numComponents,
-            type,
-            normalize,
-            stride,
-            offset,
-        );
-        gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
-    }
-    initColorBuffer(gl) {
-        const colors = [
-            1.0,
-            1.0,
-            1.0,
-            1.0, // white
-            1.0,
-            0.0,
-            0.0,
-            1.0, // red
-            0.0,
-            1.0,
-            0.0,
-            1.0, // green
-            0.0,
-            0.0,
-            1.0,
-            1.0, // blue
-        ];
-
-        const colorBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
-
-        return colorBuffer;
-    }
-    setColorAttribute(gl, buffers, programInfo) {
-        const numComponents = 4;
-        const type = gl.FLOAT;
-        const normalize = false;
-        const stride = 0;
-        const offset = 0;
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.color);
-        gl.vertexAttribPointer(
-            programInfo.attribLocations.vertexColor,
-            numComponents,
-            type,
-            normalize,
-            stride,
-            offset,
-        );
-        gl.enableVertexAttribArray(programInfo.attribLocations.vertexColor);
-    }
-    loadTexture(gl, image) {
-        const texture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-
-        // Because images have to be downloaded over the internet
-        // they might take a moment until they are ready.
-        // Until then put a single pixel in the texture so we can
-        // use it immediately. When the image has finished downloading
-        // we'll update the texture with the contents of the image.
-        const level = 0;
-        const internalFormat = gl.RGBA;
-        const width = 1;
-        const height = 1;
-        const border = 0;
-        const srcFormat = gl.RGBA;
-        const srcType = gl.UNSIGNED_BYTE;
-        const pixel = new Uint8Array([0, 0, 255, 255]); // opaque blue
-        gl.texImage2D(
-            gl.TEXTURE_2D,
-            level,
-            internalFormat,
-            width,
-            height,
-            border,
-            srcFormat,
-            srcType,
-            pixel,
-        );
-
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.texImage2D(
-            gl.TEXTURE_2D,
-            level,
-            internalFormat,
-            srcFormat,
-            srcType,
-            image,
-        );
-
-        // WebGL1 has different requirements for power of 2 images
-        // vs. non power of 2 images so check if the image is a
-        // power of 2 in both dimensions.
-        if (this.isPowerOf2(image.width) && this.isPowerOf2(image.height)) {
-            // Yes, it's a power of 2. Generate mips.
-            gl.generateMipmap(gl.TEXTURE_2D);
-        } else {
-            // No, it's not a power of 2. Turn off mips and set
-            // wrapping to clamp to edge
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        }
-        return texture;
-    };
-    setTextureAttribute(gl, buffers, programInfo) {
-        const num = 2; // every coordinate composed of 2 values
-        const type = gl.FLOAT; // the data in the buffer is 32-bit float
-        const normalize = false; // don't normalize
-        const stride = 0; // how many bytes to get from one set to the next
-        const offset = 0; // how many bytes inside the buffer to start from
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.textureCoord);
-        gl.vertexAttribPointer(
-            programInfo.attribLocations.textureCoord,
-            num,
-            type,
-            normalize,
-            stride,
-            offset,
-        );
-        gl.enableVertexAttribArray(programInfo.attribLocations.textureCoord);
-    }
-    initTextureBuffer(gl) {
-        const textureCoordBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer);
-
-        const textureCoordinates = [
-            // Front
-            0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
-        ];
-
-        gl.bufferData(
-            gl.ARRAY_BUFFER,
-            new Float32Array(textureCoordinates),
-            gl.STATIC_DRAW,
-        );
-
-        return textureCoordBuffer;
-    }
-    isPowerOf2(value) {
-        return (value & (value - 1)) === 0;
-    }
 }
