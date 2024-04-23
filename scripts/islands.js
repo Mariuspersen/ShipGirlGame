@@ -41,25 +41,38 @@ class IslandGenerator {
         webgl_canvas.width = this.tilesize
         const gl = webgl_canvas.getContext("webgl")
 
-        gl.enable(gl.BLEND)
-        gl.blendFunc(gl.ONE, gl.CONSTANT_ALPHA)
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        //gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ZERO,gl.ONE)
+        //gl.blendEquationSeparate(gl.FUNC_ADD,gl.FUNC_ADD)
+        gl.disable(gl.DEPTH_TEST)
 
-        const grass_tiles = this.tiles.map(x => x.filter(y => y.image == this.tileset[5]))
+        const ocean_tiles = this.tiles.map(x => x.filter(y => y.image == this.tileset[5]))
+        const grass_tiles = this.tiles.map(x => x.filter(y => y.image == this.tileset[2]))
+
         
-        grass_tiles.forEach(x => x.forEach(y => {
+        ocean_tiles.concat(grass_tiles).forEach(x => x.forEach(y => {
             const index = y.get_index()
             const north = this.tiles[index.x]?.[index.y - 1]
             const south = this.tiles[index.x]?.[index.y + 1]
             const west = this.tiles[index.x - 1]?.[index.y]
             const east = this.tiles[index.x + 1]?.[index.y]
+            const northeast = this.tiles[index.x + 1]?.[index.y - 1]
+            const northwest = this.tiles[index.x - 1]?.[index.y - 1]
+            const southeast = this.tiles[index.x + 1]?.[index.y + 1]
+            const southwest = this.tiles[index.x - 1]?.[index.y + 1]
 
             gl.clearColor(.0, .0, .0, .0)
             gl.clear(gl.COLOR_BUFFER_BIT)
             this.render(gl,
-                north?.image || this.tileset[4],
-                south?.image || this.tileset[4],
-                west?.image || this.tileset[4],
-                east?.image || this.tileset[4],
+                north?.image || this.tileset[5],
+                south?.image || this.tileset[5],
+                west?.image || this.tileset[5],
+                east?.image || this.tileset[5],
+                northeast?.image || this.tileset[5],
+                northwest?.image || this.tileset[5],
+                southeast?.image || this.tileset[5],
+                southwest?.image || this.tileset[5],
                 this.tilesize
             )
             y.fade.src = webgl_canvas.toDataURL()
@@ -88,7 +101,7 @@ class IslandGenerator {
         */
     }
     //Stolen from https://webglfundamentals.org/webgl/lessons/webgl-2-textures.html
-    render(gl, north, south, west, east) {
+    render(gl, north, south, west, east,northeast,northwest,southeast,southwest) {
 
         // setup GLSL program
         var program = this.createProgram(gl, assets.vert, assets.frag)
@@ -118,7 +131,7 @@ class IslandGenerator {
             1.0, 1.0,
         ]), gl.STATIC_DRAW);
 
-        var textures = [north, south, west, east].map(image => {
+        var textures = [north, south, west, east,northeast,northwest,southeast,southwest].map(image => {
             var texture = gl.createTexture();
             gl.bindTexture(gl.TEXTURE_2D, texture);
 
@@ -145,6 +158,10 @@ class IslandGenerator {
         var southLocation = gl.getUniformLocation(program, "south");
         var westLocation = gl.getUniformLocation(program, "west");
         var eastLocation = gl.getUniformLocation(program, "east");
+        var northeastLocation = gl.getUniformLocation(program, "northeast");
+        var northwestLocation = gl.getUniformLocation(program, "northwest");
+        var southeastLocation = gl.getUniformLocation(program, "southeast");
+        var southwestLocation = gl.getUniformLocation(program, "southwest");
 
         gl.viewport(0, 0, this.tilesize, this.tilesize);
 
@@ -193,6 +210,10 @@ class IslandGenerator {
         gl.uniform1i(southLocation, 1);  // texture unit 1
         gl.uniform1i(westLocation, 2);  // texture unit 2
         gl.uniform1i(eastLocation, 3);  // texture unit 3
+        gl.uniform1i(northeastLocation, 4);  // texture unit 4
+        gl.uniform1i(northwestLocation, 5);  // texture unit 5
+        gl.uniform1i(southeastLocation, 6);  // texture unit 6
+        gl.uniform1i(southwestLocation, 7);  // texture unit 7
         // Set each texture unit to use a particular texture.
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, textures[0]);
@@ -202,6 +223,14 @@ class IslandGenerator {
         gl.bindTexture(gl.TEXTURE_2D, textures[2]);
         gl.activeTexture(gl.TEXTURE3);
         gl.bindTexture(gl.TEXTURE_2D, textures[3]);
+        gl.activeTexture(gl.TEXTURE4);
+        gl.bindTexture(gl.TEXTURE_2D, textures[4]);
+        gl.activeTexture(gl.TEXTURE5);
+        gl.bindTexture(gl.TEXTURE_2D, textures[5]);
+        gl.activeTexture(gl.TEXTURE6);
+        gl.bindTexture(gl.TEXTURE_2D, textures[6]);
+        gl.activeTexture(gl.TEXTURE7);
+        gl.bindTexture(gl.TEXTURE_2D, textures[7]);
 
         // Draw the rectangle.
         gl.drawArrays(gl.TRIANGLES, 0, 6);
