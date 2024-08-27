@@ -2,8 +2,7 @@ const std = @import("std");
 const rl = @import("raylib");
 const Colors = @import("colors.zig");
 const Common = @import("common.zig");
-const Menu = @import("menu.zig");
-const Intro = @import("intro.zig");
+const sceneManager = @import("sceneManager.zig");
 
 const Self = @This();
 
@@ -18,18 +17,8 @@ pub fn Start() !void {
 
     rl.setTargetFPS(60);
     
-    var scene = Intro.load();
-    while (true) {
-        while (!rl.windowShouldClose() and scene.looping) {
-            scene.loop();
-        }
-
-        if (scene.nextScene) |nextScene| {
-            defer scene.unload();
-            // TODO: Handle switching scenes
-            _ = nextScene;
-            break;
-        }
-        else break;
+    var scene = sceneManager.init();
+    while (!rl.windowShouldClose()) {
+        scene.loop();
     }
 }

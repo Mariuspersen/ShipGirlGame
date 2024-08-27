@@ -14,7 +14,7 @@ pub fn build(b: *std.Build) void {
     const raylib_artifact = raylib_dep.artifact("raylib");
 
     const exe = b.addExecutable(.{
-        .name = "zig-pong",
+        .name = "projectboat",
         .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
