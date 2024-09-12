@@ -42,7 +42,7 @@ pub fn loop(self: *Self) Result {
     );
 
     if (self.time > 10.0) {
-        retValue = .{ .ok = .{ .MainMenu =  Menu.load() } };
+        retValue = Result.ok(.MainMenu);
     }
     return retValue;
 }

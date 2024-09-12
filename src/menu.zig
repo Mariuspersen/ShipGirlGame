@@ -5,10 +5,8 @@ const rg = @import("raygui");
 const Common = @import("common.zig");
 const Assets = @import("assets.zig");
 const Colors = @import("colors.zig");
-
 const Result = @import("sceneList.zig").Result;
 const Scene = @import("sceneList.zig").Scene;
-
 const Intro = @import("intro.zig");
 
 
@@ -55,7 +53,7 @@ pub fn loop(self: *Self) Result {
     const play_btn = rg.guiButton(rectangle, "Play");
 
     if (play_btn == 1) {
-        retValue = .{ .ok = .{ .Intro = Intro.load() } };
+        retValue = Result.ok(.Intro);
     }
 
     //Intro Fade

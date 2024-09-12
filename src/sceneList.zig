@@ -19,4 +19,11 @@ const ResultTag = enum {
 pub const Result = union(ResultTag) {
     ok: Scene,
     loop: void,
+
+    pub fn ok(scene: sceneList) @This() {
+        return .{ .ok = switch (scene) {
+            .Intro => Scene{ .Intro = Intro.load()},
+            .MainMenu => Scene{ .MainMenu = Menu.load()},
+        }};
+    }
 };
