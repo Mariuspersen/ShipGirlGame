@@ -2,7 +2,11 @@ const rl = @import("raylib");
 const Common = @import("common.zig");
 const Assets = @import("assets.zig");
 const Colors = @import("colors.zig");
-const sceneList = @import("sceneList.zig").sceneList;
+const Result = @import("sceneList.zig").Result;
+const Scene = @import("sceneList.zig").Scene;
+
+const Menu = @import("menu.zig");
+
 
 const std = @import("std");
 const math = std.math;
@@ -10,15 +14,10 @@ const math = std.math;
 const Self = @This();
 
 time: f32,
-looping: bool,
-nextScene: sceneList,
 
 pub fn load() Self {
-    rl.setTargetFPS(60);
-    return .{ 
+    return .{
         .time = 0.0,
-        .looping = true,
-        .nextScene = sceneList.MainMenu,
     };
 }
 
@@ -26,9 +25,8 @@ pub fn unload(self: *Self) void {
     _ = self;
 }
 
-pub fn loop(self: *Self) void {
-    rl.beginDrawing();
-    defer rl.endDrawing();
+pub fn loop(self: *Self) Result {
+    var retValue: Result = Result.loop;
     defer rl.clearBackground(rl.Color.black);
 
     self.time += rl.getFrameTime();
@@ -44,9 +42,7 @@ pub fn loop(self: *Self) void {
     );
 
     if (self.time > 10.0) {
-        self.looping = false;
+        retValue = .{ .ok = .{ .MainMenu =  Menu.load() } };
     }
+    return retValue;
 }
-
-
-

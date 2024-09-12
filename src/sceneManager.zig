@@ -1,53 +1,45 @@
 const Self = @This();
 
+const rl = @import("raylib");
 const Menu = @import("menu.zig");
 const Intro = @import("intro.zig");
-const sceneList = @import("sceneList.zig").sceneList;
+const Scene = @import("sceneList.zig").Scene;
+const Result = @import("sceneList.zig").Result;
 
 //TODO: write a scenemanager thats not ass
 
-currentScene: sceneList = sceneList.Intro,
-intro: Intro = undefined,
-mainMenu: Menu = undefined,
+currentScene: Scene,
 
 pub fn init() Self {
-    var temp = Self{};
-    switch (temp.currentScene) {
-        .Intro => temp.intro = Intro.load(),
-        .MainMenu => temp.mainMenu = Menu.load()
-    }
-    return temp;
+    return .{
+        .currentScene = .{ .Intro = Intro.load() },
+    };
 }
 
 pub fn loop(self: *Self) void {
+    rl.beginDrawing();
+    defer rl.endDrawing();
+    
     switch (self.currentScene) {
-        .Intro => {
-            if (self.intro.looping) {
-                self.intro.loop();
-            } else {
-                self.switchScene(self.intro.nextScene);
+        .Intro => |*intro| {
+            switch (intro.loop()) {
+                .ok => |newScene| self.switchScene(newScene),
+                .loop => {},
             }
-            
         },
-        .MainMenu => {
-            if (self.mainMenu.looping) {
-                self.mainMenu.loop();
-            } else {
-                //self.switchScene(self.intro.nextScene);
+        .MainMenu => |*menu| {
+            switch (menu.loop()) {
+                .ok => |newScene| self.switchScene(newScene),
+                .loop => {},
             }
-            
         },
     }
 }
 
-pub fn switchScene(self: *Self,newScene: sceneList) void {
+pub fn switchScene(self: *Self, newScene: Scene) void {
     switch (self.currentScene) {
-        .Intro => self.intro.unload(),
-        .MainMenu => self.mainMenu.unload(),
-    }
-    switch (newScene) {
-        .Intro => self.intro = Intro.load(),
-        .MainMenu => self.mainMenu = Menu.load()
+        .Intro => |*intro| intro.unload(),
+        .MainMenu => |*menu| menu.unload(),
     }
     self.currentScene = newScene;
 }
