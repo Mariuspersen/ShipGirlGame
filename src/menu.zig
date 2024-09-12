@@ -9,7 +9,6 @@ const Result = @import("sceneList.zig").Result;
 const Scene = @import("sceneList.zig").Scene;
 const Intro = @import("intro.zig");
 
-
 const Self = @This();
 
 background: rl.Texture2D,
@@ -53,7 +52,7 @@ pub fn loop(self: *Self) Result {
     const play_btn = rg.guiButton(rectangle, "Play");
 
     if (play_btn == 1) {
-        retValue = Result.ok(.Intro);
+        retValue = Result.ok(.Quit);
     }
 
     //Intro Fade

@@ -12,14 +12,14 @@ currentScene: Scene,
 
 pub fn init() Self {
     return .{
-        .currentScene = .{ .Intro = Intro.load() },
+        .currentScene = Scene.init(.Intro),
     };
 }
 
-pub fn loop(self: *Self) void {
+pub fn loop(self: *Self) bool {
     rl.beginDrawing();
     defer rl.endDrawing();
-    
+
     switch (self.currentScene) {
         .Intro => |*intro| {
             switch (intro.loop()) {
@@ -33,13 +33,19 @@ pub fn loop(self: *Self) void {
                 .loop => {},
             }
         },
+        .Quit => {
+            return false;
+        },
     }
+
+    return true;
 }
 
 pub fn switchScene(self: *Self, newScene: Scene) void {
     switch (self.currentScene) {
         .Intro => |*intro| intro.unload(),
         .MainMenu => |*menu| menu.unload(),
+        .Quit => {},
     }
     self.currentScene = newScene;
 }

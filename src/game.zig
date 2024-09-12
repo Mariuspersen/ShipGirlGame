@@ -18,7 +18,5 @@ pub fn Start() !void {
     rl.setTargetFPS(60);
     
     var scene = sceneManager.init();
-    while (!rl.windowShouldClose()) {
-        scene.loop();
-    }
+    while (!rl.windowShouldClose() and scene.loop()) {}
 }
