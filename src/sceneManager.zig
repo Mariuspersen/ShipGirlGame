@@ -33,6 +33,12 @@ pub fn loop(self: *Self) bool {
                 .loop => {},
             }
         },
+        .Base => |*base| {
+            switch (base.loop()) {
+                .ok => |newScene| self.switchScene(newScene),
+                .loop => {},
+            }
+        },
         .Quit => {
             return false;
         },
@@ -45,6 +51,7 @@ pub fn switchScene(self: *Self, newScene: Scene) void {
     switch (self.currentScene) {
         .Intro => |*intro| intro.unload(),
         .MainMenu => |*menu| menu.unload(),
+        .Base => |*base| base.unload(),
         .Quit => {},
     }
     self.currentScene = newScene;

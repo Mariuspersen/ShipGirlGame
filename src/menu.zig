@@ -52,7 +52,7 @@ pub fn loop(self: *Self) Result {
     const play_btn = rg.guiButton(rectangle, "Play");
 
     if (play_btn == 1) {
-        retValue = Result.ok(.Quit);
+        retValue = Result.ok(.Base);
     }
 
     //Intro Fade
