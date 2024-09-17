@@ -10,32 +10,32 @@ const Result = @import("sceneList.zig").Result;
 
 currentScene: Scene,
 
-pub fn init() Self {
+pub fn init() !Self {
     return .{
-        .currentScene = Scene.init(.Intro),
+        .currentScene = try Scene.init(.Base),
     };
 }
 
-pub fn loop(self: *Self) bool {
+pub fn loop(self: *Self) !bool {
     rl.beginDrawing();
     defer rl.endDrawing();
 
     switch (self.currentScene) {
         .Intro => |*intro| {
-            switch (intro.loop()) {
-                .ok => |newScene| self.switchScene(newScene),
+            switch (try intro.loop()) {
+                .ok => |newScene| try self.switchScene(newScene),
                 .loop => {},
             }
         },
         .MainMenu => |*menu| {
-            switch (menu.loop()) {
-                .ok => |newScene| self.switchScene(newScene),
+            switch (try menu.loop()) {
+                .ok => |newScene| try self.switchScene(newScene),
                 .loop => {},
             }
         },
         .Base => |*base| {
-            switch (base.loop()) {
-                .ok => |newScene| self.switchScene(newScene),
+            switch (try base.loop()) {
+                .ok => |newScene| try self.switchScene(newScene),
                 .loop => {},
             }
         },
@@ -47,11 +47,11 @@ pub fn loop(self: *Self) bool {
     return true;
 }
 
-pub fn switchScene(self: *Self, newScene: Scene) void {
+pub fn switchScene(self: *Self, newScene: Scene) !void {
     switch (self.currentScene) {
         .Intro => |*intro| intro.unload(),
         .MainMenu => |*menu| menu.unload(),
-        .Base => |*base| base.unload(),
+        .Base => |*base| try base.unload(),
         .Quit => {},
     }
     self.currentScene = newScene;

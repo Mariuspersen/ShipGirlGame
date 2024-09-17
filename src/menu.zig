@@ -29,7 +29,7 @@ pub fn unload(self: *Self) void {
     self.background.unload();
 }
 
-pub fn loop(self: *Self) Result {
+pub fn loop(self: *Self) !Result {
     var retValue: Result = Result.loop;
 
     defer rl.clearBackground(Colors.Gray);
@@ -52,7 +52,7 @@ pub fn loop(self: *Self) Result {
     const play_btn = rg.guiButton(rectangle, "Play");
 
     if (play_btn == 1) {
-        retValue = Result.ok(.Base);
+        retValue = try Result.ok(.Base);
     }
 
     //Intro Fade

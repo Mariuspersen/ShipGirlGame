@@ -16,11 +16,11 @@ pub const Scene = union(sceneList) {
     Base: Base,
     Quit: void,
 
-    pub fn init(scene: sceneList) Scene {
+    pub fn init(scene: sceneList) !Scene {
         return switch (scene) {
             .Intro => Scene{ .Intro = Intro.load() },
             .MainMenu => Scene{ .MainMenu = Menu.load()},
-            .Base => Scene{ .Base = Base.load()},
+            .Base => Scene{ .Base = try Base.load()},
             .Quit => Scene.Quit,
         };
     }
@@ -35,11 +35,11 @@ pub const Result = union(ResultTag) {
     ok: Scene,
     loop: void,
 
-    pub fn ok(scene: sceneList) @This() {
+    pub fn ok(scene: sceneList) !@This() {
         return .{ .ok = switch (scene) {
             .Intro => Scene{ .Intro = Intro.load()},
             .MainMenu => Scene{ .MainMenu = Menu.load()},
-            .Base => Scene{ .Base = Base.load()},
+            .Base => Scene{ .Base = try Base.load()},
             .Quit => Scene.Quit,
         }};
     }

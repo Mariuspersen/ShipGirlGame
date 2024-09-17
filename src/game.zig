@@ -16,7 +16,7 @@ pub fn Start() !void {
     defer rl.closeWindow();
 
     rl.setTargetFPS(60);
-    
-    var scene = sceneManager.init();
-    while (!rl.windowShouldClose() and scene.loop()) {}
+    rl.setExitKey(.key_null);
+    var scene = try sceneManager.init();
+    while (!rl.windowShouldClose() and try scene.loop()) {}
 }

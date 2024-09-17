@@ -25,7 +25,7 @@ pub fn unload(self: *Self) void {
     _ = self;
 }
 
-pub fn loop(self: *Self) Result {
+pub fn loop(self: *Self) !Result {
     var retValue: Result = Result.loop;
     defer rl.clearBackground(rl.Color.black);
 
@@ -42,7 +42,7 @@ pub fn loop(self: *Self) Result {
     );
 
     if (self.time > 10.0) {
-        retValue = Result.ok(.MainMenu);
+        retValue = try Result.ok(.MainMenu);
     }
     return retValue;
 }
