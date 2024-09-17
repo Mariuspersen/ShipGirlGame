@@ -3,7 +3,7 @@ const rl = @import("raylib");
 const rg = @import("raygui");
 
 const Common = @import("common.zig");
-const Assets = @import("assets.zig");
+const Assets = @import("assetManager.zig");
 const Colors = @import("colors.zig");
 const Result = @import("sceneList.zig").Result;
 const Scene = @import("sceneList.zig").Scene;
