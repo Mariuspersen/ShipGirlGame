@@ -13,6 +13,8 @@ const Self = @This();
 
 box: rl.Model,
 boxpos: rl.Vector3,
+shed: rl.Model,
+shedpos: rl.Vector3,
 background: rl.Texture2D,
 camera: rl.Camera3D = undefined,
 time: f32,
@@ -21,6 +23,8 @@ pub fn load() !Self {
     var temp = Self{
         .box = try Assets.box.getModel(),
         .boxpos = rl.Vector3.init(0.0, 0.0, 0.0),
+        .shed = try Assets.shed.getModel(),
+        .shedpos = rl.Vector3.init(-5.0, 5.0, 5.0),
         .background = Assets.battleOcean.getTexture(),
         .camera = std.mem.zeroInit(rl.Camera3D, .{}),
         .time = 0.0,
@@ -42,6 +46,8 @@ pub fn load() !Self {
 pub fn unload(self: *Self) !void {
     self.background.unload();
     self.box.unload();
+    self.shed.unload();
+    try Assets.shed.deleteRemnants();
     try Assets.box.deleteRemnants();
     rl.enableCursor();
 }
@@ -54,6 +60,7 @@ pub fn loop(self: *Self) !Result {
 
     rl.beginMode3D(self.camera);
     rl.drawModel(self.box, self.boxpos, 1.0, rl.Color.white);
+    rl.drawModel(self.shed, self.shedpos, 1.0, rl.Color.white);
     rl.drawGrid(20, 1.0);
     rl.endMode3D();
     rl.drawFPS(0, 0);
