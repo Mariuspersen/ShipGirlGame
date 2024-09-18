@@ -15,6 +15,8 @@ box: rl.Model,
 boxpos: rl.Vector3,
 shed: rl.Model,
 shedpos: rl.Vector3,
+sky: rl.Model = undefined,
+skypos: rl.Vector3,
 background: rl.Texture2D,
 camera: rl.Camera3D = undefined,
 time: f32,
@@ -25,6 +27,8 @@ pub fn load() !Self {
         .boxpos = rl.Vector3.init(0.0, 0.0, 0.0),
         .shed = try Assets.shed.getModel(),
         .shedpos = rl.Vector3.init(-5.0, 5.0, 5.0),
+        .sky = try Assets.skySunset.getModel(),
+        .skypos = rl.Vector3.init(16.0, 16.0, 16.0),
         .background = Assets.battleOcean.getTexture(),
         .camera = std.mem.zeroInit(rl.Camera3D, .{}),
         .time = 0.0,
@@ -47,8 +51,10 @@ pub fn unload(self: *Self) !void {
     self.background.unload();
     self.box.unload();
     self.shed.unload();
+    self.sky.unload();
     try Assets.shed.deleteRemnants();
     try Assets.box.deleteRemnants();
+    try Assets.skySunset.deleteRemnants();
     rl.enableCursor();
 }
 
@@ -57,11 +63,16 @@ pub fn loop(self: *Self) !Result {
     const key = rl.getKeyPressed();
     rl.clearBackground(rl.Color.gray);
     rl.updateCamera(&self.camera, .camera_free);
-
     rl.beginMode3D(self.camera);
+
+    //Always render the skybox behind
+    rl.gl.rlDisableDepthMask();
+    rl.drawModel(self.sky, self.camera.position.add(self.skypos), 1.0, rl.Color.white);
+    rl.gl.rlEnableDepthMask();
+
+    rl.drawGrid(20, 1.0);
     rl.drawModel(self.box, self.boxpos, 1.0, rl.Color.white);
     rl.drawModel(self.shed, self.shedpos, 1.0, rl.Color.white);
-    rl.drawGrid(20, 1.0);
     rl.endMode3D();
     rl.drawFPS(0, 0);
 
