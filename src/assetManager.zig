@@ -52,3 +52,4 @@ pub const battleOcean = embeddedFile.init("assets/BattleOcean.png");
 pub const skySunset = embeddedGLB.init("assets/skybox.glb");
 pub const box = embeddedGLB.init("assets/box.glb");
 pub const shed = embeddedGLB.init("assets/shed.glb");
+pub const base = embeddedGLB.init("assets/baseScene.glb");

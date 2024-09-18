@@ -17,6 +17,8 @@ shed: rl.Model,
 shedpos: rl.Vector3,
 sky: rl.Model = undefined,
 skypos: rl.Vector3,
+base: rl.Model,
+basepos: rl.Vector3,
 background: rl.Texture2D,
 camera: rl.Camera3D = undefined,
 time: f32,
@@ -29,6 +31,8 @@ pub fn load() !Self {
         .shedpos = rl.Vector3.init(-5.0, 5.0, 5.0),
         .sky = try Assets.skySunset.getModel(),
         .skypos = rl.Vector3.init(16.0, 16.0, 16.0),
+        .base = try Assets.base.getModel(),
+        .basepos = rl.Vector3.init(0.0, 0.0, 0.0),
         .background = Assets.battleOcean.getTexture(),
         .camera = std.mem.zeroInit(rl.Camera3D, .{}),
         .time = 0.0,
@@ -71,8 +75,9 @@ pub fn loop(self: *Self) !Result {
     rl.gl.rlEnableDepthMask();
 
     rl.drawGrid(20, 1.0);
-    rl.drawModel(self.box, self.boxpos, 1.0, rl.Color.white);
-    rl.drawModel(self.shed, self.shedpos, 1.0, rl.Color.white);
+    rl.drawModel(self.base, self.basepos, 1.0, rl.Color.white);
+    //rl.drawModel(self.box, self.boxpos, 1.0, rl.Color.white);
+    //rl.drawModel(self.shed, self.shedpos, 1.0, rl.Color.white);
     rl.endMode3D();
     rl.drawFPS(0, 0);
 
