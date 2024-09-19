@@ -59,6 +59,7 @@ pub fn unload(self: *Self) !void {
     try Assets.shed.deleteRemnants();
     try Assets.box.deleteRemnants();
     try Assets.skySunset.deleteRemnants();
+    try Assets.base.deleteRemnants();
     rl.enableCursor();
 }
 
