@@ -17,6 +17,8 @@ shed: rl.Model,
 shedpos: rl.Vector3,
 sky: rl.Model = undefined,
 skypos: rl.Vector3,
+guard: rl.Model,
+guardpos: rl.Vector3,
 base: rl.Model,
 basepos: rl.Vector3,
 background: rl.Texture2D,
@@ -33,6 +35,8 @@ pub fn load() !Self {
         .skypos = rl.Vector3.init(16.0, 16.0, 16.0),
         .base = try Assets.base.getModel(),
         .basepos = rl.Vector3.init(0.0, 0.0, 0.0),
+        .guard = try Assets.guardHouse.getModel(),
+        .guardpos = rl.Vector3.init(-10.0, 5.0, -10.0),
         .background = Assets.battleOcean.getTexture(),
         .camera = std.mem.zeroInit(rl.Camera3D, .{}),
         .time = 0.0,
@@ -60,6 +64,7 @@ pub fn unload(self: *Self) !void {
     try Assets.box.deleteRemnants();
     try Assets.skySunset.deleteRemnants();
     try Assets.base.deleteRemnants();
+    try Assets.guardHouse.deleteRemnants();
     rl.enableCursor();
 }
 
@@ -77,6 +82,7 @@ pub fn loop(self: *Self) !Result {
 
     rl.drawGrid(20, 1.0);
     rl.drawModel(self.base, self.basepos, 1.0, rl.Color.white);
+    rl.drawModel(self.guard, self.guardpos, 1.0, rl.Color.white);
     //rl.drawModel(self.box, self.boxpos, 1.0, rl.Color.white);
     //rl.drawModel(self.shed, self.shedpos, 1.0, rl.Color.white);
     rl.endMode3D();
