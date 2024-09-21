@@ -10,62 +10,39 @@ const Scene = @import("sceneList.zig").Scene;
 const Intro = @import("intro.zig");
 
 const Self = @This();
+const Asset = Assets.Asset;
 
-box: rl.Model,
-boxpos: rl.Vector3,
-shed: rl.Model,
-shedpos: rl.Vector3,
-sky: rl.Model = undefined,
-skypos: rl.Vector3,
-guard: rl.Model,
-guardpos: rl.Vector3,
-base: rl.Model,
-basepos: rl.Vector3,
-background: rl.Texture2D,
+skybox: Asset,
+assets: std.ArrayList(Asset),
 camera: rl.Camera3D = undefined,
 time: f32,
 
 pub fn load() !Self {
+    rl.disableCursor();
     var temp = Self{
-        .box = try Assets.box.getModel(),
-        .boxpos = rl.Vector3.init(0.0, 0.0, 0.0),
-        .shed = try Assets.shed.getModel(),
-        .shedpos = rl.Vector3.init(-5.0, 5.0, 5.0),
-        .sky = try Assets.skySunset.getModel(),
-        .skypos = rl.Vector3.init(16.0, 16.0, 16.0),
-        .base = try Assets.base.getModel(),
-        .basepos = rl.Vector3.init(0.0, 0.0, 0.0),
-        .guard = try Assets.guardHouse.getModel(),
-        .guardpos = rl.Vector3.init(-10.0, 5.0, -10.0),
-        .background = Assets.battleOcean.getTexture(),
+        .skybox = try Asset.init(&Assets.skySunset, 16.0, 16.0, 16.0, 1.0),
+        .assets = std.ArrayList(Asset).init(Common.allocator),
         .camera = std.mem.zeroInit(rl.Camera3D, .{}),
         .time = 0.0,
     };
 
+    try temp.assets.append(try Asset.init(&Assets.guardHouse, 0.0, 0.0, 0.0, 1.0));
 
-    rl.disableCursor();
     temp.camera.position = rl.Vector3.init(10.0, 10.0, 10.0);
     temp.camera.target = rl.Vector3.init(0.0, 0.0, 0.0);
     temp.camera.up = rl.Vector3.init(0.0, 1.0, 0.0);
     temp.camera.fovy = 45.0;
     temp.camera.projection = .camera_perspective;
-
-    temp.background.height = Common.Height;
-    temp.background.width = Common.Width;
     return temp;
 }
 
 pub fn unload(self: *Self) !void {
-    self.background.unload();
-    self.box.unload();
-    self.shed.unload();
-    self.sky.unload();
-    try Assets.shed.deleteRemnants();
-    try Assets.box.deleteRemnants();
-    try Assets.skySunset.deleteRemnants();
-    try Assets.base.deleteRemnants();
-    try Assets.guardHouse.deleteRemnants();
     rl.enableCursor();
+    try self.skybox.unloadAndDelete();
+    for (self.assets.items) |asset| {
+        try asset.unloadAndDelete();
+    }
+    self.assets.deinit();
 }
 
 pub fn loop(self: *Self) !Result {
@@ -76,15 +53,11 @@ pub fn loop(self: *Self) !Result {
     rl.beginMode3D(self.camera);
 
     //Always render the skybox behind
-    rl.gl.rlDisableDepthMask();
-    rl.drawModel(self.sky, self.camera.position.add(self.skypos), 1.0, rl.Color.white);
-    rl.gl.rlEnableDepthMask();
-
+    self.skybox.drawSkybox(&self.camera);
+    for (self.assets.items) |asset| {
+        asset.draw();
+    }
     rl.drawGrid(20, 1.0);
-    rl.drawModel(self.base, self.basepos, 1.0, rl.Color.white);
-    rl.drawModel(self.guard, self.guardpos, 1.0, rl.Color.white);
-    //rl.drawModel(self.box, self.boxpos, 1.0, rl.Color.white);
-    //rl.drawModel(self.shed, self.shedpos, 1.0, rl.Color.white);
     rl.endMode3D();
     rl.drawFPS(0, 0);
 

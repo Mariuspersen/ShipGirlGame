@@ -1,5 +1,6 @@
 const Self = @This();
 
+const std = @import("std");
 const rl = @import("raylib");
 const Menu = @import("menu.zig");
 const Intro = @import("intro.zig");

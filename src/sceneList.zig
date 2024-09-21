@@ -1,13 +1,13 @@
 const Menu = @import("menu.zig");
 const Intro = @import("intro.zig");
 const Base = @import("baseScene.zig");
+const std = @import("std");
 
 const sceneList = enum {
     Intro,
     MainMenu,
     Base,
     Quit,
-
 };
 
 pub const Scene = union(sceneList) {
