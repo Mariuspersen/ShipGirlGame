@@ -20,13 +20,14 @@ time: f32,
 pub fn load() !Self {
     rl.disableCursor();
     var temp = Self{
-        .skybox = try Asset.init(&Assets.skySunset, 16.0, 16.0, 16.0, 1.0),
+        .skybox = try Asset.init(&Assets.skySunset, 16.0, 16.0, 16.0),
         .assets = std.ArrayList(Asset).init(Common.allocator),
         .camera = std.mem.zeroInit(rl.Camera3D, .{}),
         .time = 0.0,
     };
 
-    try temp.assets.append(try Asset.init(&Assets.guardHouse, 0.0, 0.0, 0.0, 1.0));
+    try temp.assets.append(try Asset.init(&Assets.guardHouse, 0.0, 0.0, 0.0));
+    try temp.assets.append(try Asset.init(&Assets.shed, 5.0, 0.0, 5.0));
 
     temp.camera.position = rl.Vector3.init(10.0, 10.0, 10.0);
     temp.camera.target = rl.Vector3.init(0.0, 0.0, 0.0);

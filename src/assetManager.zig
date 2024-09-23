@@ -7,15 +7,14 @@ pub const Asset = struct {
     model: rl.Model,
     glb: *const embeddedGLB,
     position: rl.Vector3,
-    scale: f32,
+    scale: f32 = 1.0,
     color: rl.Color = rl.Color.white,
 
-    pub fn init(model: *const embeddedGLB, x: f32, y: f32, z: f32, scale: f32) !Asset {
+    pub fn init(model: *const embeddedGLB, x: f32, y: f32, z: f32) !Asset {
         return .{
             .model = try model.getModel(),
             .glb = model,
             .position = rl.Vector3.init(x, y, z),
-            .scale = scale,
         };
     }
 
@@ -84,4 +83,3 @@ pub const skySunset = embeddedGLB.init("assets/skybox.glb");
 pub const guardHouse = embeddedGLB.init("assets/guardhouse.glb");
 pub const box = embeddedGLB.init("assets/box.glb");
 pub const shed = embeddedGLB.init("assets/shed.glb");
-pub const base = embeddedGLB.init("assets/baseScene.glb");
