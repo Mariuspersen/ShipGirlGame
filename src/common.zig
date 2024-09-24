@@ -7,6 +7,7 @@ pub const Width = 1920;
 pub const Height = 1080;
 pub const Title = "Project SHIP";
 pub const MenuTitleFontSize = 40;
+pub const Version = @embedFile("version");
 
 var allocatorType: blk: {
     switch (builtin.mode) {
