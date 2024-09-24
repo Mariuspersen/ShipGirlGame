@@ -1,5 +1,6 @@
 const std = @import("std");
 const builtin = @import("builtin");
+const rl = @import("raylib");
 
 const math = std.math;
 
@@ -7,6 +8,7 @@ pub const Width = 1920;
 pub const Height = 1080;
 pub const Title = "Project SHIP";
 pub const MenuTitleFontSize = 40;
+pub const NormalFontSize = 20;
 pub const Version = @embedFile("version");
 
 var allocatorType: blk: {
@@ -50,4 +52,15 @@ pub fn fade(t: anytype, fade_in: anytype, sustain: anytype, fade_out: anytype) @
     const new_fade_out = @min(1.0, (total - new_t) / fade_out);
 
     return @min(new_fade_in, new_fade_out);
+}
+
+pub inline fn drawVersionNumber() void {
+    const offset = rl.measureText(Version, NormalFontSize) + NormalFontSize * 2;
+    rl.drawText(
+        Version,
+        Width - offset,
+        0,
+        NormalFontSize,
+        rl.Color.white,
+    );
 }

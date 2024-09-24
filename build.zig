@@ -116,9 +116,6 @@ const Date = struct {
     }
 
     fn daysInYear(year: u64) u64 {
-        if ((@mod(year, 4) == 0 and @mod(year, 100) != 0) or @mod(year, 400) == 0) {
-            return 366;
-        }
-        else return 365;
+        return if((@mod(year, 4) == 0 and @mod(year, 100) != 0) or @mod(year, 400) == 0) 366 else 365;
     }
 };

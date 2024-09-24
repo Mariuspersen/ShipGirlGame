@@ -60,7 +60,9 @@ pub fn loop(self: *Self) !Result {
     }
     rl.drawGrid(20, 1.0);
     rl.endMode3D();
+
     rl.drawFPS(0, 0);
+    Common.drawVersionNumber();
 
     if (key == .key_escape) {
         retValue = try Result.ok(.Quit);
