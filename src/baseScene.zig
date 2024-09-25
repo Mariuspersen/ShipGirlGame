@@ -27,7 +27,8 @@ pub fn load() !Self {
     };
 
     try temp.assets.append(try Asset.init(&Assets.guardHouse, 0.0, 0.0, 0.0));
-    try temp.assets.append(try Asset.init(&Assets.shed, 5.0, 0.0, 5.0));
+    try temp.assets.append(try Asset.init(&Assets.energydrink, 0.0, 7.0, 5.0));
+    try temp.assets.append(try Asset.init(&Assets.shed, 5.0, 5.0, 5.0));
 
     temp.camera.position = rl.Vector3.init(10.0, 10.0, 10.0);
     temp.camera.target = rl.Vector3.init(0.0, 0.0, 0.0);
@@ -53,6 +54,7 @@ pub fn loop(self: *Self) !Result {
     rl.updateCamera(&self.camera, .camera_free);
     rl.beginMode3D(self.camera);
 
+    
     //Always render the skybox behind
     self.skybox.drawSkybox(&self.camera);
     for (self.assets.items) |asset| {
@@ -63,6 +65,10 @@ pub fn loop(self: *Self) !Result {
 
     rl.drawFPS(0, 0);
     Common.drawVersionNumber();
+
+    const position: [:0]u8 = try std.fmt.allocPrintZ(Common.allocator, "{any}", .{self.camera.position});
+    defer Common.allocator.free(position);
+    rl.drawText(position, 10, 10, 20, rl.Color.white);
 
     if (key == .key_escape) {
         retValue = try Result.ok(.Quit);
