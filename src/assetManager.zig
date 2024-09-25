@@ -5,8 +5,10 @@ const fs = std.fs;
 
 pub const Asset = struct {
     model: rl.Model,
+    hash: u32,
     glb: *const embeddedGLB,
     position: rl.Vector3,
+    rotation: ?rl.Matrix = null,
     scale: f32 = 1.0,
     color: rl.Color = rl.Color.white,
 
@@ -15,7 +17,14 @@ pub const Asset = struct {
             .model = try model.getModel(),
             .glb = model,
             .position = rl.Vector3.init(x, y, z),
+            .hash = std.hash.uint32(@intCast(std.time.timestamp())),
         };
+    }
+
+    pub inline fn applyTransformation(self: *Asset) void {
+        if (self.rotation) |r| {
+            self.model.transform = r.multiply(self.model.transform);
+        }
     }
 
     pub inline fn draw(self: *const Asset) void {
@@ -75,6 +84,42 @@ const embeddedFile = struct {
 
     pub fn getImage(self: *const embeddedFile) rl.Image {
         return rl.loadImageFromMemory(self.fileType, self.data);
+    }
+};
+
+pub const AssetList = struct {
+    arrayList: std.ArrayList(Asset),
+
+    pub fn init(allocator: std.mem.Allocator) AssetList {
+        return .{
+            .arrayList = std.ArrayList(Asset).init(allocator),
+        };
+    }
+
+    pub fn append(self: *AssetList, model: *const embeddedGLB, x: f32, y: f32, z: f32) !void {
+        try self.arrayList.append(try Asset.init(model, x, y, z));
+    }
+
+    pub fn setTransformationMatrix(self: *AssetList,model: *const embeddedGLB,index: ?usize,x: f32, y: f32, z: f32) void {
+        var i: usize = 0;
+        const rotationMatrix = rl.Matrix.rotateXYZ(rl.Vector3.init(x, y, z));
+        for (self.arrayList.items) |*asset| {
+            if (asset.glb == model) {
+                if (index) |idx| {
+                    if (i == idx) {
+                        asset.rotation = rotationMatrix;
+                    }
+                }
+                i += 1;
+            }
+        }
+    }
+
+    pub fn deinit(self: *AssetList) !void {
+        for (self.arrayList.items) |asset| {
+            try asset.unloadAndDelete();
+        }
+        self.arrayList.deinit();
     }
 };
 

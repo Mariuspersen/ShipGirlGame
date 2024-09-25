@@ -14,7 +14,7 @@ const Self = @This();
 const Asset = Assets.Asset;
 
 skybox: Asset,
-assets: std.ArrayList(Asset),
+assets: Assets.AssetList,
 debug: bool = switch (builtin.mode) {
     .Debug => true,
     else => false,
@@ -26,14 +26,16 @@ pub fn load() !Self {
     rl.disableCursor();
     var temp = Self{
         .skybox = try Asset.init(&Assets.skySunset, 16.0, 16.0, 16.0),
-        .assets = std.ArrayList(Asset).init(Common.allocator),
+        .assets = Assets.AssetList.init(Common.allocator),
         .camera = std.mem.zeroInit(rl.Camera3D, .{}),
         .time = 0.0,
     };
 
-    try temp.assets.append(try Asset.init(&Assets.guardHouse, 0.0, 0.0, 0.0));
-    try temp.assets.append(try Asset.init(&Assets.energydrink, 0.0, 7.0, 5.0));
-    try temp.assets.append(try Asset.init(&Assets.shed, 5.0, 5.0, 5.0));
+    try temp.assets.append(&Assets.guardHouse, 0.0, 0.0, 0.0);
+    try temp.assets.append(&Assets.energydrink, 0.0, 7.0, 5.0);
+    try temp.assets.append(&Assets.shed, 5.0, 5.0, 5.0);
+
+    temp.assets.setTransformationMatrix(&Assets.energydrink, 0, 0.0, 0.25, 0.0);
 
     temp.camera.position = rl.Vector3.init(10.0, 10.0, 10.0);
     temp.camera.target = rl.Vector3.init(0.0, 0.0, 0.0);
@@ -46,10 +48,7 @@ pub fn load() !Self {
 pub fn unload(self: *Self) !void {
     rl.enableCursor();
     try self.skybox.unloadAndDelete();
-    for (self.assets.items) |asset| {
-        try asset.unloadAndDelete();
-    }
-    self.assets.deinit();
+    try self.assets.deinit();
 }
 
 pub fn loop(self: *Self) !Result {
@@ -76,8 +75,9 @@ pub fn loop(self: *Self) !Result {
 
     //Always render the skybox behind
     self.skybox.drawSkybox(&self.camera);
-    for (self.assets.items) |*asset| {
+    for (self.assets.arrayList.items) |*asset| {
         asset.draw();
+        asset.applyTransformation();
     }
     rl.drawGrid(20, 1.0);
     rl.endMode3D();
