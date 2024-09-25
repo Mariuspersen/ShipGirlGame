@@ -54,13 +54,51 @@ pub fn fade(t: anytype, fade_in: anytype, sustain: anytype, fade_out: anytype) @
     return @min(new_fade_in, new_fade_out);
 }
 
-pub inline fn drawVersionNumber() void {
-    const offset = rl.measureText(Version, NormalFontSize) + NormalFontSize * 2;
+pub inline fn drawDebugInfo(camera: *rl.Camera3D) !void {
+    try drawFPS(0);
+    drawVersionNumber(1);
+    try drawPosition(camera, 2);
+}
+
+pub inline fn drawVersionNumber(pos: usize) void {
     rl.drawText(
         Version,
-        Width - offset,
         0,
+        pos * NormalFontSize,
         NormalFontSize,
+        rl.Color.white,
+    );
+}
+
+pub inline fn drawFPS(pos: usize) !void {
+    var buf: [10]u8 = undefined;
+    const fps = rl.getFPS();
+    const string = try std.fmt.bufPrintZ(&buf, "FPS: {d}", .{fps});
+    rl.drawText(
+        string,
+        0,
+        pos * NormalFontSize,
+        NormalFontSize,
+        rl.Color.white,
+    );
+}
+
+pub inline fn drawPosition(camera: *rl.Camera3D, pos: usize) !void {
+    var buffer: [64]u8 = undefined;
+    const string = try std.fmt.bufPrintZ(
+        &buffer,
+        "X: {d}\tY: {d}\tZ: {d}",
+        .{
+            @trunc(camera.position.x),
+            @trunc(camera.position.y),
+            @trunc(camera.position.z),
+        },
+    );
+    rl.drawText(
+        string,
+        0,
+        pos*NormalFontSize,
+        20,
         rl.Color.white,
     );
 }

@@ -83,4 +83,4 @@ pub const skySunset = embeddedGLB.init("assets/skybox.glb");
 pub const guardHouse = embeddedGLB.init("assets/guardhouse.glb");
 pub const box = embeddedGLB.init("assets/box.glb");
 pub const shed = embeddedGLB.init("assets/shed.glb");
-pub const energydrink = embeddedGLB.init("assets/energydrink.glb");
+pub const energydrink = embeddedGLB.init("assets/databrus.glb");

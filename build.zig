@@ -74,7 +74,7 @@ fn gitHash(allocator: std.mem.Allocator, buffer: *[7]u8) !void {
 
 fn writeVersion(allocator: std.mem.Allocator) !void {
     var cwd = std.fs.cwd();
-    cwd.deleteFile("./src/version") catch {};
+    cwd.deleteFile("src/version") catch {};
 
     var timestamp = Date.now();
     const formatted = try timestamp.format(allocator);
@@ -82,7 +82,7 @@ fn writeVersion(allocator: std.mem.Allocator) !void {
 
     var buffer: [7]u8 = undefined;
     try gitHash(allocator, &buffer);
-    const file = try cwd.createFile("./src/version", .{});
+    const file = try cwd.createFile("src/version", .{});
     defer file.close();
 
     try file.writeAll(formatted);

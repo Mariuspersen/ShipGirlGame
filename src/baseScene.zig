@@ -1,6 +1,7 @@
 const std = @import("std");
 const rl = @import("raylib");
 const rg = @import("raygui");
+const builtin = @import("builtin");
 
 const Common = @import("common.zig");
 const Assets = @import("assetManager.zig");
@@ -14,6 +15,10 @@ const Asset = Assets.Asset;
 
 skybox: Asset,
 assets: std.ArrayList(Asset),
+debug: bool = switch (builtin.mode) {
+    .Debug => true,
+    else => false,
+},
 camera: rl.Camera3D = undefined,
 time: f32,
 
@@ -49,30 +54,39 @@ pub fn unload(self: *Self) !void {
 
 pub fn loop(self: *Self) !Result {
     var retValue: Result = Result.loop;
-    const key = rl.getKeyPressed();
+
+    switch (rl.getKeyPressed()) {
+        .key_escape => {
+            retValue = try Result.ok(.Quit);
+        },
+        .key_f3 => {
+            self.debug = !self.debug;
+        },
+        .key_null => {},
+        else => |k| {
+            if (self.debug) {
+                std.debug.print("INFO: KEYPRESS: {any}\n", .{k});
+            }
+        }
+    }
+
     rl.clearBackground(rl.Color.gray);
     rl.updateCamera(&self.camera, .camera_free);
     rl.beginMode3D(self.camera);
 
-    
     //Always render the skybox behind
     self.skybox.drawSkybox(&self.camera);
-    for (self.assets.items) |asset| {
+    for (self.assets.items) |*asset| {
         asset.draw();
     }
     rl.drawGrid(20, 1.0);
     rl.endMode3D();
 
-    rl.drawFPS(0, 0);
-    Common.drawVersionNumber();
-
-    const position: [:0]u8 = try std.fmt.allocPrintZ(Common.allocator, "{any}", .{self.camera.position});
-    defer Common.allocator.free(position);
-    rl.drawText(position, 10, 10, 20, rl.Color.white);
-
-    if (key == .key_escape) {
-        retValue = try Result.ok(.Quit);
+    if (self.debug) {
+        try Common.drawDebugInfo(&self.camera);
     }
 
     return retValue;
 }
+
+
