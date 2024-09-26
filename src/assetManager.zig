@@ -61,7 +61,7 @@ const embeddedGLB = struct {
     }
     pub fn deleteRemnants(self: *const embeddedGLB) void {
         fs.cwd().deleteFile(self.name) catch |err| {
-            std.debug.print("INFO: Unable to delete {s} because of {any}\n", .{self.name, err});
+            std.debug.print("INFO: ASSET: Unable to delete {s} because of {any}\n", .{self.name, err});
         };
     }
 };
