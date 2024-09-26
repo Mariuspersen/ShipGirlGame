@@ -37,9 +37,9 @@ pub const Asset = struct {
         rl.gl.rlEnableDepthMask();
     }
 
-    pub inline fn unloadAndDelete(self: *const Asset) !void {
+    pub inline fn unloadAndDelete(self: *const Asset) void {
         self.model.unload();
-        try self.glb.deleteRemnants();
+        self.glb.deleteRemnants();
     }
 };
 
@@ -59,8 +59,10 @@ const embeddedGLB = struct {
         try gltfFile.writeAll(self.data);
         return rl.loadModel(self.name);
     }
-    pub fn deleteRemnants(self: *const embeddedGLB) !void {
-        try fs.cwd().deleteFile(self.name);
+    pub fn deleteRemnants(self: *const embeddedGLB) void {
+        fs.cwd().deleteFile(self.name) catch |err| {
+            std.debug.print("INFO: Unable to delete {s} because of {any}\n", .{self.name, err});
+        };
     }
 };
 
@@ -115,9 +117,9 @@ pub const AssetList = struct {
         }
     }
 
-    pub fn deinit(self: *AssetList) !void {
+    pub fn deinit(self: *AssetList) void {
         for (self.arrayList.items) |asset| {
-            try asset.unloadAndDelete();
+            asset.unloadAndDelete();
         }
         self.arrayList.deinit();
     }

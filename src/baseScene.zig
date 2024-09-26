@@ -33,9 +33,11 @@ pub fn load() !Self {
 
     try temp.assets.append(&Assets.guardHouse, 0.0, 0.0, 0.0);
     try temp.assets.append(&Assets.energydrink, 0.0, 7.0, 5.0);
+    try temp.assets.append(&Assets.energydrink, 0.0, 7.0, 7.0);
     try temp.assets.append(&Assets.shed, 5.0, 5.0, 5.0);
 
     temp.assets.setTransformationMatrix(&Assets.energydrink, 0, 0.0, 0.25, 0.0);
+    temp.assets.setTransformationMatrix(&Assets.energydrink, 1, 0.0, 0.005, 0.0);
 
     temp.camera.position = rl.Vector3.init(10.0, 10.0, 10.0);
     temp.camera.target = rl.Vector3.init(0.0, 0.0, 0.0);
@@ -45,10 +47,10 @@ pub fn load() !Self {
     return temp;
 }
 
-pub fn unload(self: *Self) !void {
+pub fn unload(self: *Self) void {
     rl.enableCursor();
-    try self.skybox.unloadAndDelete();
-    try self.assets.deinit();
+    self.skybox.unloadAndDelete();
+    self.assets.deinit();
 }
 
 pub fn loop(self: *Self) !Result {

@@ -24,19 +24,19 @@ pub fn loop(self: *Self) !bool {
     switch (self.currentScene) {
         .Intro => |*intro| {
             switch (try intro.loop()) {
-                .ok => |newScene| try self.switchScene(newScene),
+                .ok => |newScene| self.switchScene(newScene),
                 .loop => {},
             }
         },
         .MainMenu => |*menu| {
             switch (try menu.loop()) {
-                .ok => |newScene| try self.switchScene(newScene),
+                .ok => |newScene| self.switchScene(newScene),
                 .loop => {},
             }
         },
         .Base => |*base| {
             switch (try base.loop()) {
-                .ok => |newScene| try self.switchScene(newScene),
+                .ok => |newScene| self.switchScene(newScene),
                 .loop => {},
             }
         },
@@ -48,11 +48,11 @@ pub fn loop(self: *Self) !bool {
     return true;
 }
 
-pub fn switchScene(self: *Self, newScene: Scene) !void {
+pub fn switchScene(self: *Self, newScene: Scene) void {
     switch (self.currentScene) {
         .Intro => |*intro| intro.unload(),
         .MainMenu => |*menu| menu.unload(),
-        .Base => |*base| try base.unload(),
+        .Base => |*base| base.unload(),
         .Quit => {},
     }
     self.currentScene = newScene;
