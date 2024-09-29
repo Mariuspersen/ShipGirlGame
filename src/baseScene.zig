@@ -25,13 +25,13 @@ time: f32,
 pub fn load() !Self {
     rl.disableCursor();
     var temp = Self{
-        .skybox = try Asset.init(&Assets.skySunset, 16.0, 16.0, 16.0),
+        .skybox = try Asset.init(&Assets.skySunset, -16.0, -16.0, -16.0),
         .assets = Assets.AssetList.init(Common.allocator),
         .camera = std.mem.zeroInit(rl.Camera3D, .{}),
         .time = 0.0,
     };
 
-    try temp.assets.append(&Assets.guardHouse, 0.0, 0.0, 0.0);
+    try temp.assets.append(&Assets.guardHouse, -13.5, 19.5,-2.5);
     try temp.assets.append(&Assets.energydrink, 0.0, 7.0, 5.0);
     try temp.assets.append(&Assets.energydrink, 0.0, 7.0, 7.0);
     try temp.assets.append(&Assets.shed, 5.0, 5.0, 5.0);
@@ -81,7 +81,7 @@ pub fn loop(self: *Self) !Result {
         asset.draw();
         asset.applyTransformation();
     }
-    rl.drawGrid(20, 1.0);
+    rl.drawGrid(100, 1.0);
     rl.endMode3D();
 
     if (self.debug) {
