@@ -4,8 +4,10 @@ const rl = @import("raylib");
 
 const math = std.math;
 
-pub var Width: usize = 1920;
-pub var Height: usize = 1080;
+pub var Width: i32 = 1920;
+pub var Height: i32 = 1080;
+pub var Framerate: i32 = 60;
+pub var Fullscreen: bool = false;
 pub const Title = "Project SHIP";
 pub const MenuTitleFontSize = 40;
 pub const NormalFontSize = 20;
@@ -40,6 +42,21 @@ pub fn deinitAllocator() void {
             allocatorType.deinit();
         },
     }
+}
+
+pub fn initResolution() void {
+    switch (builtin.mode) {
+        .Debug => {
+        },
+        else => {
+            const monitor = rl.getCurrentMonitor();
+            Height = rl.getMonitorHeight(monitor);
+            Width = rl.getMonitorWidth(monitor);
+            Framerate = rl.getMonitorRefreshRate(monitor);
+            Fullscreen = true;
+        },
+    }
+
 }
 
 pub fn scale(n: anytype, a: anytype, b: anytype, x: anytype, z: anytype) @TypeOf(n, a, b, x, z) {

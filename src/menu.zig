@@ -47,8 +47,13 @@ pub fn loop(self: *Self) !Result {
         Common.MenuTitleFontSize,
         Colors.WhiteGray,
     );
-
-    const rectangle = rl.Rectangle.init(@divTrunc(Common.Width, 2) - 200, @divTrunc(Common.Height, 3), 400, 200);
+    
+    const rectangle = rl.Rectangle.init(
+        (@as(f32, @floatFromInt(Common.Width)) / 2.0) - 200.0,
+        @as(f32,@floatFromInt(Common.Height)) / 3.0,
+        400,
+        200,
+    );
     const play_btn = rg.guiButton(rectangle, "Play");
 
     if (play_btn == 1) {

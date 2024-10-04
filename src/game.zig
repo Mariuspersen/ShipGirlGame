@@ -6,16 +6,16 @@ const sceneManager = @import("sceneManager.zig");
 
 const Self = @This();
 
-const Width = Common.Width;
-const Height = Common.Height;
-const Title = Common.Title;
-
-
 pub fn Start() !void {
-    rl.initWindow(Common.Width, Common.Height, Title);
+    rl.initWindow(0, 0, Common.Title);
+    Common.initResolution();
+    if (Common.Fullscreen) {
+        rl.toggleFullscreen();
+    }
     defer rl.closeWindow();
 
-    rl.setTargetFPS(60);
+
+    rl.setTargetFPS(Common.Framerate);
     rl.setExitKey(.key_null);
     var scene = try sceneManager.init();
     while (!rl.windowShouldClose() and try scene.loop()) {}

@@ -16,10 +16,6 @@ pub fn build(b: *std.Build) !void {
     const raygui = raylib_dep.module("raygui");
     const raylib_artifact = raylib_dep.artifact("raylib");
 
-    if (target.result.isAndroid()) {
-        raylib_artifact.defineCMacro("PLATFORM_ANDROID", null);
-    }
-
     raylib_artifact.defineCMacro("SUPPORT_FILEFORMAT_JPG", "1");
 
     const exe = b.addExecutable(.{
