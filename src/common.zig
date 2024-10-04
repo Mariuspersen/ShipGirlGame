@@ -10,6 +10,7 @@ pub const Title = "Project SHIP";
 pub const MenuTitleFontSize = 40;
 pub const NormalFontSize = 20;
 pub const Version = @embedFile("version");
+pub const Zero: usize = 0;
 
 var allocatorType: blk: {
     switch (builtin.mode) {
@@ -101,4 +102,27 @@ pub inline fn drawPosition(camera: *rl.Camera3D, pos: usize) !void {
         20,
         rl.Color.white,
     );
+}
+
+pub inline fn initDrawLoadingMessage(name: [:0]const u8,count: *const usize) !void {
+        rl.beginDrawing();
+        defer rl.endDrawing();
+        rl.clearBackground(rl.Color.black);
+
+        var buffer: [64]u8 = undefined;
+        const string = try std.fmt.bufPrintZ(
+            &buffer,
+            "[ {d} ] Loading {s}",
+            .{
+                count.*,
+                name,
+            },
+        );
+        rl.drawText(
+            string,
+            0,
+            0 * NormalFontSize,
+            20,
+            rl.Color.white,
+        );
 }

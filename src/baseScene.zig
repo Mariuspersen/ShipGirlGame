@@ -25,7 +25,7 @@ time: f32,
 pub fn load() !Self {
     rl.disableCursor();
     var temp = Self{
-        .skybox = try Asset.init(&Assets.skySunset, -16.0, -16.0, -16.0,0),
+        .skybox = try Asset.init(&Assets.skySunset, -16.0, -16.0, -16.0,&Common.Zero),
         .assets = Assets.AssetList.init(Common.allocator),
         .camera = std.mem.zeroInit(rl.Camera3D, .{}),
         .time = 0.0,

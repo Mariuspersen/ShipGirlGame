@@ -13,27 +13,8 @@ pub const Asset = struct {
     scale: f32 = 1.0,
     color: rl.Color = rl.Color.white,
 
-    pub fn init(model: *const embeddedGLB, x: f32, y: f32, z: f32, count: usize) !Asset {
-        rl.beginDrawing();
-        defer rl.endDrawing();
-        rl.clearBackground(rl.Color.black);
-        var buffer: [64]u8 = undefined;
-        const string = try std.fmt.bufPrintZ(
-            &buffer,
-            "[ {d} ] Loading {s}",
-            .{
-                count,
-                model.name,
-            },
-        );
-        rl.drawText(
-            string,
-            0,
-            0 * Common.NormalFontSize,
-            20,
-            rl.Color.white,
-        );
-
+    pub fn init(model: *const embeddedGLB, x: f32, y: f32, z: f32, count: *const usize) !Asset {
+        try Common.initDrawLoadingMessage(model.name, count);
         return .{
             .model = try model.getModel(),
             .glb = model,
@@ -120,7 +101,7 @@ pub const AssetList = struct {
     }
 
     pub fn append(self: *AssetList, model: *const embeddedGLB, x: f32, y: f32, z: f32) !void {
-        try self.arrayList.append(try Asset.init(model, x, y, z, self.arrayList.items.len));
+        try self.arrayList.append(try Asset.init(model, x, y, z, &self.arrayList.items.len));
     }
 
     pub fn setTransformationMatrix(self: *AssetList, model: *const embeddedGLB, index: ?usize, x: f32, y: f32, z: f32) void {
