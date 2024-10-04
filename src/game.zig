@@ -12,7 +12,7 @@ const Title = Common.Title;
 
 
 pub fn Start() !void {
-    rl.initWindow(Width, Height, Title);
+    rl.initWindow(Common.Width, Common.Height, Title);
     defer rl.closeWindow();
 
     rl.setTargetFPS(60);

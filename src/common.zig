@@ -4,8 +4,8 @@ const rl = @import("raylib");
 
 const math = std.math;
 
-pub const Width = 1920;
-pub const Height = 1080;
+pub var Width: usize = 1920;
+pub var Height: usize = 1080;
 pub const Title = "Project SHIP";
 pub const MenuTitleFontSize = 40;
 pub const NormalFontSize = 20;

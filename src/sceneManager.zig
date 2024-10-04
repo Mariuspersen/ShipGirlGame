@@ -13,7 +13,7 @@ currentScene: Scene,
 
 pub fn init() !Self {
     return .{
-        .currentScene = try Scene.init(.Base),
+        .currentScene = try Scene.init(.Intro),
     };
 }
 
