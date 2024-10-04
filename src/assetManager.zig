@@ -1,5 +1,6 @@
 const std = @import("std");
 const rl = @import("raylib");
+const Common = @import("common.zig");
 
 const fs = std.fs;
 
@@ -12,7 +13,27 @@ pub const Asset = struct {
     scale: f32 = 1.0,
     color: rl.Color = rl.Color.white,
 
-    pub fn init(model: *const embeddedGLB, x: f32, y: f32, z: f32) !Asset {
+    pub fn init(model: *const embeddedGLB, x: f32, y: f32, z: f32, count: usize) !Asset {
+        rl.beginDrawing();
+        defer rl.endDrawing();
+        rl.clearBackground(rl.Color.black);
+        var buffer: [64]u8 = undefined;
+        const string = try std.fmt.bufPrintZ(
+            &buffer,
+            "[ {d} ] Loading {s}",
+            .{
+                count,
+                model.name,
+            },
+        );
+        rl.drawText(
+            string,
+            0,
+            0 * Common.NormalFontSize,
+            20,
+            rl.Color.white,
+        );
+
         return .{
             .model = try model.getModel(),
             .glb = model,
@@ -61,7 +82,7 @@ const embeddedGLB = struct {
     }
     pub fn deleteRemnants(self: *const embeddedGLB) void {
         fs.cwd().deleteFile(self.name) catch |err| {
-            std.debug.print("INFO: ASSET: Unable to delete {s} because of {any}\n", .{self.name, err});
+            std.debug.print("INFO: ASSET: Unable to delete {s} because of {any}\n", .{ self.name, err });
         };
     }
 };
@@ -99,10 +120,10 @@ pub const AssetList = struct {
     }
 
     pub fn append(self: *AssetList, model: *const embeddedGLB, x: f32, y: f32, z: f32) !void {
-        try self.arrayList.append(try Asset.init(model, x, y, z));
+        try self.arrayList.append(try Asset.init(model, x, y, z, self.arrayList.items.len));
     }
 
-    pub fn setTransformationMatrix(self: *AssetList,model: *const embeddedGLB,index: ?usize,x: f32, y: f32, z: f32) void {
+    pub fn setTransformationMatrix(self: *AssetList, model: *const embeddedGLB, index: ?usize, x: f32, y: f32, z: f32) void {
         var i: usize = 0;
         const rotationMatrix = rl.Matrix.rotateXYZ(rl.Vector3.init(x, y, z));
         for (self.arrayList.items) |*asset| {
@@ -131,3 +152,4 @@ pub const guardHouse = embeddedGLB.init("assets/guardhouse.glb");
 pub const box = embeddedGLB.init("assets/box.glb");
 pub const shed = embeddedGLB.init("assets/shed.glb");
 pub const energydrink = embeddedGLB.init("assets/databrus.glb");
+pub const draug = embeddedGLB.init("assets/KNM Draug.glb");
