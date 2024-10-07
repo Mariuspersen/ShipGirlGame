@@ -45,6 +45,42 @@ pub const Asset = struct {
     }
 };
 
+pub const AssetList = struct {
+    arrayList: std.ArrayList(Asset),
+
+    pub fn init(allocator: std.mem.Allocator) AssetList {
+        return .{
+            .arrayList = std.ArrayList(Asset).init(allocator),
+        };
+    }
+
+    pub fn append(self: *AssetList, model: *const embeddedGLB, x: f32, y: f32, z: f32) !void {
+        try self.arrayList.append(try Asset.init(model, x, y, z, &self.arrayList.items.len));
+    }
+
+    pub fn setTransformationMatrix(self: *AssetList, model: *const embeddedGLB, index: ?usize, x: f32, y: f32, z: f32) void {
+        var i: usize = 0;
+        const rotationMatrix = rl.Matrix.rotateXYZ(rl.Vector3.init(x, y, z));
+        for (self.arrayList.items) |*asset| {
+            if (asset.glb == model) {
+                if (index) |idx| {
+                    if (i == idx) {
+                        asset.rotation = rotationMatrix;
+                    }
+                }
+                i += 1;
+            }
+        }
+    }
+
+    pub fn deinit(self: *AssetList) void {
+        for (self.arrayList.items) |asset| {
+            asset.unloadAndDelete();
+        }
+        self.arrayList.deinit();
+    }
+};
+
 const embeddedGLB = struct {
     name: [:0]const u8,
     data: []const u8,
@@ -91,46 +127,32 @@ const embeddedFile = struct {
     }
 };
 
-pub const AssetList = struct {
-    arrayList: std.ArrayList(Asset),
+const embeddedShader = struct {
+    vertex: [:0]const u8,
+    fragment: [:0]const u8,
 
-    pub fn init(allocator: std.mem.Allocator) AssetList {
+    pub fn init(comptime vertex: []const u8, comptime fragment: []const u8) embeddedShader {
         return .{
-            .arrayList = std.ArrayList(Asset).init(allocator),
+            .vertex = @embedFile(vertex),
+            .fragment = @embedFile(fragment),
         };
     }
 
-    pub fn append(self: *AssetList, model: *const embeddedGLB, x: f32, y: f32, z: f32) !void {
-        try self.arrayList.append(try Asset.init(model, x, y, z, &self.arrayList.items.len));
+    pub fn loadShader(self: *const embeddedShader) rl.Shader {
+        return rl.loadShaderFromMemory(self.vertex, self.fragment);
     }
 
-    pub fn setTransformationMatrix(self: *AssetList, model: *const embeddedGLB, index: ?usize, x: f32, y: f32, z: f32) void {
-        var i: usize = 0;
-        const rotationMatrix = rl.Matrix.rotateXYZ(rl.Vector3.init(x, y, z));
-        for (self.arrayList.items) |*asset| {
-            if (asset.glb == model) {
-                if (index) |idx| {
-                    if (i == idx) {
-                        asset.rotation = rotationMatrix;
-                    }
-                }
-                i += 1;
-            }
-        }
-    }
-
-    pub fn deinit(self: *AssetList) void {
-        for (self.arrayList.items) |asset| {
-            asset.unloadAndDelete();
-        }
-        self.arrayList.deinit();
-    }
 };
-
+//Textures
 pub const battleOcean = embeddedFile.init("assets/BattleOcean.png");
+
+//Models
 pub const skySunset = embeddedGLB.init("assets/skybox.glb");
 pub const guardHouse = embeddedGLB.init("assets/guardhouse.glb");
 pub const box = embeddedGLB.init("assets/box.glb");
 pub const shed = embeddedGLB.init("assets/shed.glb");
 pub const energydrink = embeddedGLB.init("assets/databrus.glb");
 pub const draug = embeddedGLB.init("assets/KNM Draug.glb");
+
+//Shaders
+pub const lighting = embeddedShader.init("assets/shaders/lighting.vs", "assets/shaders/lighting.fs");
