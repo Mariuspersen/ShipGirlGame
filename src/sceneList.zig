@@ -3,7 +3,7 @@ const Intro = @import("intro.zig");
 const Base = @import("baseScene.zig");
 const std = @import("std");
 
-const sceneList = enum {
+pub const sceneList = enum {
     Intro,
     MainMenu,
     Base,

@@ -16,7 +16,8 @@ pub fn build(b: *std.Build) !void {
     const raygui = raylib_dep.module("raygui");
     const raylib_artifact = raylib_dep.artifact("raylib");
 
-    raylib_artifact.defineCMacro("SUPPORT_FILEFORMAT_JPG", "1");
+    raylib_artifact.defineCMacro("SUPPORT_FILEFORMAT_JPG", null);
+    //raylib_artifact.defineCMacro("RLIGHTS_IMPLEMENTATION", null);
 
     const exe = b.addExecutable(.{
         .name = "projectboat",
