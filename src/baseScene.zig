@@ -111,6 +111,7 @@ pub fn loop(self: *Self) !Result {
             self.light.enabled = if (self.light.enabled == 1) 0 else 1;
             std.debug.print("{any}\n", .{self.light});
             std.debug.print("{any}\n", .{self.shader});
+            std.debug.print("{d}\n", .{Light.MAX_LIGHTS});
         },
         .key_f11 => {
             rl.toggleFullscreen();

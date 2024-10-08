@@ -13,7 +13,7 @@ out vec4 finalColor;
 
 // NOTE: Add here your custom variables
 
-#define     MAX_LIGHTS              1
+#define     MAX_LIGHTS              2
 #define     LIGHT_DIRECTIONAL       0
 #define     LIGHT_POINT             1
 

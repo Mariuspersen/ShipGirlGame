@@ -155,4 +155,4 @@ pub const energydrink = embeddedGLB.init("assets/databrus.glb");
 pub const draug = embeddedGLB.init("assets/KNM Draug.glb");
 
 //Shaders
-pub const lighting = embeddedShader.init("assets/shaders/directional.vs", "assets/shaders/directional.fs");
+pub const lighting = embeddedShader.init("shaders/directional.vs", "shaders/directional.fs");

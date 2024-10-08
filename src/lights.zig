@@ -1,7 +1,7 @@
 //**********************************************************************************************
 //*
 //*   raylib.lights - Some useful functions to deal with lights data
-//*   Translated to Zig by Marius
+//*   Translated to Zig by Mariuspersen
 //*
 //*   LICENSE: zlib/libpng
 //*
@@ -28,11 +28,26 @@ const rl = @import("raylib");
 // Constants
 //----------------------------------------------------------------------------------
 const Self = @This();
-
-// Light data
 pub const DIRECTIONAL: i32 = 0;
 pub const POINT: i32 = 1;
 
+//Changes MAX_LIGHTS based on the defined value in the shader
+//TODO: I would love to count the number of function calls to CreateLight
+// and add the define to the shader instead ...
+pub const MAX_LIGHTS = blk: {
+    const std = @import("std");
+    const Assets = @import("assetManager.zig");
+    const needle = "MAX_LIGHTS";
+    const i = std.mem.indexOf(u8, Assets.lighting.fragment, needle) orelse unreachable;
+    const j = std.mem.indexOf(u8, Assets.lighting.fragment[i..], "\n") orelse unreachable;
+    const number = std.mem.trim(u8, Assets.lighting.fragment[i + needle.len .. i + j], "\n\r ");
+    break :blk std.fmt.parseInt(usize, number, 10) catch unreachable;
+};
+
+pub var LIGHT_COUNT: usize = 0;
+
+
+// Light data
 lightType: i32,
 enabled: i32,
 position: rl.Vector3,
@@ -77,6 +92,7 @@ pub fn CreateLight(lightType: i32, position: rl.Vector3, target: rl.Vector3, col
         ),
     };
     light.updateLightValues(shader);
+    LIGHT_COUNT += 1;
     return light;
 }
 //// Send light properties to shader
