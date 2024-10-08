@@ -108,23 +108,21 @@ pub fn updateLightValues(light: *const Self, shader: rl.Shader) void {
         &position,
         rl.ShaderUniformDataType.shader_uniform_vec3,
     );
-    const target = [3]f32{ light.target.x, light.target.y, light.target.z };
     rl.setShaderValue(
         shader,
         light.targetLoc,
-        &target,
+        &light.target,
         rl.ShaderUniformDataType.shader_uniform_vec3,
     );
-    const color = [4]f32{
-        @as(f32, @floatFromInt(light.color.r)) / 255.0,
-        @as(f32, @floatFromInt(light.color.g)) / 255.0,
-        @as(f32, @floatFromInt(light.color.b)) / 255.0,
-        @as(f32, @floatFromInt(light.color.a)) / 255.0,
-    };
     rl.setShaderValue(
         shader,
         light.colorLoc,
-        &color,
+        &[4]f32{
+            @as(f32, @floatFromInt(light.color.r)) / 255.0,
+            @as(f32, @floatFromInt(light.color.g)) / 255.0,
+            @as(f32, @floatFromInt(light.color.b)) / 255.0,
+            @as(f32, @floatFromInt(light.color.a)) / 255.0,
+        },
         rl.ShaderUniformDataType.shader_uniform_vec4,
     );
 }

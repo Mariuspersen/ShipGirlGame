@@ -39,12 +39,18 @@ pub fn load() !Self {
         temp.shader,
         "viewPos",
     );
-    const loc = rl.getShaderLocation(temp.shader, "ambient");
+
+    temp.shader.locs[@intFromEnum(rl.ShaderLocationIndex.shader_loc_matrix_model)] = rl.getShaderLocation(
+        temp.shader,
+        "matModel",
+    );
+
+    const ambientLoc = rl.getShaderLocation(temp.shader, "ambient");
 
     rl.setShaderValue(
         temp.shader,
-        loc,
-        &[4]f32{ 0.1, 0.6, 0.1, 1.0 },
+        ambientLoc,
+        &[4]f32{ 0.1, 0.1, 0.1, 1.0 },
         rl.ShaderUniformDataType.shader_uniform_vec4,
     );
 
@@ -52,7 +58,7 @@ pub fn load() !Self {
         Light.DIRECTIONAL,
         rl.Vector3.init(1.0, 1.0, 1.0),
         rl.Vector3.init(0.0, 0.0, 0.0),
-        rl.Color.fromInt(0xfcf185FF),
+        rl.Color.fromInt(0xFFAAFFFF),
         temp.shader,
     );
 
@@ -64,6 +70,12 @@ pub fn load() !Self {
 
     temp.assets.setTransformationMatrix(&Assets.energydrink, 0, 0.0, 0.25, 0.0);
     temp.assets.setTransformationMatrix(&Assets.energydrink, 1, 0.0, 0.005, 0.0);
+
+    for (temp.assets.arrayList.items) |*asset| {
+        for (0..@as(usize, @intCast(asset.model.materialCount))) |i| {
+            asset.model.materials[i].shader = temp.shader;
+        }
+    }
 
     temp.camera.position = rl.Vector3.init(10.0, 10.0, 10.0);
     temp.camera.target = rl.Vector3.init(0.0, 0.0, 0.0);
@@ -91,7 +103,7 @@ pub fn loop(self: *Self) !Result {
             self.debug = !self.debug;
         },
         .key_f4 => {
-            self.light.enabled = if(self.light.enabled == 1) 0 else 1;
+            self.light.enabled = if (self.light.enabled == 1) 0 else 1;
             std.debug.print("{any}\n", .{self.light});
             std.debug.print("{any}\n", .{self.shader});
         },
@@ -112,24 +124,24 @@ pub fn loop(self: *Self) !Result {
         rl.ShaderUniformDataType.shader_uniform_vec3,
     );
     self.light.updateLightValues(self.shader);
-        //Draw 3D objects
-        rl.beginMode3D(self.camera);
-        //Always render the skybox behind
-        self.skybox.drawSkybox(&self.camera);
-        //Shadows shader
-        self.shader.activate();
-        //Cube for shadow testing
-        rl.drawCube(rl.Vector3.zero(), 1.0, 1.0, 1.0, rl.Color.white);
+    //Draw 3D objects
+    rl.beginMode3D(self.camera);
+    //Always render the skybox behind
+    self.skybox.drawSkybox(&self.camera);
+    //Shadows shader
+    self.shader.activate();
+    //Cube for shadow testing
+    rl.drawCube(rl.Vector3.zero(), 1.0, 1.0, 1.0, rl.Color.white);
 
-        //Draw objects and apply effects
-        for (self.assets.arrayList.items) |*asset| {
-            asset.draw();
-            asset.applyTransformation();
-        }
+    //Draw objects and apply effects
+    for (self.assets.arrayList.items) |*asset| {
+        asset.draw();
+        asset.applyTransformation();
+    }
 
-        rl.drawGrid(100, 1.0);
-        self.shader.deactivate();
-        rl.endMode3D();
+    rl.drawGrid(100, 1.0);
+    self.shader.deactivate();
+    rl.endMode3D();
 
     if (self.debug) {
         try Common.drawDebugInfo(&self.camera);
