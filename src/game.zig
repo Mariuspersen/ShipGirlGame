@@ -8,10 +8,8 @@ const Self = @This();
 
 pub fn Start() !void {
     rl.initWindow(0, 0, Common.Title);
-    Common.initResolution();
-    if (Common.Fullscreen) {
-        rl.toggleFullscreen();
-    }
+    Common.initVariables();
+    if (Common.Fullscreen) rl.toggleFullscreen();
     defer rl.closeWindow();
 
 

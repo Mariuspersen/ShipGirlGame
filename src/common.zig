@@ -44,9 +44,10 @@ pub fn deinitAllocator() void {
     }
 }
 
-pub fn initResolution() void {
+pub fn initVariables() void {
     switch (builtin.mode) {
         .Debug => {
+            rl.setWindowSize(Width, Height);
         },
         else => {
             const monitor = rl.getCurrentMonitor();
@@ -54,6 +55,7 @@ pub fn initResolution() void {
             Width = rl.getMonitorWidth(monitor);
             Framerate = rl.getMonitorRefreshRate(monitor);
             Fullscreen = true;
+            rl.setWindowSize(Width, Height);
         },
     }
 
