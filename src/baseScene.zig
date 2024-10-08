@@ -46,11 +46,16 @@ pub fn load() !Self {
     );
 
     const ambientLoc = rl.getShaderLocation(temp.shader, "ambient");
-
+    const ambientColor = rl.Color.fromInt(0x19071DFF);
     rl.setShaderValue(
         temp.shader,
         ambientLoc,
-        &[4]f32{ 0.1, 0.1, 0.1, 1.0 },
+        &rl.Vector4.init(
+        @as(f32, @floatFromInt(ambientColor.r)) / 255.0,
+        @as(f32, @floatFromInt(ambientColor.g)) / 255.0,
+        @as(f32, @floatFromInt(ambientColor.b)) / 255.0,
+        @as(f32, @floatFromInt(ambientColor.a)) / 255.0,
+        ),
         rl.ShaderUniformDataType.shader_uniform_vec4,
     );
 
@@ -107,6 +112,9 @@ pub fn loop(self: *Self) !Result {
             std.debug.print("{any}\n", .{self.light});
             std.debug.print("{any}\n", .{self.shader});
         },
+        .key_f11 => {
+            rl.toggleFullscreen();
+        },
         .key_null => {},
         else => |k| {
             if (self.debug) {
@@ -130,8 +138,6 @@ pub fn loop(self: *Self) !Result {
     self.skybox.drawSkybox(&self.camera);
     //Shadows shader
     self.shader.activate();
-    //Cube for shadow testing
-    rl.drawCube(rl.Vector3.zero(), 1.0, 1.0, 1.0, rl.Color.white);
 
     //Draw objects and apply effects
     for (self.assets.arrayList.items) |*asset| {
@@ -139,8 +145,8 @@ pub fn loop(self: *Self) !Result {
         asset.applyTransformation();
     }
 
-    rl.drawGrid(100, 1.0);
     self.shader.deactivate();
+    rl.drawGrid(100, 1.0);
     rl.endMode3D();
 
     if (self.debug) {

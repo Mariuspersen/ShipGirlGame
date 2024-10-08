@@ -1,8 +1,9 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const rl = @import("raylib");
-
 const math = std.math;
+
+const Scene = @import("sceneList.zig").sceneList;
 
 pub var Width: i32 = 1920;
 pub var Height: i32 = 1080;
@@ -13,6 +14,10 @@ pub const MenuTitleFontSize = 40;
 pub const NormalFontSize = 20;
 pub const Version = @embedFile("version");
 pub const Zero: usize = 0;
+pub const StartScene: Scene = switch (builtin.mode) {
+    .Debug => Scene.Base,
+    else => Scene.Intro,
+};
 
 var allocatorType: blk: {
     switch (builtin.mode) {

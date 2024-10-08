@@ -1,14 +1,7 @@
 //**********************************************************************************************
 //*
 //*   raylib.lights - Some useful functions to deal with lights data
-//*   Translated to Zig
-//*
-//*   CONFIGURATION:
-//*
-//*   #define RLIGHTS_IMPLEMENTATION
-//*       Generates the implementation of the library into the included file.
-//*       If not defined, the library is in header only mode and can be included in other headers
-//*       or source files without problems. But only ONE file should hold the implementation.
+//*   Translated to Zig by Marius
 //*
 //*   LICENSE: zlib/libpng
 //*
@@ -101,11 +94,10 @@ pub fn updateLightValues(light: *const Self, shader: rl.Shader) void {
         &light.lightType,
         rl.ShaderUniformDataType.shader_uniform_int,
     );
-    const position = [3]f32{ light.position.x, light.position.y, light.position.z };
     rl.setShaderValue(
         shader,
         light.positionLoc,
-        &position,
+        &light.position,
         rl.ShaderUniformDataType.shader_uniform_vec3,
     );
     rl.setShaderValue(

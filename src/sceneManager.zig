@@ -6,6 +6,7 @@ const Menu = @import("menu.zig");
 const Intro = @import("intro.zig");
 const Scene = @import("sceneList.zig").Scene;
 const Result = @import("sceneList.zig").Result;
+const Common = @import("common.zig");
 
 //TODO: write a scenemanager thats not ass
 
@@ -13,7 +14,7 @@ currentScene: Scene,
 
 pub fn init() !Self {
     return .{
-        .currentScene = try Scene.init(.Base),
+        .currentScene = try Scene.init(Common.StartScene),
     };
 }
 
