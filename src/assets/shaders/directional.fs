@@ -1,5 +1,3 @@
-#version 330
-
 // Input vertex attributes (from vertex shader)
 in vec3 fragPosition;
 in vec2 fragTexCoord;
@@ -72,5 +70,10 @@ void main()
     finalColor += texelColor*(ambient/10.0)*colDiffuse;
 
     // Gamma correction
-    finalColor = pow(finalColor, vec4(1.0/2.2));
+    if(lights[0].enabled == 0) {
+        finalColor = vec4(normal, 1.0); // Outputs normal vectors as color.
+
+    } else {
+        finalColor = pow(finalColor, vec4(1.0/2.2));
+    }
 }

@@ -44,12 +44,12 @@ pub fn load() !Self {
     rl.setShaderValue(
         temp.shader,
         loc,
-        &[4]f32{ 0.1, 0.1, 0.1, 1.0 },
+        &[4]f32{ 0.1, 0.6, 0.1, 1.0 },
         rl.ShaderUniformDataType.shader_uniform_vec4,
     );
 
     temp.light = Light.CreateLight(
-        .LIGHT_POINT,
+        Light.DIRECTIONAL,
         rl.Vector3.init(1.0, 1.0, 1.0),
         rl.Vector3.init(0.0, 0.0, 0.0),
         rl.Color.fromInt(0xfcf185FF),
@@ -91,9 +91,9 @@ pub fn loop(self: *Self) !Result {
             self.debug = !self.debug;
         },
         .key_f4 => {
+            self.light.enabled = if(self.light.enabled == 1) 0 else 1;
             std.debug.print("{any}\n", .{self.light});
             std.debug.print("{any}\n", .{self.shader});
-            self.light.enabled = !self.light.enabled;
         },
         .key_null => {},
         else => |k| {
@@ -105,29 +105,31 @@ pub fn loop(self: *Self) !Result {
 
     rl.clearBackground(rl.Color.gray);
     rl.updateCamera(&self.camera, .camera_free);
-    self.light.updateLightValues(self.shader);
     rl.setShaderValue(
         self.shader,
         self.shader.locs[@intFromEnum(rl.ShaderLocationIndex.shader_loc_vector_view)],
         &[3]f32{ self.camera.position.x, self.camera.position.y, self.camera.position.z },
         rl.ShaderUniformDataType.shader_uniform_vec3,
     );
-    {
+    self.light.updateLightValues(self.shader);
+        //Draw 3D objects
         rl.beginMode3D(self.camera);
-        defer rl.endMode3D();
         //Always render the skybox behind
         self.skybox.drawSkybox(&self.camera);
+        //Shadows shader
         self.shader.activate();
-        defer self.shader.deactivate();
+        //Cube for shadow testing
+        rl.drawCube(rl.Vector3.zero(), 1.0, 1.0, 1.0, rl.Color.white);
 
+        //Draw objects and apply effects
         for (self.assets.arrayList.items) |*asset| {
             asset.draw();
             asset.applyTransformation();
         }
 
-        rl.drawCube(rl.Vector3.zero(), 1.0, 1.0, 1.0, rl.Color.white);
         rl.drawGrid(100, 1.0);
-    }
+        self.shader.deactivate();
+        rl.endMode3D();
 
     if (self.debug) {
         try Common.drawDebugInfo(&self.camera);

@@ -37,29 +37,27 @@ const rl = @import("raylib");
 const Self = @This();
 
 // Light data
-const LightType = enum(c_int) {
-    LIGHT_DIRECTIONAL = 0,
-    LIGHT_POINT = 1,
-};
+pub const DIRECTIONAL: i32 = 0;
+pub const POINT: i32 = 1;
 
-lightType: LightType,
-enabled: bool,
+lightType: i32,
+enabled: i32,
 position: rl.Vector3,
 target: rl.Vector3,
 color: rl.Color,
 attenuation: f32 = 0.0,
 // Shader locations
-enabledLoc: c_int,
-typeLoc: c_int,
-positionLoc: c_int,
-targetLoc: c_int,
-colorLoc: c_int,
-attenuationLoc: c_int = -1,
+enabledLoc: i32,
+typeLoc: i32,
+positionLoc: i32,
+targetLoc: i32,
+colorLoc: i32,
+attenuationLoc: i32 = -1,
 
 // Create a light and get shader locations
-pub fn CreateLight(lightType: LightType, position: rl.Vector3, target: rl.Vector3, color: rl.Color, shader: rl.Shader) Self {
+pub fn CreateLight(lightType: i32, position: rl.Vector3, target: rl.Vector3, color: rl.Color, shader: rl.Shader) Self {
     var light = Self{
-        .enabled = true,
+        .enabled = 1,
         .lightType = lightType,
         .position = position,
         .target = target,
@@ -103,27 +101,30 @@ pub fn updateLightValues(light: *const Self, shader: rl.Shader) void {
         &light.lightType,
         rl.ShaderUniformDataType.shader_uniform_int,
     );
+    const position = [3]f32{ light.position.x, light.position.y, light.position.z };
     rl.setShaderValue(
         shader,
         light.positionLoc,
-        &[3]f32{ light.position.x, light.position.y, light.position.z },
+        &position,
         rl.ShaderUniformDataType.shader_uniform_vec3,
     );
+    const target = [3]f32{ light.target.x, light.target.y, light.target.z };
     rl.setShaderValue(
         shader,
         light.targetLoc,
-        &[3]f32{ light.target.x, light.target.y, light.target.z },
+        &target,
         rl.ShaderUniformDataType.shader_uniform_vec3,
     );
+    const color = [4]f32{
+        @as(f32, @floatFromInt(light.color.r)) / 255.0,
+        @as(f32, @floatFromInt(light.color.g)) / 255.0,
+        @as(f32, @floatFromInt(light.color.b)) / 255.0,
+        @as(f32, @floatFromInt(light.color.a)) / 255.0,
+    };
     rl.setShaderValue(
         shader,
         light.colorLoc,
-        &[4]f32{
-            @floatFromInt(light.color.r),
-            @floatFromInt(light.color.g),
-            @floatFromInt(light.color.b),
-            @floatFromInt(light.color.a),
-        },
+        &color,
         rl.ShaderUniformDataType.shader_uniform_vec4,
     );
 }
