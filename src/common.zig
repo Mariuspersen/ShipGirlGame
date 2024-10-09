@@ -1,12 +1,14 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const rl = @import("raylib");
+const rg = @import("raygui");
+
 const math = std.math;
 
 const Scene = @import("sceneList.zig").sceneList;
 
-pub var Width: i32 = 1920;
-pub var Height: i32 = 1080;
+pub var Width: i32 = 1280;
+pub var Height: i32 = 720;
 pub var Framerate: i32 = 60;
 pub var Fullscreen: bool = false;
 pub const Title = "Project SHIP";
@@ -154,4 +156,12 @@ pub inline fn initDrawLoadingMessage(name: [:0]const u8, count: *const usize) !v
         20,
         rl.Color.white,
     );
+}
+
+pub inline fn drawCloseBtn() bool {
+    const size = 0.02;
+    const scaled = @as(f32, @floatFromInt(Width)) * size;
+    const close_btn = rl.Rectangle.init( @as(f32, @floatFromInt(Width)) - scaled - 5, 5, scaled, scaled);
+    const pressed = rg.guiButton(close_btn, "X");
+    return pressed == 1;
 }

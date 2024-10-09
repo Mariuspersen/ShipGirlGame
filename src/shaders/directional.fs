@@ -71,10 +71,5 @@ void main()
     finalColor += texelColor*(ambient/10.0)*colDiffuse;
 
     // Gamma correction
-    if(lights[0].enabled == 0) {
-        finalColor = vec4(normal, 1.0); // Outputs normal vectors as color.
-
-    } else {
-        finalColor = pow(finalColor, vec4(1.0/2.2));
-    }
+    finalColor = pow(finalColor, vec4(1.0/2.2));
 }

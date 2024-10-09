@@ -65,5 +65,9 @@ pub fn loop(self: *Self) !Result {
     const fade_in_color = rl.fade(rl.Color.black, alpha);
     defer rl.drawRectangle(0, 0, Common.Width, Common.Height, fade_in_color);
 
+    if(Common.drawCloseBtn()) {
+        retValue = try Result.ok(.Quit);
+    }
+
     return retValue;
 }

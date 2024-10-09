@@ -13,7 +13,9 @@ pub fn Start() !void {
         rl.toggleFullscreen();
     }
     else {
-        rl.toggleBorderlessWindowed();
+        rl.setWindowState(.{
+            .window_undecorated = true,
+        });
     }
     defer rl.closeWindow();
 

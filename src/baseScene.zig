@@ -116,7 +116,12 @@ pub fn loop(self: *Self) !Result {
         .key_f11 => {
             rl.toggleFullscreen();
         },
-        .key_null => {},
+        .key_left_control => {
+            rl.enableCursor();
+        },
+        .key_null => {
+            //if (rl.isCursorOnScreen()) rl.disableCursor();
+        },
         else => |k| {
             if (self.debug) {
                 std.debug.print("INFO: KEYPRESS: {any}\n", .{k});
@@ -152,6 +157,10 @@ pub fn loop(self: *Self) !Result {
 
     if (self.debug) {
         try Common.drawDebugInfo(&self.camera);
+    }
+
+    if(Common.drawCloseBtn()) {
+        retValue = try Result.ok(.MainMenu);
     }
 
     return retValue;
