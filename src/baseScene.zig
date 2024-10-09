@@ -100,6 +100,7 @@ pub fn unload(self: *Self) void {
 pub fn loop(self: *Self) !Result {
     var retValue: Result = Result.loop;
 
+    //TODO: Make keyboard handling into a manager to handle input universally
     if (rl.isKeyDown(.key_left_control)) {
         if (rl.isCursorHidden()) {
             rl.enableCursor();
@@ -123,7 +124,7 @@ pub fn loop(self: *Self) !Result {
             self.light.enabled = if (self.light.enabled == 1) 0 else 1;
         },
         .key_f11 => {
-            rl.toggleFullscreen();
+           Common.toggleFullscreen();
         },
         .key_null => {},
         else => |k| {
@@ -132,7 +133,6 @@ pub fn loop(self: *Self) !Result {
             }
         },
     }
-
     rl.clearBackground(rl.Color.gray);
     rl.updateCamera(&self.camera, .camera_free);
     rl.setShaderValue(
@@ -166,6 +166,8 @@ pub fn loop(self: *Self) !Result {
     if (Common.drawCloseBtn()) {
         retValue = try Result.ok(.MainMenu);
     }
+
+    
 
     return retValue;
 }

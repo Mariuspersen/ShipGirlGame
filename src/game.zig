@@ -8,16 +8,9 @@ const Self = @This();
 
 pub fn Start() !void {
     rl.initWindow(Common.Width, Common.Height, Common.Title);
-    Common.initVariables();
-    if (Common.Fullscreen) {
-        rl.toggleFullscreen();
-    }
-    else {
-        rl.setWindowState(.{
-            .window_undecorated = true,
-        });
-    }
     defer rl.closeWindow();
+    
+    Common.initVariables();
 
     rl.setTargetFPS(Common.Framerate);
     rl.setExitKey(.key_null);

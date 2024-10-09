@@ -21,6 +21,12 @@ pub const StartScene: Scene = switch (builtin.mode) {
     else => Scene.Intro,
 };
 
+pub const windowConfigFlags = rl.ConfigFlags{
+    .window_resizable = true,
+    .window_undecorated = true,
+    .window_always_run = true,
+};
+
 //Change allocator used based on Debug or Release builds
 var allocatorType: blk: {
     switch (builtin.mode) {
@@ -62,10 +68,11 @@ pub fn initVariables() void {
             Height = rl.getMonitorHeight(monitor);
             Width = rl.getMonitorWidth(monitor);
             Framerate = rl.getMonitorRefreshRate(monitor);
-            Fullscreen = true;
+            rl.toggleFullscreen();
             rl.setWindowSize(Width, Height);
         },
     }
+    rl.setWindowState(windowConfigFlags);
 }
 
 pub fn scale(n: anytype, a: anytype, b: anytype, x: anytype, z: anytype) @TypeOf(n, a, b, x, z) {
@@ -164,4 +171,17 @@ pub inline fn drawCloseBtn() bool {
     const close_btn = rl.Rectangle.init( @as(f32, @floatFromInt(Width)) - scaled - 5, 5, scaled, scaled);
     const pressed = rg.guiButton(close_btn, "X");
     return pressed == 1;
+}
+
+pub inline fn toggleFullscreen() void {
+    rl.toggleBorderlessWindowed();
+    Width = rl.getScreenWidth();
+    Height = rl.getScreenHeight();
+}
+
+pub inline fn checkWindowResized() void {
+    if (rl.isWindowResized()) {
+        Width = rl.getScreenWidth();
+        Height = rl.getScreenHeight();
+    }
 }
