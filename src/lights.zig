@@ -31,6 +31,13 @@ const std = @import("std");
 const Self = @This();
 pub const DIRECTIONAL: i32 = 0;
 pub const POINT: i32 = 1;
+const shaderFmt = [_][]const u8{
+    "lights[{d}].enabled",
+    "lights[{d}].type",
+    "lights[0].position",
+    "lights[0].target",
+    "lights[0].color",
+};
 
 //Changes MAX_LIGHTS based on the defined value in the shader
 //TODO: I would love to count the number of function calls to CreateLight
@@ -40,20 +47,16 @@ pub const MAX_LIGHTS = blk: {
     const needle = "MAX_LIGHTS";
 
     const shader = Assets.lighting.fragment;
-    const i = std.mem.indexOf(u8, shader, needle) 
-    orelse @compileError("Unable to find " ++ needle ++ "in file\n\n" ++ shader);
+    const i = std.mem.indexOf(u8, shader, needle) orelse @compileError("Unable to find " ++ needle ++ "in file\n\n" ++ shader);
 
-    const j = std.mem.indexOf(u8, shader[i..], "\n") 
-    orelse @compileError("Unable to find end of the line in file\n\n" ++ shader);
+    const j = std.mem.indexOf(u8, shader[i..], "\n") orelse @compileError("Unable to find end of the line in file\n\n" ++ shader);
 
     const number = std.mem.trim(u8, shader[i + needle.len .. i + j], "\n\r ");
 
-    break :blk std.fmt.parseInt(usize, number, 10)
-    catch |err| @compileError("Unable to parse int:" ++ err);
+    break :blk std.fmt.parseInt(usize, number, 10) catch |err| @compileError("Unable to parse int:" ++ err);
 };
 
 pub var LIGHT_COUNT: usize = 0;
-
 
 // Light data
 lightType: i32,
@@ -64,16 +67,16 @@ color: rl.Color,
 attenuation: f32 = 0.0,
 // Shader locations
 enabledLoc: i32,
-typeLoc: i32,
-positionLoc: i32,
-targetLoc: i32,
-colorLoc: i32,
+typeLoc: i32 = -1,
+positionLoc: i32 = -1,
+targetLoc: i32 = -1,
+colorLoc: i32 = -1,
 attenuationLoc: i32 = -1,
 
 // Create a light and get shader locations
 pub fn CreateLight(lightType: i32, position: rl.Vector3, target: rl.Vector3, color: rl.Color, shader: rl.Shader) Self {
     var buf: [64]u8 = undefined;
-    
+    _ = &buf;
     var light = Self{
         .enabled = 1,
         .lightType = lightType,
@@ -101,6 +104,11 @@ pub fn CreateLight(lightType: i32, position: rl.Vector3, target: rl.Vector3, col
             "lights[0].color",
         ),
     };
+
+    inline for (@typeInfo(Self).Struct.fields) |field| {
+        @compileLog(field);
+    }
+
     light.updateLightValues(shader);
     LIGHT_COUNT += 1;
     return light;
