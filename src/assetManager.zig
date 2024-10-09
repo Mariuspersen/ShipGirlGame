@@ -1,4 +1,6 @@
 const std = @import("std");
+const builtin = @import("builtin");
+
 const rl = @import("raylib");
 const Common = @import("common.zig");
 
@@ -130,11 +132,15 @@ const embeddedFile = struct {
 const embeddedShader = struct {
     vertex: [:0]const u8,
     fragment: [:0]const u8,
+    const VERSION = switch (builtin.os.tag) {
+        .linux => "#version 330",
+        else => "",
+    };
 
     pub fn init(comptime vertex: []const u8, comptime fragment: []const u8) embeddedShader {
         return .{
-            .vertex = @embedFile(vertex),
-            .fragment = @embedFile(fragment),
+            .vertex = VERSION ++ @embedFile(vertex),
+            .fragment = VERSION ++ @embedFile(fragment),
         };
     }
 
