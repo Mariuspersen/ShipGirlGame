@@ -26,7 +26,7 @@ camera: rl.Camera3D = undefined,
 time: f32,
 
 pub fn load() !Self {
-    //rl.disableCursor();
+    rl.disableCursor();
     var temp = Self{
         .skybox = try Asset.init(&Assets.skySunset, -16.0, -16.0, -16.0, &Common.Zero),
         .assets = Assets.AssetList.init(Common.allocator),
@@ -46,7 +46,7 @@ pub fn load() !Self {
     );
 
     const ambientLoc = rl.getShaderLocation(temp.shader, "ambient");
-    const ambientColor = rl.Color.fromInt(0x19071DFF);
+    const ambientColor = rl.Color.fromInt(0x654801FF);
     rl.setShaderValue(
         temp.shader,
         ambientLoc,
@@ -63,7 +63,7 @@ pub fn load() !Self {
         Light.DIRECTIONAL,
         rl.Vector3.init(1.0, 1.0, 1.0),
         rl.Vector3.init(0.0, 0.0, 0.0),
-        rl.Color.fromInt(0xFFAAFFFF),
+        rl.Color.fromInt(0xfde198ff),
         temp.shader,
     );
 

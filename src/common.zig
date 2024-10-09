@@ -80,10 +80,11 @@ pub fn fade(t: anytype, fade_in: anytype, sustain: anytype, fade_out: anytype) @
 }
 
 var debugPos: i32 = 0;
+var debugBuffer: [64]u8 = undefined;
 pub inline fn drawDebugInfo(camera: *rl.Camera3D) !void {
     drawVersionNumber();
-    try drawFPS();
     try drawPosition(camera);
+    try drawFPS();
     debugPos = 0;
 }
 
@@ -99,9 +100,9 @@ pub inline fn drawVersionNumber() void {
 }
 
 pub inline fn drawFPS() !void {
-    var buf: [10]u8 = undefined;
     const fps = rl.getFPS();
-    const string = try std.fmt.bufPrintZ(&buf, "FPS: {d}", .{fps});
+    const frametime = rl.getFrameTime();
+    const string = try std.fmt.bufPrintZ(&debugBuffer, "FPS: {d} Frametime: {d:>4}", .{fps,frametime});
     rl.drawText(
         string,
         0,
@@ -113,9 +114,9 @@ pub inline fn drawFPS() !void {
 }
 
 pub inline fn drawPosition(camera: *rl.Camera3D) !void {
-    var buffer: [64]u8 = undefined;
+    
     const string = try std.fmt.bufPrintZ(
-        &buffer,
+        &debugBuffer,
         "PLAYER POS: X: {d}\tY: {d}\tZ: {d}",
         .{
             @trunc(camera.position.x),
@@ -138,9 +139,8 @@ pub inline fn initDrawLoadingMessage(name: [:0]const u8, count: *const usize) !v
     defer rl.endDrawing();
     rl.clearBackground(rl.Color.black);
 
-    var buffer: [64]u8 = undefined;
     const string = try std.fmt.bufPrintZ(
-        &buffer,
+        &debugBuffer,
         "[ {d} ] Loading {s}",
         .{
             count.*,

@@ -12,6 +12,9 @@ pub fn Start() !void {
     if (Common.Fullscreen) {
         rl.toggleFullscreen();
     }
+    else {
+        rl.toggleBorderlessWindowed();
+    }
     defer rl.closeWindow();
 
     rl.setTargetFPS(Common.Framerate);

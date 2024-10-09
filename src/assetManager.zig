@@ -130,12 +130,13 @@ const embeddedFile = struct {
 };
 
 const embeddedShader = struct {
-    vertex: [:0]const u8,
-    fragment: [:0]const u8,
     const VERSION = switch (builtin.os.tag) {
         .linux => "#version 330",
         else => "",
     };
+    
+    vertex: [:0]const u8,
+    fragment: [:0]const u8,
 
     pub fn init(comptime vertex: []const u8, comptime fragment: []const u8) embeddedShader {
         return .{
