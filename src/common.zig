@@ -19,6 +19,7 @@ pub const StartScene: Scene = switch (builtin.mode) {
     else => Scene.Intro,
 };
 
+//Change allocator used based on Debug or Release builds
 var allocatorType: blk: {
     switch (builtin.mode) {
         .Debug => break :blk std.heap.GeneralPurposeAllocator(.{}),
@@ -63,7 +64,6 @@ pub fn initVariables() void {
             rl.setWindowSize(Width, Height);
         },
     }
-
 }
 
 pub fn scale(n: anytype, a: anytype, b: anytype, x: anytype, z: anytype) @TypeOf(n, a, b, x, z) {
@@ -79,40 +79,44 @@ pub fn fade(t: anytype, fade_in: anytype, sustain: anytype, fade_out: anytype) @
     return @min(new_fade_in, new_fade_out);
 }
 
+var debugPos: i32 = 0;
 pub inline fn drawDebugInfo(camera: *rl.Camera3D) !void {
-    try drawFPS(0);
-    drawVersionNumber(1);
-    try drawPosition(camera, 2);
+    drawVersionNumber();
+    try drawFPS();
+    try drawPosition(camera);
+    debugPos = 0;
 }
 
-pub inline fn drawVersionNumber(pos: usize) void {
+pub inline fn drawVersionNumber() void {
     rl.drawText(
-        Version,
+        "VERSION: " ++ Version,
         0,
-        pos * NormalFontSize,
+        debugPos * NormalFontSize,
         NormalFontSize,
         rl.Color.white,
     );
+    debugPos += 1;
 }
 
-pub inline fn drawFPS(pos: usize) !void {
+pub inline fn drawFPS() !void {
     var buf: [10]u8 = undefined;
     const fps = rl.getFPS();
     const string = try std.fmt.bufPrintZ(&buf, "FPS: {d}", .{fps});
     rl.drawText(
         string,
         0,
-        pos * NormalFontSize,
+        debugPos * NormalFontSize,
         NormalFontSize,
         rl.Color.white,
     );
+    debugPos += 1;
 }
 
-pub inline fn drawPosition(camera: *rl.Camera3D, pos: usize) !void {
+pub inline fn drawPosition(camera: *rl.Camera3D) !void {
     var buffer: [64]u8 = undefined;
     const string = try std.fmt.bufPrintZ(
         &buffer,
-        "X: {d}\tY: {d}\tZ: {d}",
+        "PLAYER POS: X: {d}\tY: {d}\tZ: {d}",
         .{
             @trunc(camera.position.x),
             @trunc(camera.position.y),
@@ -122,31 +126,32 @@ pub inline fn drawPosition(camera: *rl.Camera3D, pos: usize) !void {
     rl.drawText(
         string,
         0,
-        pos*NormalFontSize,
+        debugPos * NormalFontSize,
         20,
         rl.Color.white,
     );
+    debugPos += 1;
 }
 
-pub inline fn initDrawLoadingMessage(name: [:0]const u8,count: *const usize) !void {
-        rl.beginDrawing();
-        defer rl.endDrawing();
-        rl.clearBackground(rl.Color.black);
+pub inline fn initDrawLoadingMessage(name: [:0]const u8, count: *const usize) !void {
+    rl.beginDrawing();
+    defer rl.endDrawing();
+    rl.clearBackground(rl.Color.black);
 
-        var buffer: [64]u8 = undefined;
-        const string = try std.fmt.bufPrintZ(
-            &buffer,
-            "[ {d} ] Loading {s}",
-            .{
-                count.*,
-                name,
-            },
-        );
-        rl.drawText(
-            string,
-            0,
-            0 * NormalFontSize,
-            20,
-            rl.Color.white,
-        );
+    var buffer: [64]u8 = undefined;
+    const string = try std.fmt.bufPrintZ(
+        &buffer,
+        "[ {d} ] Loading {s}",
+        .{
+            count.*,
+            name,
+        },
+    );
+    rl.drawText(
+        string,
+        0,
+        0 * NormalFontSize,
+        20,
+        rl.Color.white,
+    );
 }

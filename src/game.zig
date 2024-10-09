@@ -8,7 +8,7 @@ const Self = @This();
 
 pub fn Start() !void {
     rl.initWindow(Common.Width, Common.Height, Common.Title);
-    Common.initResolution();
+    Common.initVariables();
     if (Common.Fullscreen) {
         rl.toggleFullscreen();
     }

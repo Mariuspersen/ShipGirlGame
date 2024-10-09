@@ -26,7 +26,7 @@ camera: rl.Camera3D = undefined,
 time: f32,
 
 pub fn load() !Self {
-    rl.disableCursor();
+    //rl.disableCursor();
     var temp = Self{
         .skybox = try Asset.init(&Assets.skySunset, -16.0, -16.0, -16.0, &Common.Zero),
         .assets = Assets.AssetList.init(Common.allocator),
