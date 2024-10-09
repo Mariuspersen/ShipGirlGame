@@ -51,10 +51,10 @@ pub fn load() !Self {
         temp.shader,
         ambientLoc,
         &rl.Vector4.init(
-        @as(f32, @floatFromInt(ambientColor.r)) / 255.0,
-        @as(f32, @floatFromInt(ambientColor.g)) / 255.0,
-        @as(f32, @floatFromInt(ambientColor.b)) / 255.0,
-        @as(f32, @floatFromInt(ambientColor.a)) / 255.0,
+            @as(f32, @floatFromInt(ambientColor.r)) / 255.0,
+            @as(f32, @floatFromInt(ambientColor.g)) / 255.0,
+            @as(f32, @floatFromInt(ambientColor.b)) / 255.0,
+            @as(f32, @floatFromInt(ambientColor.a)) / 255.0,
         ),
         rl.ShaderUniformDataType.shader_uniform_vec4,
     );
@@ -100,6 +100,18 @@ pub fn unload(self: *Self) void {
 pub fn loop(self: *Self) !Result {
     var retValue: Result = Result.loop;
 
+    if (rl.isKeyDown(.key_left_control)) {
+        if (rl.isCursorHidden()) {
+            rl.enableCursor();
+            rl.showCursor();
+        }
+    } else {
+        if (!rl.isCursorHidden()) {
+            rl.hideCursor();
+            rl.disableCursor();
+        }
+    }
+
     switch (rl.getKeyPressed()) {
         .key_escape => {
             retValue = try Result.ok(.Quit);
@@ -109,19 +121,11 @@ pub fn loop(self: *Self) !Result {
         },
         .key_f4 => {
             self.light.enabled = if (self.light.enabled == 1) 0 else 1;
-            std.debug.print("{any}\n", .{self.light});
-            std.debug.print("{any}\n", .{self.shader});
-            std.debug.print("{d}\n", .{Light.MAX_LIGHTS});
         },
         .key_f11 => {
             rl.toggleFullscreen();
         },
-        .key_left_control => {
-            rl.enableCursor();
-        },
-        .key_null => {
-            //if (rl.isCursorOnScreen()) rl.disableCursor();
-        },
+        .key_null => {},
         else => |k| {
             if (self.debug) {
                 std.debug.print("INFO: KEYPRESS: {any}\n", .{k});
@@ -159,7 +163,7 @@ pub fn loop(self: *Self) !Result {
         try Common.drawDebugInfo(&self.camera);
     }
 
-    if(Common.drawCloseBtn()) {
+    if (Common.drawCloseBtn()) {
         retValue = try Result.ok(.MainMenu);
     }
 
