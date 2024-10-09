@@ -24,6 +24,7 @@
 //*
 //**********************************************************************************************/
 const rl = @import("raylib");
+const std = @import("std");
 //----------------------------------------------------------------------------------
 // Constants
 //----------------------------------------------------------------------------------
@@ -35,13 +36,20 @@ pub const POINT: i32 = 1;
 //TODO: I would love to count the number of function calls to CreateLight
 // and add the define to the shader instead ...
 pub const MAX_LIGHTS = blk: {
-    const std = @import("std");
     const Assets = @import("assetManager.zig");
     const needle = "MAX_LIGHTS";
-    const i = std.mem.indexOf(u8, Assets.lighting.fragment, needle) orelse unreachable;
-    const j = std.mem.indexOf(u8, Assets.lighting.fragment[i..], "\n") orelse unreachable;
-    const number = std.mem.trim(u8, Assets.lighting.fragment[i + needle.len .. i + j], "\n\r ");
-    break :blk std.fmt.parseInt(usize, number, 10) catch unreachable;
+
+    const shader = Assets.lighting.fragment;
+    const i = std.mem.indexOf(u8, shader, needle) 
+    orelse @compileError("Unable to find " ++ needle ++ "in file\n\n" ++ shader);
+
+    const j = std.mem.indexOf(u8, shader[i..], "\n") 
+    orelse @compileError("Unable to find end of the line in file\n\n" ++ shader);
+
+    const number = std.mem.trim(u8, shader[i + needle.len .. i + j], "\n\r ");
+
+    break :blk std.fmt.parseInt(usize, number, 10)
+    catch |err| @compileError("Unable to parse int:" ++ err);
 };
 
 pub var LIGHT_COUNT: usize = 0;
@@ -64,6 +72,8 @@ attenuationLoc: i32 = -1,
 
 // Create a light and get shader locations
 pub fn CreateLight(lightType: i32, position: rl.Vector3, target: rl.Vector3, color: rl.Color, shader: rl.Shader) Self {
+    var buf: [64]u8 = undefined;
+    
     var light = Self{
         .enabled = 1,
         .lightType = lightType,
