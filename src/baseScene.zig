@@ -15,7 +15,7 @@ const Self = @This();
 const Asset = Assets.Asset;
 
 skybox: Asset,
-light: Light = undefined,
+lights: [Light.MAX_LIGHTS]Light,
 shader: rl.Shader,
 assets: Assets.AssetList,
 debug: bool = switch (builtin.mode) {
@@ -33,6 +33,7 @@ pub fn load() !Self {
         .camera = std.mem.zeroInit(rl.Camera3D, .{}),
         .time = 0.0,
         .shader = Assets.lighting.loadShader(),
+        .lights = std.mem.zeroes([Light.MAX_LIGHTS]Light),
     };
 
     temp.shader.locs[@intFromEnum(rl.ShaderLocationIndex.shader_loc_vector_view)] = rl.getShaderLocation(
@@ -59,11 +60,19 @@ pub fn load() !Self {
         rl.ShaderUniformDataType.shader_uniform_vec4,
     );
 
-    temp.light = Light.CreateLight(
+    temp.lights[Light.LIGHT_COUNT] = try Light.CreateLight(
         Light.DIRECTIONAL,
         rl.Vector3.init(1.0, 1.0, 1.0),
         rl.Vector3.init(0.0, 0.0, 0.0),
         rl.Color.fromInt(0xfde198ff),
+        temp.shader,
+    );
+
+    temp.lights[Light.LIGHT_COUNT] = try Light.CreateLight(
+        Light.POINT,
+        rl.Vector3.init(0.8, 7.1, 6.0),
+        rl.Vector3.init(0.0, 7.0, 7.0),
+        rl.Color.fromInt(0x00110011),
         temp.shader,
     );
 
@@ -121,7 +130,9 @@ pub fn loop(self: *Self) !Result {
             self.debug = !self.debug;
         },
         .key_f4 => {
-            self.light.enabled = if (self.light.enabled == 1) 0 else 1;
+            inline for (&self.lights) |*light| {
+                light.enabled = if (light.enabled == 1) 0 else 1;
+            }
         },
         .key_f11 => {
            Common.toggleFullscreen();
@@ -135,13 +146,17 @@ pub fn loop(self: *Self) !Result {
     }
     rl.clearBackground(rl.Color.gray);
     rl.updateCamera(&self.camera, .camera_free);
+    
     rl.setShaderValue(
         self.shader,
         self.shader.locs[@intFromEnum(rl.ShaderLocationIndex.shader_loc_vector_view)],
-        &[3]f32{ self.camera.position.x, self.camera.position.y, self.camera.position.z },
+        &self.camera.position,
         rl.ShaderUniformDataType.shader_uniform_vec3,
     );
-    self.light.updateLightValues(self.shader);
+
+    inline for (self.lights) |light| {
+        light.updateLightValues(self.shader);
+    }
     //Draw 3D objects
     rl.beginMode3D(self.camera);
     //Always render the skybox behind
@@ -155,6 +170,10 @@ pub fn loop(self: *Self) !Result {
         asset.applyTransformation();
     }
 
+    inline for (self.lights) |light| {
+        rl.drawSphere(light.position, 0.5, light.color);
+    }
+
     self.shader.deactivate();
     rl.drawGrid(100, 1.0);
     rl.endMode3D();
@@ -166,8 +185,6 @@ pub fn loop(self: *Self) !Result {
     if (Common.drawCloseBtn()) {
         retValue = try Result.ok(.MainMenu);
     }
-
-    
 
     return retValue;
 }

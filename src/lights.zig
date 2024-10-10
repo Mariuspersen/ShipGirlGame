@@ -31,13 +31,11 @@ const std = @import("std");
 const Self = @This();
 pub const DIRECTIONAL: i32 = 0;
 pub const POINT: i32 = 1;
-const shaderFmt = [_][]const u8{
-    "lights[{d}].enabled",
-    "lights[{d}].type",
-    "lights[0].position",
-    "lights[0].target",
-    "lights[0].color",
-};
+const enabledFmt = "lights[{d}].enabled";
+const typeFmt = "lights[{d}].type";
+const positionFmt = "lights[{d}].position";
+const targetFmt = "lights[{d}].target";
+const colorFmt = "lights[{d}].color";
 
 //Changes MAX_LIGHTS based on the defined value in the shader
 //TODO: I would love to count the number of function calls to CreateLight
@@ -74,40 +72,19 @@ colorLoc: i32 = -1,
 attenuationLoc: i32 = -1,
 
 // Create a light and get shader locations
-pub fn CreateLight(lightType: i32, position: rl.Vector3, target: rl.Vector3, color: rl.Color, shader: rl.Shader) Self {
-    var buf: [64]u8 = undefined;
-    _ = &buf;
+pub fn CreateLight(lightType: i32, position: rl.Vector3, target: rl.Vector3, color: rl.Color, shader: rl.Shader) !Self {
     var light = Self{
         .enabled = 1,
         .lightType = lightType,
         .position = position,
         .target = target,
         .color = color,
-        .enabledLoc = rl.getShaderLocation(
-            shader,
-            "lights[0].enabled",
-        ),
-        .typeLoc = rl.getShaderLocation(
-            shader,
-            "lights[0].type",
-        ),
-        .positionLoc = rl.getShaderLocation(
-            shader,
-            "lights[0].position",
-        ),
-        .targetLoc = rl.getShaderLocation(
-            shader,
-            "lights[0].target",
-        ),
-        .colorLoc = rl.getShaderLocation(
-            shader,
-            "lights[0].color",
-        ),
+        .enabledLoc = try getShaderLightPos(enabledFmt,&shader),
+        .typeLoc = try getShaderLightPos(typeFmt,&shader),
+        .positionLoc = try getShaderLightPos(positionFmt,&shader),
+        .targetLoc = try getShaderLightPos(targetFmt,&shader),
+        .colorLoc = try getShaderLightPos(colorFmt, &shader),
     };
-
-    inline for (@typeInfo(Self).Struct.fields) |field| {
-        @compileLog(field);
-    }
 
     light.updateLightValues(shader);
     LIGHT_COUNT += 1;
@@ -150,5 +127,14 @@ pub fn updateLightValues(light: *const Self, shader: rl.Shader) void {
             @as(f32, @floatFromInt(light.color.a)) / 255.0,
         },
         rl.ShaderUniformDataType.shader_uniform_vec4,
+    );
+}
+
+fn getShaderLightPos(comptime fmt: []const u8, shader: *const rl.Shader) !i32 {
+    var buf: [64]u8 = undefined;
+    const string = try std.fmt.bufPrintZ(&buf, fmt, .{LIGHT_COUNT});
+    return rl.getShaderLocation(
+        shader.*,
+        string,
     );
 }
