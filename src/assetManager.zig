@@ -149,7 +149,6 @@ const embeddedShader = struct {
     pub fn loadShader(self: *const embeddedShader) rl.Shader {
         return rl.loadShaderFromMemory(self.vertex, self.fragment);
     }
-
 };
 //Textures
 pub const battleOcean = embeddedFile.init("assets/BattleOcean.png");
@@ -165,23 +164,31 @@ pub const draug = embeddedGLB.init("assets/KNM Draug.glb");
 //Shaders
 pub const lighting = embeddedShader.init("shaders/directional.vs", "shaders/directional.fs");
 
+//Since Raylib can't load models from memory,
+//Lets do this unreadable mess
 pub fn loadDataCallback(filename: [*c]const u8, size: [*c]c_uint) callconv(.C) [*c]u8 {
     const len = std.mem.len(filename);
-    return loadData(filename[0 .. len :0], size) catch null;
+    return loadData(filename[0..len :0], size) catch null;
 }
 
+//This function will load models from the stack and everything else from files
 pub fn loadData(filename: [:0]const u8, size: [*c]c_uint) ![*]u8 {
+    //Read all the variable declerations in this zig file
     inline for (@typeInfo(@This()).Struct.decls) |decl| {
-        if (std.mem.eql(u8, filename, decl.name)) {
-            const field = @field(@This(), decl.name);
-            if (@TypeOf(field) == embeddedGLB) {
-                size.* = field.data.len;
-                const data: [*]u8 = @ptrCast(rl.memAlloc(field.data.len));
-                @memcpy(data, &field.data);
-                return data;
-            }
+        //Get the current field
+        const field = @field(@This(), decl.name);
+        //If it is a embedded GLB model and the filename matches,
+        //set the deferences size pointer to the length of the data
+        //And then copy the model data to the newly allocated space
+        if (@TypeOf(field) == embeddedGLB and std.mem.eql(u8, filename, field.name)) {
+            size.* = field.data.len;
+            const data: [*]u8 = @ptrCast(rl.memAlloc(field.data.len));
+            @memcpy(data, field.data);
+            return data;
         }
     }
+
+    //Otherwise load from file
     const f = try std.fs.cwd().openFileZ(filename, .{});
     const stat = try f.stat();
     size.* = @intCast(stat.size);
@@ -189,4 +196,3 @@ pub fn loadData(filename: [:0]const u8, size: [*c]c_uint) ![*]u8 {
     _ = try f.readAll(data[0..stat.size]);
     return data;
 }
-
