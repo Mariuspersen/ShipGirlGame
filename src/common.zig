@@ -6,6 +6,7 @@ const rg = @import("raygui");
 const math = std.math;
 
 const Scene = @import("sceneList.zig").sceneList;
+const Assets = @import("assetManager.zig");
 
 pub var Width: i32 = 1280;
 pub var Height: i32 = 720;
@@ -73,6 +74,7 @@ pub fn initVariables() void {
         },
     }
     rl.setWindowState(windowConfigFlags);
+    rl.setLoadFileDataCallback(Assets.loadDataCallback);
 }
 
 pub fn scale(n: anytype, a: anytype, b: anytype, x: anytype, z: anytype) @TypeOf(n, a, b, x, z) {

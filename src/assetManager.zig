@@ -94,15 +94,16 @@ const embeddedGLB = struct {
         };
     }
     pub fn getModel(self: *const embeddedGLB) !rl.Model {
-        const gltfFile = try fs.cwd().createFile(self.name, .{});
-        defer gltfFile.close();
-        try gltfFile.writeAll(self.data);
+        //const gltfFile = try fs.cwd().createFile(self.name, .{});
+        //defer gltfFile.close();
+        //try gltfFile.writeAll(self.data);
         return rl.loadModel(self.name);
     }
     pub fn deleteRemnants(self: *const embeddedGLB) void {
-        fs.cwd().deleteFile(self.name) catch |err| {
-            std.debug.print("INFO: ASSET: Unable to delete {s} because of {any}\n", .{ self.name, err });
-        };
+        _ = &self;
+        //fs.cwd().deleteFile(self.name) catch |err| {
+        //    std.debug.print("INFO: ASSET: Unable to delete {s} because of {any}\n", .{ self.name, err });
+        //};
     }
 };
 
@@ -134,7 +135,7 @@ const embeddedShader = struct {
         .linux => "#version 330",
         else => "",
     };
-    
+
     vertex: [:0]const u8,
     fragment: [:0]const u8,
 
@@ -163,3 +164,29 @@ pub const draug = embeddedGLB.init("assets/KNM Draug.glb");
 
 //Shaders
 pub const lighting = embeddedShader.init("shaders/directional.vs", "shaders/directional.fs");
+
+pub fn loadDataCallback(filename: [*c]const u8, size: [*c]c_uint) callconv(.C) [*c]u8 {
+    const len = std.mem.len(filename);
+    return loadData(filename[0 .. len :0], size) catch null;
+}
+
+pub fn loadData(filename: [:0]const u8, size: [*c]c_uint) ![*]u8 {
+    inline for (@typeInfo(@This()).Struct.decls) |decl| {
+        if (std.mem.eql(u8, filename, decl.name)) {
+            const field = @field(@This(), decl.name);
+            if (@TypeOf(field) == embeddedGLB) {
+                size.* = field.data.len;
+                const data: [*]u8 = @ptrCast(rl.memAlloc(field.data.len));
+                @memcpy(data, &field.data);
+                return data;
+            }
+        }
+    }
+    const f = try std.fs.cwd().openFileZ(filename, .{});
+    const stat = try f.stat();
+    size.* = @intCast(stat.size);
+    var data: [*]u8 = @ptrCast(rl.memAlloc(@intCast(stat.size)));
+    _ = try f.readAll(data[0..stat.size]);
+    return data;
+}
+

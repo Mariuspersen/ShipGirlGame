@@ -96,6 +96,7 @@ pub fn load() !Self {
     temp.camera.up = rl.Vector3.init(0.0, 1.0, 0.0);
     temp.camera.fovy = 45.0;
     temp.camera.projection = .camera_perspective;
+
     return temp;
 }
 
@@ -146,7 +147,7 @@ pub fn loop(self: *Self) !Result {
     }
     rl.clearBackground(rl.Color.gray);
     rl.updateCamera(&self.camera, .camera_free);
-    
+
     rl.setShaderValue(
         self.shader,
         self.shader.locs[@intFromEnum(rl.ShaderLocationIndex.shader_loc_vector_view)],

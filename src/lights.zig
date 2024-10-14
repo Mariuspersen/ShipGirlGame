@@ -43,14 +43,10 @@ const colorFmt = "lights[{d}].color";
 pub const MAX_LIGHTS = blk: {
     const Assets = @import("assetManager.zig");
     const needle = "MAX_LIGHTS";
-
     const shader = Assets.lighting.fragment;
     const i = std.mem.indexOf(u8, shader, needle) orelse @compileError("Unable to find " ++ needle ++ "in file\n\n" ++ shader);
-
     const j = std.mem.indexOf(u8, shader[i..], "\n") orelse @compileError("Unable to find end of the line in file\n\n" ++ shader);
-
     const number = std.mem.trim(u8, shader[i + needle.len .. i + j], "\n\r ");
-
     break :blk std.fmt.parseInt(usize, number, 10) catch |err| @compileError("Unable to parse int:" ++ err);
 };
 
@@ -65,10 +61,10 @@ color: rl.Color,
 attenuation: f32 = 0.0,
 // Shader locations
 enabledLoc: i32,
-typeLoc: i32 = -1,
-positionLoc: i32 = -1,
-targetLoc: i32 = -1,
-colorLoc: i32 = -1,
+typeLoc: i32,
+positionLoc: i32,
+targetLoc: i32,
+colorLoc: i32,
 attenuationLoc: i32 = -1,
 
 // Create a light and get shader locations
