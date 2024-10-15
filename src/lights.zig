@@ -86,6 +86,12 @@ pub fn CreateLight(lightType: i32, position: rl.Vector3, target: rl.Vector3, col
     LIGHT_COUNT += 1;
     return light;
 }
+
+pub fn DestroyLight(light: *const Self) void {
+    _ = light;
+    LIGHT_COUNT -= 1;
+}
+
 //// Send light properties to shader
 //// NOTE: Light shader locations should be available
 pub fn updateLightValues(light: *const Self, shader: rl.Shader) void {

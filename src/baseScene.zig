@@ -104,14 +104,17 @@ pub fn unload(self: *Self) void {
     rl.enableCursor();
     self.skybox.unloadAndDelete();
     self.assets.deinit();
+    for (self.lights) |light| {
+        light.DestroyLight();
+    }    
     rl.unloadShader(self.shader);
 }
 
 pub fn loop(self: *Self) !Result {
     var retValue: Result = Result.loop;
-
+    const ctrlDown = rl.isKeyDown(.key_left_control);
     //TODO: Make keyboard handling into a manager to handle input universally
-    if (rl.isKeyDown(.key_left_control)) {
+    if (ctrlDown) {
         if (rl.isCursorHidden()) {
             rl.enableCursor();
             rl.showCursor();
@@ -146,8 +149,11 @@ pub fn loop(self: *Self) !Result {
         },
     }
     rl.clearBackground(rl.Color.gray);
-    rl.updateCamera(&self.camera, .camera_free);
 
+    if(!ctrlDown) {
+        rl.updateCamera(&self.camera, .camera_free);
+    }
+    
     rl.setShaderValue(
         self.shader,
         self.shader.locs[@intFromEnum(rl.ShaderLocationIndex.shader_loc_vector_view)],
