@@ -1,17 +1,21 @@
+//Imports
 const std = @import("std");
 const builtin = @import("builtin");
 const rl = @import("raylib");
 const rg = @import("raygui");
-
 const math = std.math;
-
 const Scene = @import("sceneList.zig").sceneList;
 const Assets = @import("assetManager.zig");
-
+//Public Variables
 pub var Width: i32 = 1280;
 pub var Height: i32 = 720;
 pub var Framerate: i32 = 60;
 pub var Fullscreen: bool = false;
+pub var Allocator: std.mem.Allocator = undefined;
+pub var UiCloseText: rl.Texture2D = undefined;
+pub var UIMaximizeText: rl.Texture2D = undefined;
+pub var UIMinimizeText: rl.Texture2D = undefined;
+//Public Constants
 pub const Title = "Project SHIP";
 pub const MenuTitleFontSize = 40;
 pub const NormalFontSize = 20;
@@ -41,10 +45,8 @@ var allocatorType: blk: {
     }
 };
 
-pub var allocator: std.mem.Allocator = undefined;
-
 pub fn initAllocator() void {
-    allocator = allocatorType.allocator();
+    Allocator = allocatorType.allocator();
 }
 
 pub fn deinitAllocator() void {
@@ -73,8 +75,28 @@ pub fn initVariables() void {
             rl.setWindowSize(Width, Height);
         },
     }
+    initUiButtons();
     rl.setWindowState(windowConfigFlags);
     rl.setLoadFileDataCallback(Assets.loadDataCallback);
+}
+
+pub fn deinitVariables() void {
+    UiCloseText.unload();
+    UIMaximizeText.unload();
+    UIMinimizeText.unload();
+}
+
+fn initUiButtons() void {
+    var close = Assets.barIcons.getImage();
+    var max = Assets.barIcons.getImage();
+    var min = Assets.barIcons.getImage();
+    const tileWidth: f32 = @as(f32, @floatFromInt(min.width)) / 3.0;
+    min.crop(rl.Rectangle.init(0, 0, tileWidth, @floatFromInt(min.height)));
+    max.crop(rl.Rectangle.init(tileWidth, 0, tileWidth, @floatFromInt(min.height)));
+    close.crop(rl.Rectangle.init(tileWidth * 2, 0, tileWidth, @floatFromInt(min.height)));
+    UiCloseText = rl.loadTextureFromImage(close);
+    UIMaximizeText = rl.loadTextureFromImage(max);
+    UIMinimizeText = rl.loadTextureFromImage(min);
 }
 
 pub fn scale(n: anytype, a: anytype, b: anytype, x: anytype, z: anytype) @TypeOf(n, a, b, x, z) {
@@ -113,7 +135,7 @@ pub inline fn drawVersionNumber() void {
 pub inline fn drawFPS() !void {
     const fps = rl.getFPS();
     const frametime = rl.getFrameTime();
-    const string = try std.fmt.bufPrintZ(&debugBuffer, "FPS: {d} Frametime: {d:>4}", .{fps,frametime});
+    const string = try std.fmt.bufPrintZ(&debugBuffer, "FPS: {d} Frametime: {d:>4}", .{ fps, frametime });
     rl.drawText(
         string,
         0,
@@ -125,7 +147,6 @@ pub inline fn drawFPS() !void {
 }
 
 pub inline fn drawPosition(camera: *rl.Camera3D) !void {
-    
     const string = try std.fmt.bufPrintZ(
         &debugBuffer,
         "PLAYER POS: X: {d}\tY: {d}\tZ: {d}",
@@ -168,12 +189,62 @@ pub inline fn initDrawLoadingMessage(name: [:0]const u8, count: *const usize) !v
 }
 
 pub inline fn drawCloseBtn() bool {
+    const fWidth: f32 = @floatFromInt(Width);
     const size = 0.02;
-    const scaled = @as(f32, @floatFromInt(Width)) * size;
-    const close_btn = rl.Rectangle.init( @as(f32, @floatFromInt(Width)) - scaled - 5, 5, scaled, scaled);
-    const pressed = rg.guiButton(close_btn, "X");
-    return pressed == 1;
+    const scaled = fWidth * size;
+    const closeBtn = Button.init(
+        fWidth - scaled - 5,
+        5,
+        @floatFromInt(UiCloseText.width),
+        @floatFromInt(UiCloseText.height),
+        UiCloseText,
+    );
+    closeBtn.draw();
+    return closeBtn.pressed();
 }
+
+const Button = struct {
+    location: rl.Vector2,
+    size: rl.Vector2,
+    icon: rl.Texture2D,
+
+    pub fn init(x: f32, y: f32, width: f32, height: f32, icon: rl.Texture2D) Button {
+        return .{
+            .location = rl.Vector2.init(x, y),
+            .size = rl.Vector2.init(width, height),
+            .icon = icon,
+        };
+    }
+
+    pub fn draw(self: *const Button) void {
+        const color = if(self.hover()) rl.Color.red else rl.Color.white;
+        rl.drawRectangle(
+            @intFromFloat(self.location.x),
+            @intFromFloat(self.location.y),
+            @intFromFloat(self.size.x),
+            @intFromFloat(self.size.y),
+            rl.Color.fromInt(0x00000011),
+        );
+        self.icon.draw(
+            @intFromFloat(self.location.x),
+            @intFromFloat(self.location.y),
+            color,
+        );
+    }
+
+    pub fn pressed(self: *const Button) bool {
+        return rl.isMouseButtonReleased(.mouse_button_left) and self.hover();
+    }
+
+    inline fn hover(self: *const Button) bool {
+        const mousePosition = rl.getMousePosition();
+        return 
+                mousePosition.x > self.location.x 
+            and mousePosition.y > self.location.y 
+            and mousePosition.x < self.location.x + self.size.x 
+            and mousePosition.y < self.location.y + self.size.y;
+    }
+};
 
 pub inline fn toggleFullscreen() void {
     rl.toggleBorderlessWindowed();

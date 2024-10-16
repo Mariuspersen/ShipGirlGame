@@ -29,7 +29,7 @@ pub fn load() !Self {
     rl.disableCursor();
     var temp = Self{
         .skybox = try Asset.init(&Assets.skySunset, -16.0, -16.0, -16.0, &Common.Zero),
-        .assets = Assets.AssetList.init(Common.allocator),
+        .assets = Assets.AssetList.init(Common.Allocator),
         .camera = std.mem.zeroInit(rl.Camera3D, .{}),
         .time = 0.0,
         .shader = Assets.lighting.loadShader(),
@@ -153,7 +153,7 @@ pub fn loop(self: *Self) !Result {
     if(!ctrlDown) {
         rl.updateCamera(&self.camera, .camera_free);
     }
-    
+
     rl.setShaderValue(
         self.shader,
         self.shader.locs[@intFromEnum(rl.ShaderLocationIndex.shader_loc_vector_view)],

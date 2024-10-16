@@ -152,6 +152,7 @@ const embeddedShader = struct {
 };
 //Textures
 pub const battleOcean = embeddedFile.init("assets/BattleOcean.png");
+pub const barIcons = embeddedFile.init("assets/barIcons.png");
 
 //Models
 pub const skySunset = embeddedGLB.init("assets/skybox.glb");
