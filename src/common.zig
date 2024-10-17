@@ -6,6 +6,7 @@ const rg = @import("raygui");
 const math = std.math;
 const Scene = @import("sceneList.zig").sceneList;
 const Assets = @import("assetManager.zig");
+const Button = @import("button.zig");
 //Public Variables
 pub var Width: i32 = 1280;
 pub var Height: i32 = 720;
@@ -15,6 +16,10 @@ pub var Allocator: std.mem.Allocator = undefined;
 pub var UiCloseText: rl.Texture2D = undefined;
 pub var UIMaximizeText: rl.Texture2D = undefined;
 pub var UIMinimizeText: rl.Texture2D = undefined;
+pub var UICloseBtn: Button = undefined;
+pub var UIMaximizeBtn: Button = undefined;
+pub var UIMinimizeBtn: Button = undefined;
+
 //Public Constants
 pub const Title = "Project SHIP";
 pub const MenuTitleFontSize = 40;
@@ -97,6 +102,34 @@ fn initUiButtons() void {
     UiCloseText = rl.loadTextureFromImage(close);
     UIMaximizeText = rl.loadTextureFromImage(max);
     UIMinimizeText = rl.loadTextureFromImage(min);
+    UICloseBtn = Button.init(
+        (@as(f32, @floatFromInt(Width)) - 46) / @as(f32, @floatFromInt(Width)),
+        0.0,
+        46,
+        46,
+        true,
+        false,
+        &UiCloseText,
+    );
+    UICloseBtn.colorHover = rl.Color.red;
+    UIMaximizeBtn = Button.init(
+        (@as(f32, @floatFromInt(Width)) - (46*2)) / @as(f32, @floatFromInt(Width)),
+        0.0,
+        46,
+        46,
+        true,
+        false,
+        &UIMaximizeText,
+    );
+    UIMinimizeBtn = Button.init(
+        (@as(f32, @floatFromInt(Width)) - (46*3)) / @as(f32, @floatFromInt(Width)),
+        0.0,
+        46,
+        46,
+        true,
+        false,
+        &UIMinimizeText,
+    );
 }
 
 pub fn scale(n: anytype, a: anytype, b: anytype, x: anytype, z: anytype) @TypeOf(n, a, b, x, z) {
@@ -189,62 +222,26 @@ pub inline fn initDrawLoadingMessage(name: [:0]const u8, count: *const usize) !v
 }
 
 pub inline fn drawCloseBtn() bool {
-    const fWidth: f32 = @floatFromInt(Width);
-    const size = 0.02;
-    const scaled = fWidth * size;
-    const closeBtn = Button.init(
-        fWidth - scaled - 5,
-        5,
-        @floatFromInt(UiCloseText.width),
-        @floatFromInt(UiCloseText.height),
-        UiCloseText,
-    );
-    closeBtn.draw();
-    return closeBtn.pressed();
+    UICloseBtn.draw();
+    UIMaximizeBtn.draw();
+    UIMinimizeBtn.draw();
+    if (UIMinimizeBtn.pressed()) {
+        if (rl.isWindowMinimized()) {
+            rl.restoreWindow();
+        } else {
+            rl.minimizeWindow();
+        }
+    }
+    if (UIMaximizeBtn.pressed()) {
+        if (rl.isWindowMaximized()) {
+            rl.restoreWindow();
+        } else {
+            rl.maximizeWindow();
+        }
+        checkWindowResized();
+    }
+    return UICloseBtn.pressed();
 }
-
-const Button = struct {
-    location: rl.Vector2,
-    size: rl.Vector2,
-    icon: rl.Texture2D,
-
-    pub fn init(x: f32, y: f32, width: f32, height: f32, icon: rl.Texture2D) Button {
-        return .{
-            .location = rl.Vector2.init(x, y),
-            .size = rl.Vector2.init(width, height),
-            .icon = icon,
-        };
-    }
-
-    pub fn draw(self: *const Button) void {
-        const color = if(self.hover()) rl.Color.red else rl.Color.white;
-        rl.drawRectangle(
-            @intFromFloat(self.location.x),
-            @intFromFloat(self.location.y),
-            @intFromFloat(self.size.x),
-            @intFromFloat(self.size.y),
-            rl.Color.fromInt(0x00000011),
-        );
-        self.icon.draw(
-            @intFromFloat(self.location.x),
-            @intFromFloat(self.location.y),
-            color,
-        );
-    }
-
-    pub fn pressed(self: *const Button) bool {
-        return rl.isMouseButtonReleased(.mouse_button_left) and self.hover();
-    }
-
-    inline fn hover(self: *const Button) bool {
-        const mousePosition = rl.getMousePosition();
-        return 
-                mousePosition.x > self.location.x 
-            and mousePosition.y > self.location.y 
-            and mousePosition.x < self.location.x + self.size.x 
-            and mousePosition.y < self.location.y + self.size.y;
-    }
-};
 
 pub inline fn toggleFullscreen() void {
     rl.toggleBorderlessWindowed();
@@ -256,5 +253,23 @@ pub inline fn checkWindowResized() void {
     if (rl.isWindowResized()) {
         Width = rl.getScreenWidth();
         Height = rl.getScreenHeight();
+        UICloseBtn.modifyFactor(
+            (@as(f32, @floatFromInt(Width)) - UICloseBtn.size.real.x) / @as(f32, @floatFromInt(Width)),
+            null,
+            null,
+            null,
+        );
+        UIMaximizeBtn.modifyFactor(
+            (@as(f32, @floatFromInt(Width)) - UIMaximizeBtn.size.real.x*2) / @as(f32, @floatFromInt(Width)),
+            null,
+            null,
+            null,
+        );
+        UIMinimizeBtn.modifyFactor(
+            (@as(f32, @floatFromInt(Width)) - UIMaximizeBtn.size.real.x*3) / @as(f32, @floatFromInt(Width)),
+            null,
+            null,
+            null,
+        );
     }
 }
