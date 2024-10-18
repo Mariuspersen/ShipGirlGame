@@ -29,6 +29,7 @@ pub fn initAllocator() void {
 }
 
 pub fn deinitAllocator() void {
+    allocationMap.deinit();
     switch (builtin.mode) {
         .Debug => _ = {
             _ = allocatorType.detectLeaks();
@@ -38,11 +39,6 @@ pub fn deinitAllocator() void {
             allocatorType.deinit();
         },
     }
-    var it = allocationMap.iterator();
-    while (it.next()) |e| {
-        rlFree(@ptrFromInt(e.key_ptr.*));
-    }
-    allocationMap.deinit();
 }
 
 export fn rlMalloc(size: usize) callconv(.C) ?*anyopaque {
@@ -88,7 +84,8 @@ export fn rlRealloc(ptr: ?*anyopaque, size: usize) callconv(.C) ?*anyopaque {
 
     if (allocationMap.fetchRemove(@intFromPtr(p))) |key| {
         const old: []u8 = @as([*]u8, @ptrCast(p))[0..key.value];
-        const new = Allocator.realloc(old, size) catch @panic("Allocator: unable to reallocate");
+        const new = Allocator.realloc(old, size) catch
+            @panic("Allocator: unable to reallocate");
 
         allocationMap.put(
             @intFromPtr(new.ptr),
