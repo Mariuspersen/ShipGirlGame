@@ -66,6 +66,9 @@ fn initUiButtons() void {
     var close = Assets.barIcons.getImage();
     var max = Assets.barIcons.getImage();
     var min = Assets.barIcons.getImage();
+    defer close.unload();
+    defer max.unload();
+    defer min.unload();
     const tileWidth: f32 = @as(f32, @floatFromInt(min.width)) / 3.0;
     min.crop(rl.Rectangle.init(0, 0, tileWidth, @floatFromInt(min.height)));
     max.crop(rl.Rectangle.init(tileWidth, 0, tileWidth, @floatFromInt(min.height)));

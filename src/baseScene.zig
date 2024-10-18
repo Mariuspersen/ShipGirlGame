@@ -27,7 +27,7 @@ camera: rl.Camera3D = undefined,
 time: f32,
 
 pub fn load() !Self {
-    rl.disableCursor();
+    //rl.disableCursor();
     var temp = Self{
         .skybox = try Asset.init(&Assets.skySunset, -16.0, -16.0, -16.0, &Common.Zero),
         .assets = Assets.AssetList.init(Memory.Allocator),
@@ -107,7 +107,7 @@ pub fn unload(self: *Self) void {
     self.assets.deinit();
     for (self.lights) |light| {
         light.DestroyLight();
-    }    
+    }
     rl.unloadShader(self.shader);
 }
 
@@ -140,7 +140,7 @@ pub fn loop(self: *Self) !Result {
             }
         },
         .key_f11 => {
-           Common.toggleFullscreen();
+            Common.toggleFullscreen();
         },
         .key_null => {},
         else => |k| {
@@ -151,7 +151,7 @@ pub fn loop(self: *Self) !Result {
     }
     rl.clearBackground(rl.Color.gray);
 
-    if(!ctrlDown) {
+    if (!ctrlDown) {
         rl.updateCamera(&self.camera, .camera_free);
     }
 

@@ -1,9 +1,14 @@
+//Imports
 const std = @import("std");
 const builtin = @import("builtin");
 const Common = @import("common.zig");
-
+const rl = @import("raylib");
+//Public Variables
 pub var Allocator: std.mem.Allocator = undefined;
-pub var allocMap: ?std.AutoHashMap(usize, usize) = null;
+//Private Constants
+const memAlign = 16;
+//Private Variables
+var allocationMap: std.AutoHashMap(usize, usize) = undefined;
 
 //Change allocator used based on Debug or Release builds
 var allocatorType: blk: {
@@ -20,7 +25,7 @@ var allocatorType: blk: {
 
 pub fn initAllocator() void {
     Allocator = allocatorType.allocator();
-    allocMap = std.AutoHashMap(usize, usize).init(Allocator);
+    allocationMap = std.AutoHashMap(usize, usize).init(Allocator);
 }
 
 pub fn deinitAllocator() void {
@@ -33,55 +38,65 @@ pub fn deinitAllocator() void {
             allocatorType.deinit();
         },
     }
+    var it = allocationMap.iterator();
+    while (it.next()) |e| {
+        rlFree(@ptrFromInt(e.key_ptr.*));
+    }
+    allocationMap.deinit();
 }
 
-export fn rlMalloc(size: c_int) callconv(.C) ?*anyopaque {
-    if (allocMap) |*map| {
-        const pointer = Allocator.alloc(u8, @intCast(size)) catch return null;
-        map.put(@intFromPtr(pointer.ptr), @intCast(size)) catch {
-            Allocator.free(pointer);
-            return null;
-        };
-        return @ptrCast(pointer.ptr);
-    }
-    else return null;
+export fn rlMalloc(size: usize) callconv(.C) ?*anyopaque {
+    const pointer = Allocator.alloc(
+        u8,
+        size,
+    ) catch @panic("Allocator: unable to allocate");
+
+    allocationMap.put(
+        @intFromPtr(pointer.ptr),
+        size,
+    ) catch @panic("allocationMap: unable to add KV pair");
+
+    return pointer.ptr;
 }
 
-export fn rlCalloc(n: c_int, size: c_int) callconv(.C) ?*anyopaque {
-    if (allocMap) |*map| {
-        const pointer = Allocator.alloc(u8, @intCast(size*n)) catch return null;
-        for (pointer) |*c| {
-            c.* = 0;
-        }
-        map.put(@intFromPtr(pointer.ptr), @intCast(size)) catch {
-            Allocator.free(pointer);
-            return null;
-        };
-        return @ptrCast(pointer.ptr);
-    }
-    else return null;
+export fn rlCalloc(n: usize, size: usize) callconv(.C) ?*anyopaque {
+    const pointer = Allocator.alloc(
+        u8,
+        size * n,
+    ) catch @panic("Allocator: unable to allocate");
+
+    @memset(pointer, 0);
+
+    allocationMap.put(
+        @intFromPtr(pointer.ptr),
+        size * n,
+    ) catch @panic("allocationMap: unable to add KV pair");
+
+    return pointer.ptr;
 }
 
 export fn rlFree(ptr: ?*anyopaque) callconv(.C) void {
-    if (ptr) |p|
-    if (allocMap) |*map|
-    if (map.fetchRemove(@intFromPtr(p))) |key| {
+    const p = ptr orelse return;
+    if (allocationMap.fetchRemove(@intFromPtr(p))) |key| {
         const mem: []u8 = @as([*]u8, @ptrCast(p))[0..key.value];
         Allocator.free(mem);
-    };
+    }
 }
 
-export fn rlRealloc(ptr: ?*anyopaque, size: c_int) callconv(.C) ?*anyopaque {
-    if (ptr) |p|
-    if (allocMap) |*map|
-    if (map.fetchRemove(@intFromPtr(p))) |key| {
-        const mem: []u8 = @as([*]u8, @ptrCast(p))[0..key.value];
-        const new = Allocator.realloc(mem, @intCast(size)) catch return null;
-        map.put(@intFromPtr(new.ptr), @intCast(size)) catch {
-            Allocator.free(new);
-            return null;
-        };
-        return @ptrCast(new.ptr);
-    };
-    return null;
+export fn rlRealloc(ptr: ?*anyopaque, size: usize) callconv(.C) ?*anyopaque {
+    var p = ptr orelse return rlMalloc(size) orelse return null;
+
+    if (allocationMap.fetchRemove(@intFromPtr(p))) |key| {
+        const old: []u8 = @as([*]u8, @ptrCast(p))[0..key.value];
+        const new = Allocator.realloc(old, size) catch @panic("Allocator: unable to reallocate");
+
+        allocationMap.put(
+            @intFromPtr(new.ptr),
+            size,
+        ) catch @panic("allocationMap: unable to add KV pair");
+
+        p = new.ptr;
+    }
+
+    return p;
 }

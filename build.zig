@@ -15,20 +15,9 @@ pub fn build(b: *std.Build) !void {
     const raylib = raylib_dep.module("raylib");
     const raygui = raylib_dep.module("raygui");
     const raylib_artifact = raylib_dep.artifact("raylib");
-    const memory = b.addObject(.{
-        .name = "rlMemory",
-        .root_source_file = b.path("src/memory.zig"),
-        .optimize = optimize,
-        .target = target,
-    });
-
-    raylib_artifact.addObject(memory);
+    
     raylib_artifact.defineCMacro("SUPPORT_FILEFORMAT_JPG", null);
     raylib_artifact.defineCMacro("CUSTOM_ALLOCATOR", null);
-    raylib_artifact.defineCMacro("RL_MALLOC(size)", "rlMalloc(size)");
-    raylib_artifact.defineCMacro("RL_CALLOC(n,size)", "rlCalloc(n,size)");
-    raylib_artifact.defineCMacro("RL_REALLOC(ptr,size)", "rlRealloc(ptr,size)");
-    raylib_artifact.defineCMacro("RL_FREE(ptr)", "rlFree(ptr)");
 
     const exe = b.addExecutable(.{
         .name = "projectboat",
@@ -36,7 +25,7 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .optimize = optimize,
     });
-    
+
     exe.linkLibrary(raylib_artifact);
     exe.root_module.addImport("raylib", raylib);
     exe.root_module.addImport("raygui", raygui);
@@ -50,7 +39,6 @@ pub fn build(b: *std.Build) !void {
     }
     const run_step = b.step("run", "Run the app");
     run_step.dependOn(&run_cmd.step);
-
 }
 
 fn gitHash(allocator: std.mem.Allocator, buffer: *[7]u8) !void {
