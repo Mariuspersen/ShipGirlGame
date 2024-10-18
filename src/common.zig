@@ -7,12 +7,12 @@ const math = std.math;
 const Scene = @import("sceneList.zig").sceneList;
 const Assets = @import("assetManager.zig");
 const Button = @import("button.zig");
+const Memory = @import("memory.zig");
 //Public Variables
 pub var Width: i32 = 1280;
 pub var Height: i32 = 720;
 pub var Framerate: i32 = 60;
 pub var Fullscreen: bool = false;
-pub var Allocator: std.mem.Allocator = undefined;
 pub var UiCloseText: rl.Texture2D = undefined;
 pub var UIMaximizeText: rl.Texture2D = undefined;
 pub var UIMinimizeText: rl.Texture2D = undefined;
@@ -36,35 +36,6 @@ pub const windowConfigFlags = rl.ConfigFlags{
     .window_undecorated = true,
     .window_always_run = true,
 };
-
-//Change allocator used based on Debug or Release builds
-var allocatorType: blk: {
-    switch (builtin.mode) {
-        .Debug => break :blk std.heap.GeneralPurposeAllocator(.{}),
-        else => break :blk std.heap.ArenaAllocator,
-    }
-} = blk: {
-    switch (builtin.mode) {
-        .Debug => break :blk std.heap.GeneralPurposeAllocator(.{}){},
-        else => break :blk std.heap.ArenaAllocator.init(std.heap.page_allocator),
-    }
-};
-
-pub fn initAllocator() void {
-    Allocator = allocatorType.allocator();
-}
-
-pub fn deinitAllocator() void {
-    switch (builtin.mode) {
-        .Debug => _ = {
-            _ = allocatorType.detectLeaks();
-            _ = allocatorType.deinit();
-        },
-        else => {
-            allocatorType.deinit();
-        },
-    }
-}
 
 pub fn initVariables() void {
     switch (builtin.mode) {

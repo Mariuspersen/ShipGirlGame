@@ -4,6 +4,7 @@ const rg = @import("raygui");
 const builtin = @import("builtin");
 
 const Common = @import("common.zig");
+const Memory = @import("memory.zig");
 const Assets = @import("assetManager.zig");
 const Colors = @import("colors.zig");
 const Result = @import("sceneList.zig").Result;
@@ -29,7 +30,7 @@ pub fn load() !Self {
     rl.disableCursor();
     var temp = Self{
         .skybox = try Asset.init(&Assets.skySunset, -16.0, -16.0, -16.0, &Common.Zero),
-        .assets = Assets.AssetList.init(Common.Allocator),
+        .assets = Assets.AssetList.init(Memory.Allocator),
         .camera = std.mem.zeroInit(rl.Camera3D, .{}),
         .time = 0.0,
         .shader = Assets.lighting.loadShader(),
