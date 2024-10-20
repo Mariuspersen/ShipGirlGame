@@ -15,9 +15,10 @@ pub fn build(b: *std.Build) !void {
     const raylib = raylib_dep.module("raylib");
     const raygui = raylib_dep.module("raygui");
     const raylib_artifact = raylib_dep.artifact("raylib");
-    
+
     raylib_artifact.defineCMacro("SUPPORT_FILEFORMAT_JPG", null);
-    raylib_artifact.defineCMacro("CUSTOM_ALLOCATOR", null);
+
+    includeHeader(&raylib_artifact.root_module, "src/memory.h");
 
     const exe = b.addExecutable(.{
         .name = "projectboat",
@@ -91,4 +92,40 @@ fn writeVersion(allocator: std.mem.Allocator) !void {
     try file.writeAll(formatted);
     try file.writeAll("-");
     try file.writeAll(&buffer);
+}
+
+fn includeHeader(m: *std.Build.Module, sub_path: []const u8) void {
+    const b = m.owner;
+    const path = std.fs.cwd().realpathAlloc(b.allocator, sub_path) catch @panic("OOM");
+    const string = b.fmt("-include{s}", .{path});
+
+    for (m.link_objects.items) |lobj| {
+        switch (lobj) {
+            .c_source_file => updateFlags(
+                std.Build.Module.CSourceFile,
+                b,
+                lobj.c_source_file,
+                string,
+            ),
+            .c_source_files => updateFlags(
+                std.Build.Module.CSourceFiles,
+                b,
+                lobj.c_source_files,
+                string,
+            ),
+            else => {},
+        }
+    }
+}
+
+fn updateFlags(T: type, b: *std.Build, c_source_file: *T, path: []u8) void {
+    if (T != std.Build.Module.CSourceFile and T != std.Build.Module.CSourceFiles) {
+        @compileError("Needs to be CSourceFile or CSourceFiles");
+    }
+    const new_flags = b.allocator.alloc([]u8, c_source_file.flags.len + 1) catch @panic("OOM");
+    for (new_flags[0..c_source_file.flags.len], c_source_file.flags) |*new_flag, old_flag| {
+        new_flag.* = b.dupe(old_flag);
+    }
+    new_flags[new_flags.len - 1] = path;
+    c_source_file.flags = new_flags;
 }

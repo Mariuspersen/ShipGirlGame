@@ -8,9 +8,6 @@ const sceneManager = @import("sceneManager.zig");
 const Self = @This();
 
 pub fn Start() !void {
-    //Game uses a different type of allocator
-    //depending on build type
-    //Release = Arena, Debug = GeneralPurposeAllocator
     Memory.initAllocator();
     defer Memory.deinitAllocator();
     

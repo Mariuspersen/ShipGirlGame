@@ -3,6 +3,7 @@ const std = @import("std");
 const builtin = @import("builtin");
 const Common = @import("common.zig");
 const rl = @import("raylib");
+
 //Public Variables
 pub var Allocator: std.mem.Allocator = undefined;
 //Private Constants
@@ -10,7 +11,9 @@ const memAlign = 16;
 //Private Variables
 var allocationMap: std.AutoHashMap(usize, usize) = undefined;
 
-//Change allocator used based on Debug or Release builds
+//Game uses a different type of allocator
+//depending on build type
+//Release = Arena, Debug = GeneralPurposeAllocator
 var allocatorType: blk: {
     switch (builtin.mode) {
         .Debug => break :blk std.heap.GeneralPurposeAllocator(.{}),
