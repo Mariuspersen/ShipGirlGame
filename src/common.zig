@@ -47,7 +47,7 @@ pub fn initVariables() void {
             Height = rl.getMonitorHeight(monitor);
             Width = rl.getMonitorWidth(monitor);
             Framerate = rl.getMonitorRefreshRate(monitor);
-            rl.toggleFullscreen();
+            toggleFullscreen();
             rl.setWindowSize(Width, Height);
         },
     }

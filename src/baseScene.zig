@@ -11,13 +11,16 @@ const Result = @import("sceneList.zig").Result;
 const Scene = @import("sceneList.zig").Scene;
 const Intro = @import("intro.zig");
 const Light = @import("lights.zig");
+const Ocean = @import("ocean.zig");
 
 const Self = @This();
 const Asset = Assets.Asset;
 
 skybox: Asset,
 lights: [Light.MAX_LIGHTS]Light,
-shader: rl.Shader,
+lightShader: rl.Shader,
+oceanShader: rl.Shader,
+ocean: Ocean = undefined,
 assets: Assets.AssetList,
 debug: bool = switch (builtin.mode) {
     .Debug => true,
@@ -33,24 +36,27 @@ pub fn load() !Self {
         .assets = Assets.AssetList.init(Memory.Allocator),
         .camera = std.mem.zeroInit(rl.Camera3D, .{}),
         .time = 0.0,
-        .shader = Assets.lighting.loadShader(),
+        .lightShader = Assets.lighting.loadShader(),
+        .oceanShader = Assets.ocean.loadShader(),
         .lights = std.mem.zeroes([Light.MAX_LIGHTS]Light),
     };
 
-    temp.shader.locs[@intFromEnum(rl.ShaderLocationIndex.shader_loc_vector_view)] = rl.getShaderLocation(
-        temp.shader,
+    temp.ocean = Ocean.init(temp.oceanShader);
+
+    temp.lightShader.locs[@intFromEnum(rl.ShaderLocationIndex.shader_loc_vector_view)] = rl.getShaderLocation(
+        temp.lightShader,
         "viewPos",
     );
 
-    temp.shader.locs[@intFromEnum(rl.ShaderLocationIndex.shader_loc_matrix_model)] = rl.getShaderLocation(
-        temp.shader,
+    temp.lightShader.locs[@intFromEnum(rl.ShaderLocationIndex.shader_loc_matrix_model)] = rl.getShaderLocation(
+        temp.lightShader,
         "matModel",
     );
 
-    const ambientLoc = rl.getShaderLocation(temp.shader, "ambient");
+    const ambientLoc = rl.getShaderLocation(temp.lightShader, "ambient");
     const ambientColor = rl.Color.fromInt(0x654801FF);
     rl.setShaderValue(
-        temp.shader,
+        temp.lightShader,
         ambientLoc,
         &rl.Vector4.init(
             @as(f32, @floatFromInt(ambientColor.r)) / 255.0,
@@ -66,7 +72,7 @@ pub fn load() !Self {
         rl.Vector3.init(1.0, 1.0, 1.0),
         rl.Vector3.init(0.0, 0.0, 0.0),
         rl.Color.fromInt(0xfde198ff),
-        temp.shader,
+        temp.lightShader,
     );
 
     temp.lights[Light.LIGHT_COUNT] = try Light.CreateLight(
@@ -74,13 +80,13 @@ pub fn load() !Self {
         rl.Vector3.init(0.8, 7.1, 6.0),
         rl.Vector3.init(0.0, 7.0, 7.0),
         rl.Color.fromInt(0x00110011),
-        temp.shader,
+        temp.lightShader,
     );
 
     try temp.assets.append(&Assets.guardHouse, -20, 19.5, -2.5);
     try temp.assets.append(&Assets.energydrink, 0.0, 7.0, 5.0);
     try temp.assets.append(&Assets.energydrink, 0.0, 7.0, 7.0);
-    try temp.assets.append(&Assets.shed, 5.0, 5.0, 5.0);
+    //try temp.assets.append(&Assets.shed, 5.0, 5.0, 5.0);
     try temp.assets.append(&Assets.draug, 30.0, 5.0, 10);
 
     temp.assets.setTransformationMatrix(&Assets.energydrink, 0, 0.0, 0.25, 0.0);
@@ -88,7 +94,7 @@ pub fn load() !Self {
 
     for (temp.assets.arrayList.items) |*asset| {
         for (0..@as(usize, @intCast(asset.model.materialCount))) |i| {
-            asset.model.materials[i].shader = temp.shader;
+            asset.model.materials[i].shader = temp.lightShader;
         }
     }
 
@@ -108,7 +114,8 @@ pub fn unload(self: *Self) void {
     for (self.lights) |light| {
         light.DestroyLight();
     }
-    rl.unloadShader(self.shader);
+    rl.unloadShader(self.lightShader);
+    rl.unloadShader(self.oceanShader);
 }
 
 pub fn loop(self: *Self) !Result {
@@ -156,21 +163,21 @@ pub fn loop(self: *Self) !Result {
     }
 
     rl.setShaderValue(
-        self.shader,
-        self.shader.locs[@intFromEnum(rl.ShaderLocationIndex.shader_loc_vector_view)],
+        self.lightShader,
+        self.lightShader.locs[@intFromEnum(rl.ShaderLocationIndex.shader_loc_vector_view)],
         &self.camera.position,
         rl.ShaderUniformDataType.shader_uniform_vec3,
     );
 
     inline for (self.lights) |light| {
-        light.updateLightValues(self.shader);
+        light.updateLightValues(self.lightShader);
     }
     //Draw 3D objects
     rl.beginMode3D(self.camera);
     //Always render the skybox behind
     self.skybox.drawSkybox(&self.camera);
     //Shadows shader
-    self.shader.activate();
+    self.lightShader.activate();
 
     //Draw objects and apply effects
     for (self.assets.arrayList.items) |*asset| {
@@ -178,11 +185,12 @@ pub fn loop(self: *Self) !Result {
         asset.applyTransformation();
     }
 
-    inline for (self.lights) |light| {
-        rl.drawSphere(light.position, 0.5, light.color);
-    }
+    self.lightShader.deactivate();
 
-    self.shader.deactivate();
+    self.ocean.update();
+    self.oceanShader.activate();
+    rl.drawPlane(rl.Vector3.zero(), rl.Vector2.init(10, 10), rl.Color.white);
+    self.oceanShader.deactivate();
     rl.drawGrid(100, 1.0);
     rl.endMode3D();
 

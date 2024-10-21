@@ -14,7 +14,6 @@ pub fn Start() !void {
     rl.initWindow(Common.Width, Common.Height, Common.Title);
     defer rl.closeWindow();
     
-
     //Variables like settings and UI textures
     Common.initVariables();
     defer Common.deinitVariables();

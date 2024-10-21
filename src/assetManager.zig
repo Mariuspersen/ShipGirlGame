@@ -164,6 +164,7 @@ pub const draug = embeddedGLB.init("assets/KNM Draug.glb");
 
 //Shaders
 pub const lighting = embeddedShader.init("shaders/directional.vs", "shaders/directional.fs");
+pub const ocean = embeddedShader.init("shaders/ocean.vs", "shaders/ocean.fs");
 
 //Since Raylib can't load models from memory,
 //Lets do this unreadable mess
