@@ -12,6 +12,9 @@ out vec2 fragTexCoord;
 out vec4 fragColor;
 
 // NOTE: Add here your custom variables
+uniform float time;
+uniform float amplitude;
+uniform float frequency;
 
 void main()
 {
@@ -19,6 +22,9 @@ void main()
     fragTexCoord = vertexTexCoord;
     fragColor = vertexColor;
 
+    vec3 newPos = vertexPosition;
+    newPos.y = amplitude * sin(vertexPosition.x - frequency * cos(time)) ;
+
     // Calculate final vertex position
-    gl_Position = mvp*vec4(vertexPosition, 1.0);
+    gl_Position = mvp*vec4(newPos, 1.0);
 }

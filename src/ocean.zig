@@ -16,17 +16,21 @@ const ShaderVariable = struct {
         };
     }
 
-    fn setVariable(self: *ShaderVariable, shader: rl.Shader, value: anytype) void {
+    pub fn setVariable(self: *ShaderVariable, shader: rl.Shader, value: anytype) void {
         rl.setShaderValue(shader, self.location, &value, self.dataType);
     }
 };
 
 shader: rl.Shader,
 time: ShaderVariable,
+amplitude: ShaderVariable,
+frequency: ShaderVariable,
 
 pub fn init(shader: rl.Shader) Self {
     return .{
         .time = ShaderVariable.init(shader, "time", .shader_uniform_float),
+        .amplitude = ShaderVariable.init(shader, "amplitude", .shader_uniform_float),
+        .frequency = ShaderVariable.init(shader, "frequency", .shader_uniform_float),
         .shader = shader,
     };
 }

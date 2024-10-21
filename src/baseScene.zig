@@ -16,6 +16,9 @@ const Ocean = @import("ocean.zig");
 const Self = @This();
 const Asset = Assets.Asset;
 
+var amp: f32 = 1;
+var freq: f32 = 1;
+
 skybox: Asset,
 lights: [Light.MAX_LIGHTS]Light,
 lightShader: rl.Shader,
@@ -42,7 +45,6 @@ pub fn load() !Self {
     };
 
     temp.ocean = Ocean.init(temp.oceanShader);
-
     temp.lightShader.locs[@intFromEnum(rl.ShaderLocationIndex.shader_loc_vector_view)] = rl.getShaderLocation(
         temp.lightShader,
         "viewPos",
@@ -187,12 +189,21 @@ pub fn loop(self: *Self) !Result {
 
     self.lightShader.deactivate();
 
+    //Ocean Stuff
     self.ocean.update();
     self.oceanShader.activate();
-    rl.drawPlane(rl.Vector3.zero(), rl.Vector2.init(10, 10), rl.Color.white);
+    rl.drawPlane(rl.Vector3.zero(), rl.Vector2.init(100, 100), rl.Color.sky_blue);
     self.oceanShader.deactivate();
+
     rl.drawGrid(100, 1.0);
     rl.endMode3D();
+
+
+    Common.drawSlider(&amp, 0, 100, 100, 46, "amp");
+    self.ocean.amplitude.setVariable(self.oceanShader, amp);
+
+    Common.drawSlider(&freq, 0, 150, 100, 46, "freq");
+    self.ocean.frequency.setVariable(self.oceanShader, freq);
 
     if (self.debug) {
         try Common.drawDebugInfo(&self.camera);
