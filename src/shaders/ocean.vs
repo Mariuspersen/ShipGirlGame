@@ -23,7 +23,7 @@ void main()
     fragColor = vertexColor;
 
     vec3 newPos = vertexPosition;
-    newPos.y = amplitude * sin(vertexPosition.x - frequency * cos(time)) ;
+    newPos.y = amplitude * sin(time * vertexTexCoord.x);
 
     // Calculate final vertex position
     gl_Position = mvp*vec4(newPos, 1.0);
