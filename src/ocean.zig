@@ -3,6 +3,10 @@ const std = @import("std");
 const Assets = @import("assetManager.zig");
 
 const Self = @This();
+const SIZE_X = 100;
+const SIZE_Y = 100;
+const HALF_X = @divExact(SIZE_X, 2);
+const HALF_Y = @divExact(SIZE_Y, 2);
 
 const ShaderVariable = struct {
     location: i32,
@@ -53,8 +57,19 @@ pub fn update(self: *Self) void {
 pub fn draw(self: *Self) void {
     self.shader.activate();
     defer self.shader.deactivate();
-    self.model.draw(rl.Vector3.zero(), 1.0, rl.Color.white);
-    self.model.draw(rl.Vector3.init(8.0, 0.0, 0.0), 1.0, rl.Color.white);
+
+    for (0..SIZE_X) |x|
+        for (0..SIZE_Y) |y| {
+            self.model.draw(
+                rl.Vector3.init(
+                    @as(f32, @floatFromInt(@as(i32, @intCast(x * 8)) - HALF_X*8)),
+                    0.0,
+                    @as(f32, @floatFromInt(@as(i32, @intCast(y * 8)) - HALF_Y*8)),
+                ),
+                1.0,
+                rl.Color.white,
+            );
+        };
 }
 
 pub fn setVariable(self: *Self, comptime name: []const u8, value: anytype) void {
