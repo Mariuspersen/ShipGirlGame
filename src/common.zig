@@ -249,9 +249,9 @@ pub inline fn checkWindowResized() void {
 }
 
 pub fn drawSlider(value: *f32, x: f32, y: f32, width: f32, height: f32,text: [*:0]const u8) void {
-    const rect = rl.Rectangle.init(x + 10.0,y,width,height);
+    const rect = rl.Rectangle.init(x + 20.0,y,width,height);
     const val = std.fmt.allocPrintZ(Memory.Allocator, "{d}", .{value.*}) catch return;
     defer Memory.Allocator.free(val);
-    _ = rg.guiSlider(rect, text, val, value, 0.0, 10.0);
+    _ = rg.guiSlider(rect, text, val, value, 0.0, 1.0);
 
 }

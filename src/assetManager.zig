@@ -43,7 +43,6 @@ pub const Asset = struct {
 
     pub inline fn unloadAndDelete(self: *const Asset) void {
         self.model.unload();
-        self.glb.deleteRemnants();
     }
 };
 
@@ -94,20 +93,11 @@ const embeddedGLB = struct {
         };
     }
     pub fn getModel(self: *const embeddedGLB) !rl.Model {
-        //const gltfFile = try fs.cwd().createFile(self.name, .{});
-        //defer gltfFile.close();
-        //try gltfFile.writeAll(self.data);
         return rl.loadModel(self.name);
-    }
-    pub fn deleteRemnants(self: *const embeddedGLB) void {
-        _ = &self;
-        //fs.cwd().deleteFile(self.name) catch |err| {
-        //    std.debug.print("INFO: ASSET: Unable to delete {s} because of {any}\n", .{ self.name, err });
-        //};
     }
 };
 
-const embeddedFile = struct {
+pub const embeddedFile = struct {
     data: []const u8,
     fileType: [:0]const u8,
 
@@ -161,6 +151,8 @@ pub const box = embeddedGLB.init("assets/box.glb");
 pub const shed = embeddedGLB.init("assets/shed.glb");
 pub const energydrink = embeddedGLB.init("assets/databrus.glb");
 pub const draug = embeddedGLB.init("assets/KNM Draug.glb");
+pub const oceanModel = embeddedGLB.init("assets/Ocean.glb");
+
 
 //Shaders
 pub const lighting = embeddedShader.init("shaders/directional.vs", "shaders/directional.fs");

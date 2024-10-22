@@ -16,14 +16,13 @@ const Ocean = @import("ocean.zig");
 const Self = @This();
 const Asset = Assets.Asset;
 
-var amp: f32 = 1;
-var freq: f32 = 1;
+var amp: f32 = 0.25;
+var freq: f32 = 0.25;
 
 skybox: Asset,
 lights: [Light.MAX_LIGHTS]Light,
 lightShader: rl.Shader,
-oceanShader: rl.Shader,
-ocean: Ocean = undefined,
+ocean: Ocean,
 assets: Assets.AssetList,
 debug: bool = switch (builtin.mode) {
     .Debug => true,
@@ -33,18 +32,8 @@ camera: rl.Camera3D = undefined,
 time: f32,
 
 pub fn load() !Self {
-    //rl.disableCursor();
-    var temp = Self{
-        .skybox = try Asset.init(&Assets.skySunset, -16.0, -16.0, -16.0, &Common.Zero),
-        .assets = Assets.AssetList.init(Memory.Allocator),
-        .camera = std.mem.zeroInit(rl.Camera3D, .{}),
-        .time = 0.0,
-        .lightShader = Assets.lighting.loadShader(),
-        .oceanShader = Assets.ocean.loadShader(),
-        .lights = std.mem.zeroes([Light.MAX_LIGHTS]Light),
-    };
+    var temp = Self{ .skybox = try Asset.init(&Assets.skySunset, -16.0, -16.0, -16.0, &Common.Zero), .assets = Assets.AssetList.init(Memory.Allocator), .camera = std.mem.zeroInit(rl.Camera3D, .{}), .time = 0.0, .lightShader = Assets.lighting.loadShader(), .lights = std.mem.zeroes([Light.MAX_LIGHTS]Light), .ocean = try Ocean.init(Assets.ocean.loadShader()) };
 
-    temp.ocean = Ocean.init(temp.oceanShader);
     temp.lightShader.locs[@intFromEnum(rl.ShaderLocationIndex.shader_loc_vector_view)] = rl.getShaderLocation(
         temp.lightShader,
         "viewPos",
@@ -116,8 +105,7 @@ pub fn unload(self: *Self) void {
     for (self.lights) |light| {
         light.DestroyLight();
     }
-    rl.unloadShader(self.lightShader);
-    rl.unloadShader(self.oceanShader);
+    self.ocean.deinit();
 }
 
 pub fn loop(self: *Self) !Result {
@@ -132,7 +120,7 @@ pub fn loop(self: *Self) !Result {
     } else {
         if (!rl.isCursorHidden()) {
             rl.hideCursor();
-            rl.disableCursor();
+            //rl.disableCursor();
         }
     }
 
@@ -191,19 +179,16 @@ pub fn loop(self: *Self) !Result {
 
     //Ocean Stuff
     self.ocean.update();
-    self.oceanShader.activate();
-    rl.drawPlane(rl.Vector3.zero(), rl.Vector2.init(100, 100), rl.Color.sky_blue);
-    self.oceanShader.deactivate();
+    self.ocean.draw();
 
     rl.drawGrid(100, 1.0);
     rl.endMode3D();
 
-
     Common.drawSlider(&amp, 0, 100, 100, 46, "amp");
-    self.ocean.amplitude.setVariable(self.oceanShader, amp);
+    self.ocean.setVariable("amplitude", amp);
 
     Common.drawSlider(&freq, 0, 150, 100, 46, "freq");
-    self.ocean.frequency.setVariable(self.oceanShader, freq);
+    self.ocean.setVariable("frequency", freq);
 
     if (self.debug) {
         try Common.drawDebugInfo(&self.camera);
