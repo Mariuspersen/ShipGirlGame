@@ -19,6 +19,8 @@ pub var UIMinimizeText: rl.Texture2D = undefined;
 pub var UICloseBtn: Button = undefined;
 pub var UIMaximizeBtn: Button = undefined;
 pub var UIMinimizeBtn: Button = undefined;
+pub var UITitleBar: Button = undefined;
+pub var TitleBarOffset: i32 = 46;
 
 //Public Constants
 pub const Title = "Project SHIP";
@@ -84,26 +86,40 @@ fn initUiButtons() void {
         true,
         false,
         &UiCloseText,
+        null,
     );
     UICloseBtn.colorHover = rl.Color.red;
     UIMaximizeBtn = Button.init(
-        (@as(f32, @floatFromInt(Width)) - (46*2)) / @as(f32, @floatFromInt(Width)),
+        (@as(f32, @floatFromInt(Width)) - (46 * 2)) / @as(f32, @floatFromInt(Width)),
         0.0,
         46,
         46,
         true,
         false,
         &UIMaximizeText,
+        null,
     );
     UIMinimizeBtn = Button.init(
-        (@as(f32, @floatFromInt(Width)) - (46*3)) / @as(f32, @floatFromInt(Width)),
+        (@as(f32, @floatFromInt(Width)) - (46 * 3)) / @as(f32, @floatFromInt(Width)),
         0.0,
         46,
         46,
         true,
         false,
         &UIMinimizeText,
+        null,
     );
+    UITitleBar = Button.init(
+        0.0,
+        0.0,
+        (@as(f32, @floatFromInt(Width)) - (46 * 3)) / @as(f32, @floatFromInt(Width)),
+        (@as(f32, @floatFromInt(Height)) - (@as(f32, @floatFromInt(Height)) - 46)) / @as(f32, @floatFromInt(Height)),
+        false,
+        true,
+        null,
+        Title,
+    );
+    UITitleBar.colorHover = rl.Color.dark_gray;
 }
 
 pub fn scale(n: anytype, a: anytype, b: anytype, x: anytype, z: anytype) @TypeOf(n, a, b, x, z) {
@@ -132,7 +148,7 @@ pub inline fn drawVersionNumber() void {
     rl.drawText(
         "VERSION: " ++ Version,
         0,
-        debugPos * NormalFontSize,
+        (debugPos * NormalFontSize) + TitleBarOffset,
         NormalFontSize,
         rl.Color.white,
     );
@@ -146,7 +162,7 @@ pub inline fn drawFPS() !void {
     rl.drawText(
         string,
         0,
-        debugPos * NormalFontSize,
+        (debugPos * NormalFontSize) + TitleBarOffset,
         NormalFontSize,
         rl.Color.white,
     );
@@ -166,7 +182,7 @@ pub inline fn drawPosition(camera: *rl.Camera3D) !void {
     rl.drawText(
         string,
         0,
-        debugPos * NormalFontSize,
+        (debugPos * NormalFontSize) + TitleBarOffset,
         20,
         rl.Color.white,
     );
@@ -189,16 +205,23 @@ pub inline fn initDrawLoadingMessage(name: [:0]const u8, count: *const usize) !v
     rl.drawText(
         string,
         0,
-        0 * NormalFontSize,
+        (0 * NormalFontSize) + TitleBarOffset,
         20,
         rl.Color.white,
     );
 }
 
-pub inline fn drawCloseBtn() bool {
+pub inline fn drawTitleBar() bool {
+    if (rl.getMousePosition().y > 50 and rl.isWindowMaximized()) {
+        TitleBarOffset = 0;
+        return false;
+    } else {
+        TitleBarOffset = 46;
+    }
     UICloseBtn.draw();
     UIMaximizeBtn.draw();
     UIMinimizeBtn.draw();
+    UITitleBar.draw();
     if (UIMinimizeBtn.pressed()) {
         if (rl.isWindowMinimized()) {
             rl.restoreWindow();
@@ -219,8 +242,7 @@ pub inline fn drawCloseBtn() bool {
 
 pub inline fn toggleFullscreen() void {
     rl.toggleBorderlessWindowed();
-    Width = rl.getScreenWidth();
-    Height = rl.getScreenHeight();
+    checkWindowResized();
 }
 
 pub inline fn checkWindowResized() void {
@@ -234,24 +256,29 @@ pub inline fn checkWindowResized() void {
             null,
         );
         UIMaximizeBtn.modifyFactor(
-            (@as(f32, @floatFromInt(Width)) - UIMaximizeBtn.size.real.x*2) / @as(f32, @floatFromInt(Width)),
+            (@as(f32, @floatFromInt(Width)) - UIMaximizeBtn.size.real.x * 2) / @as(f32, @floatFromInt(Width)),
             null,
             null,
             null,
         );
         UIMinimizeBtn.modifyFactor(
-            (@as(f32, @floatFromInt(Width)) - UIMaximizeBtn.size.real.x*3) / @as(f32, @floatFromInt(Width)),
+            (@as(f32, @floatFromInt(Width)) - UIMinimizeBtn.size.real.x * 3) / @as(f32, @floatFromInt(Width)),
             null,
             null,
             null,
         );
+        UITitleBar.modifyFactor(
+            null,
+            null,
+            (@as(f32, @floatFromInt(Width)) - (46 * 3)) / @as(f32, @floatFromInt(Width)),
+            (@as(f32, @floatFromInt(Height)) - (@as(f32, @floatFromInt(Height)) - 46)) / @as(f32, @floatFromInt(Height)),
+        );
     }
 }
 
-pub fn drawSlider(value: *f32, x: f32, y: f32, width: f32, height: f32,text: [*:0]const u8) void {
-    const rect = rl.Rectangle.init(x + 20.0,y,width,height);
+pub fn drawSlider(value: *f32, x: f32, y: f32, width: f32, height: f32, text: [*:0]const u8) void {
+    const rect = rl.Rectangle.init(x + 20.0, y, width, height);
     const val = std.fmt.allocPrintZ(Memory.Allocator, "{d}", .{value.*}) catch return;
     defer Memory.Allocator.free(val);
     _ = rg.guiSlider(rect, text, val, value, 0.0, 1.0);
-
 }

@@ -74,9 +74,9 @@ pub fn load() !Self {
         temp.lightShader,
     );
 
-    try temp.assets.append(&Assets.guardHouse, -20, 19.5, -2.5);
-    try temp.assets.append(&Assets.energydrink, 0.0, 7.0, 5.0);
-    try temp.assets.append(&Assets.energydrink, 0.0, 7.0, 7.0);
+    try temp.assets.append(&Assets.guardHouse, -20, 20.5, -2.5);
+    try temp.assets.append(&Assets.energydrink, 0.0, 8.0, 5.0);
+    try temp.assets.append(&Assets.energydrink, 0.0, 8.0, 7.0);
     //try temp.assets.append(&Assets.shed, 5.0, 5.0, 5.0);
     try temp.assets.append(&Assets.draug, 30.0, 5.0, 10);
 
@@ -120,7 +120,7 @@ pub fn loop(self: *Self) !Result {
     } else {
         if (!rl.isCursorHidden()) {
             rl.hideCursor();
-            //rl.disableCursor();
+            rl.disableCursor();
         }
     }
 
@@ -166,9 +166,12 @@ pub fn loop(self: *Self) !Result {
     rl.beginMode3D(self.camera);
     //Always render the skybox behind
     self.skybox.drawSkybox(&self.camera);
-    //Shadows shader
-    self.lightShader.activate();
 
+    self.lightShader.activate();
+    //Ocean Stuff
+    self.ocean.update();
+    self.ocean.draw(self.camera);
+    //Shadows shader
     //Draw objects and apply effects
     for (self.assets.arrayList.items) |*asset| {
         asset.draw();
@@ -177,24 +180,14 @@ pub fn loop(self: *Self) !Result {
 
     self.lightShader.deactivate();
 
-    //Ocean Stuff
-    self.ocean.update();
-    self.ocean.draw();
-
     rl.drawGrid(100, 1.0);
     rl.endMode3D();
-
-    Common.drawSlider(&amp, 0, 100, 100, 46, "amp");
-    self.ocean.setVariable("amplitude", amp);
-
-    Common.drawSlider(&freq, 0, 150, 100, 46, "freq");
-    self.ocean.setVariable("frequency", freq);
 
     if (self.debug) {
         try Common.drawDebugInfo(&self.camera);
     }
 
-    if (Common.drawCloseBtn()) {
+    if (Common.drawTitleBar()) {
         retValue = try Result.ok(.MainMenu);
     }
 

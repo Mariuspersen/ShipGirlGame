@@ -47,10 +47,10 @@ pub fn loop(self: *Self) !Result {
         Common.MenuTitleFontSize,
         Colors.WhiteGray,
     );
-    
+
     const rectangle = rl.Rectangle.init(
         (@as(f32, @floatFromInt(Common.Width)) / 2.0) - 200.0,
-        @as(f32,@floatFromInt(Common.Height)) / 3.0,
+        @as(f32, @floatFromInt(Common.Height)) / 3.0,
         400,
         200,
     );
@@ -65,7 +65,7 @@ pub fn loop(self: *Self) !Result {
     const fade_in_color = rl.fade(rl.Color.black, alpha);
     defer rl.drawRectangle(0, 0, Common.Width, Common.Height, fade_in_color);
 
-    if(Common.drawCloseBtn()) {
+    if (Common.drawTitleBar()) {
         retValue = try Result.ok(.Quit);
     }
 

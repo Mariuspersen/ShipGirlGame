@@ -11,7 +11,8 @@ size: union(enum) {
     real: rl.Vector2,
     scale: rl.Vector2,
 },
-icon: *rl.Texture2D,
+icon: ?*rl.Texture2D,
+text: ?[:0]const u8,
 colorHover: rl.Color = rl.Color.gray,
 color: rl.Color = rl.Color.dark_gray,
 
@@ -22,12 +23,14 @@ pub fn init(
     height: f32,
     scaledLoc: bool,
     scaledSize: bool,
-    icon: *rl.Texture2D,
+    icon: ?*rl.Texture2D,
+    text: ?[:0]const u8,
 ) Self {
     return .{
         .location = if (scaledLoc) .{ .scale = rl.Vector2.init(x, y) } else .{ .real = rl.Vector2.init(x, y) },
         .size = if (scaledSize) .{ .scale = rl.Vector2.init(width, height) } else .{ .real = rl.Vector2.init(width, height) },
         .icon = icon,
+        .text = text,
     };
 }
 
@@ -49,11 +52,25 @@ pub fn draw(self: *const Self) void {
         @intFromFloat(trueSize.y),
         if (self.hover()) self.colorHover else self.color,
     );
-    self.icon.draw(
-        @intFromFloat(trueLoc.x + ((trueSize.x - @as(f32, @floatFromInt(self.icon.width)))) / 2),
-        @intFromFloat(trueLoc.y + ((trueSize.y - @as(f32, @floatFromInt(self.icon.height)))) / 2),
-        rl.Color.white,
-    );
+
+    if (self.icon) |icon| {
+        icon.draw(
+            @intFromFloat(trueLoc.x + ((trueSize.x - @as(f32, @floatFromInt(icon.width)))) / 2),
+            @intFromFloat(trueLoc.y + ((trueSize.y - @as(f32, @floatFromInt(icon.height)))) / 2),
+            rl.Color.white,
+        );
+    }
+
+    if (self.text) |text| {
+        const width = rl.measureText(text, Common.NormalFontSize);
+        rl.drawText(
+            text,
+            @intFromFloat(trueLoc.x + ((trueSize.x - @as(f32, @floatFromInt(width)))) / 2),
+            @intFromFloat(trueLoc.y + ((trueSize.y - @as(f32, Common.NormalFontSize))) / 2),
+            Common.NormalFontSize,
+            rl.Color.white,
+        );
+    }
 }
 
 fn getLocVec(self: *const Self) rl.Vector2 {
@@ -90,27 +107,27 @@ inline fn hover(self: *const Self) bool {
 }
 
 pub fn modifyFactor(self: *Self, x: ?f32, y: ?f32, width: ?f32, height: ?f32) void {
-    if(x) |xx| {
+    if (x) |xx| {
         switch (self.location) {
             .scale => |*s| s.x = xx,
             else => {},
         }
     }
-    if(y) |yy| {
+    if (y) |yy| {
         switch (self.location) {
             .scale => |*s| s.y = yy,
             else => {},
         }
     }
-    if(width) |wwidth| {
-        switch (self.location) {
+    if (width) |wwidth| {
+        switch (self.size) {
             .scale => |*s| s.x = wwidth,
             else => {},
         }
     }
-    if(height) |hheight| {
-        switch (self.location) {
-            .scale => |*s| s.x = hheight,
+    if (height) |hheight| {
+        switch (self.size) {
+            .scale => |*s| s.y = hheight,
             else => {},
         }
     }

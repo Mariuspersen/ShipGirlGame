@@ -15,17 +15,13 @@ out vec4 finalColor;
 uniform float time;
 uniform float amplitude;
 uniform float frequency;
+uniform vec3 camera;
 
 void main()
 {
     float height = sin(pos.y)*0.2f;
-    // Texel color fetching from texture sampler
     vec4 foam = vec4(height,height,height,0.0);
     vec4 texelColor = texture(texture0,fragTexCoord);
-    //texelColor.x += sin(pos.x + time)*0.5;
-    //texelColor.y += cos(pos.y + time)*0.5;
-    //texelColor.z += sin(pos.z)*0.5;
-    // NOTE: Implement here your fragment shader code
 
     finalColor = (texelColor+foam)*colDiffuse;
 }
