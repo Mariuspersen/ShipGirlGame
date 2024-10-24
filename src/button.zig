@@ -91,7 +91,7 @@ pub fn pressed(self: *const Self) bool {
     return rl.isMouseButtonReleased(.mouse_button_left) and self.hover();
 }
 
-inline fn hover(self: *const Self) bool {
+fn hover(self: *const Self) bool {
     const mousePosition = rl.getMousePosition();
     const fWidth: f32 = @floatFromInt(Common.Width);
     const fHeight: f32 = @floatFromInt(Common.Height);

@@ -25,23 +25,23 @@ pub const Asset = struct {
         };
     }
 
-    pub inline fn applyTransformation(self: *Asset) void {
+    pub fn applyTransformation(self: *Asset) void {
         if (self.rotation) |r| {
             self.model.transform = r.multiply(self.model.transform);
         }
     }
 
-    pub inline fn draw(self: *const Asset) void {
+    pub fn draw(self: *const Asset) void {
         rl.drawModel(self.model, self.position, self.scale, self.color);
     }
 
-    pub inline fn drawSkybox(self: *const Asset, camera: *rl.Camera3D) void {
+    pub fn drawSkybox(self: *const Asset, camera: *rl.Camera3D) void {
         rl.gl.rlDisableDepthMask();
         rl.drawModel(self.model, camera.position.add(self.position), self.scale, self.color);
         rl.gl.rlEnableDepthMask();
     }
 
-    pub inline fn unloadAndDelete(self: *const Asset) void {
+    pub fn unloadAndDelete(self: *const Asset) void {
         self.model.unload();
     }
 };

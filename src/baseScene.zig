@@ -22,7 +22,8 @@ var freq: f32 = 0.25;
 skybox: Asset,
 lights: [Light.MAX_LIGHTS]Light,
 lightShader: rl.Shader,
-ocean: Ocean,
+ocean: Ocean = undefined,
+oceanShader : rl.Shader,
 assets: Assets.AssetList,
 debug: bool = switch (builtin.mode) {
     .Debug => true,
@@ -32,7 +33,17 @@ camera: rl.Camera3D = undefined,
 time: f32,
 
 pub fn load() !Self {
-    var temp = Self{ .skybox = try Asset.init(&Assets.skySunset, -16.0, -16.0, -16.0, &Common.Zero), .assets = Assets.AssetList.init(Memory.Allocator), .camera = std.mem.zeroInit(rl.Camera3D, .{}), .time = 0.0, .lightShader = Assets.lighting.loadShader(), .lights = std.mem.zeroes([Light.MAX_LIGHTS]Light), .ocean = try Ocean.init(Assets.ocean.loadShader()) };
+    var temp = Self{
+        .skybox = try Asset.init(&Assets.skySunset, -16.0, -16.0, -16.0, &Common.Zero),
+        .assets = Assets.AssetList.init(Memory.Allocator),
+        .camera = std.mem.zeroInit(rl.Camera3D, .{}),
+        .time = 0.0,
+        .lightShader = Assets.lighting.loadShader(),
+        .lights = std.mem.zeroes([Light.MAX_LIGHTS]Light),
+        .oceanShader = Assets.ocean.loadShader(),
+    };
+
+    temp.ocean = try Ocean.init(temp.oceanShader);
 
     temp.lightShader.locs[@intFromEnum(rl.ShaderLocationIndex.shader_loc_vector_view)] = rl.getShaderLocation(
         temp.lightShader,
@@ -106,6 +117,8 @@ pub fn unload(self: *Self) void {
         light.DestroyLight();
     }
     self.ocean.deinit();
+    rl.memFree(self.lightShader.locs);
+    rl.memFree(self.oceanShader.locs);
 }
 
 pub fn loop(self: *Self) !Result {

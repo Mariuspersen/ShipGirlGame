@@ -137,14 +137,14 @@ pub fn fade(t: anytype, fade_in: anytype, sustain: anytype, fade_out: anytype) @
 
 var debugPos: i32 = 0;
 var debugBuffer: [64]u8 = undefined;
-pub inline fn drawDebugInfo(camera: *rl.Camera3D) !void {
+pub fn drawDebugInfo(camera: *rl.Camera3D) !void {
     drawVersionNumber();
     try drawPosition(camera);
     try drawFPS();
     debugPos = 0;
 }
 
-pub inline fn drawVersionNumber() void {
+pub fn drawVersionNumber() void {
     rl.drawText(
         "VERSION: " ++ Version,
         0,
@@ -155,7 +155,7 @@ pub inline fn drawVersionNumber() void {
     debugPos += 1;
 }
 
-pub inline fn drawFPS() !void {
+pub fn drawFPS() !void {
     const fps = rl.getFPS();
     const frametime = rl.getFrameTime();
     const string = try std.fmt.bufPrintZ(&debugBuffer, "FPS: {d} Frametime: {d:>4}", .{ fps, frametime });
@@ -169,7 +169,7 @@ pub inline fn drawFPS() !void {
     debugPos += 1;
 }
 
-pub inline fn drawPosition(camera: *rl.Camera3D) !void {
+pub fn drawPosition(camera: *rl.Camera3D) !void {
     const string = try std.fmt.bufPrintZ(
         &debugBuffer,
         "PLAYER POS: X: {d}\tY: {d}\tZ: {d}",
@@ -189,7 +189,7 @@ pub inline fn drawPosition(camera: *rl.Camera3D) !void {
     debugPos += 1;
 }
 
-pub inline fn initDrawLoadingMessage(name: [:0]const u8, count: *const usize) !void {
+pub fn initDrawLoadingMessage(name: [:0]const u8, count: *const usize) !void {
     rl.beginDrawing();
     defer rl.endDrawing();
     rl.clearBackground(rl.Color.black);
@@ -211,7 +211,7 @@ pub inline fn initDrawLoadingMessage(name: [:0]const u8, count: *const usize) !v
     );
 }
 
-pub inline fn drawTitleBar() bool {
+pub fn drawTitleBar() bool {
     if (rl.getMousePosition().y > 50 and rl.isWindowMaximized()) {
         TitleBarOffset = 0;
         return false;
@@ -240,12 +240,12 @@ pub inline fn drawTitleBar() bool {
     return UICloseBtn.pressed();
 }
 
-pub inline fn toggleFullscreen() void {
+pub fn toggleFullscreen() void {
     rl.toggleBorderlessWindowed();
     checkWindowResized();
 }
 
-pub inline fn checkWindowResized() void {
+pub fn checkWindowResized() void {
     if (rl.isWindowResized()) {
         Width = rl.getScreenWidth();
         Height = rl.getScreenHeight();
