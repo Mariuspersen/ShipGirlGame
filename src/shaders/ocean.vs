@@ -29,8 +29,8 @@ void main()
     fragColor = vertexColor;
 
     vec3 newPos = vertexPosition;
-    float waveX = sin(vertexPosition.x * M_PI * (floor(frequency*100.0f) * 0.25) + time + camera.x);
-    float waveZ = sin(vertexPosition.z * M_PI * (floor(frequency*100.0f) * 0.25) + time + camera.z);
+    float waveX = sin(vertexPosition.x * M_PI * (floor(frequency*100.0f) * 0.25) + time + (camera.x*2));
+    float waveZ = sin(vertexPosition.z * M_PI * (floor(frequency*100.0f) * 0.25) + time + (camera.z*2));
     
     newPos.y = amplitude * (waveX + waveZ);
 

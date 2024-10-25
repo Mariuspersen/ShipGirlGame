@@ -41,7 +41,7 @@ pub fn init(shader: rl.Shader) !Self {
         .camera = ShaderVariable.init(shader, "camera", .shader_uniform_vec3),
     };
     temp.setVariable("amplitude", @as(f32, 0.25));
-    temp.setVariable("frequency", @as(f32, 0.5));
+    temp.setVariable("frequency", @as(f32, 0.75));
 
     for (0..@as(usize, @intCast(temp.model.materialCount))) |i| {
         temp.model.materials[i].shader = temp.shader;
