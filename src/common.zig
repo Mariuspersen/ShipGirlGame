@@ -11,10 +11,6 @@ const Memory = @import("memory.zig");
 const Config = @import("config.zig");
 
 //Public Variables
-pub var ConVars: Config = undefined;
-pub var ConFile: std.fs.File = undefined;
-pub var Width: i32 = 1280;
-pub var Height: i32 = 720;
 pub var Framerate: i32 = 60;
 pub var Fullscreen: bool = false;
 pub var UiCloseText: rl.Texture2D = undefined;
@@ -46,41 +42,28 @@ pub const windowConfigFlags = rl.ConfigFlags{
 pub fn initVariables() !void {
     switch (builtin.mode) {
         .Debug => {
-            rl.setWindowSize(Width, Height);
+            try Config.vars.add("WindowWidth", @as(i32, 1920));
+            try Config.vars.add("WindowHeight", @as(i32, 1080));
+            try Config.vars.add("Framerate", @as(i32, 60));
         },
         else => {
             const monitor = rl.getCurrentMonitor();
-            Height = rl.getMonitorHeight(monitor);
-            Width = rl.getMonitorWidth(monitor);
-            Framerate = rl.getMonitorRefreshRate(monitor);
-            toggleFullscreen();
-            rl.setWindowSize(Width, Height);
+            try Config.vars.add("WindowWidth", rl.getMonitorWidth(monitor));
+            try Config.vars.add("WindowHeight", rl.getMonitorHeight(monitor));
+            try Config.vars.add("Framerate", rl.getMonitorRefreshRate(monitor));
+            toggleFullscreen();  
         },
     }
-    ConVars = Config.init(Memory.Allocator);
-    ConFile = std.fs.cwd().openFile("config", .{ .mode = .read_write }) catch
-        try std.fs.cwd().createFile("config", .{ .read = true });
-    const conFileRead = ConFile.reader();
-    try ConVars.read(conFileRead);
+
     initUiButtons();
     rl.setWindowState(windowConfigFlags);
     rl.setExitKey(.key_null);
     rl.setLoadFileDataCallback(Assets.loadDataCallback);
 
-    const fps = try ConVars.get("Framerate");
-    rl.setTargetFPS(@intCast(fps.data.number));
+    rl.setTargetFPS(Config.vars.get(i32,"Framerate"));
 }
 
 pub fn deinitVariables() void {
-    const conFileWrite = ConFile.writer();
-    ConFile.seekTo(0) catch |err| {
-        std.debug.print("ERROR: {any}", .{err});
-    };
-    ConVars.write(conFileWrite) catch |err| {
-        std.debug.print("ERROR: {any}", .{err});
-    };
-    ConVars.deinit();
-    ConFile.close();
     UiCloseText.unload();
     UIMaximizeText.unload();
     UIMinimizeText.unload();
@@ -100,8 +83,10 @@ fn initUiButtons() void {
     UiCloseText = rl.loadTextureFromImage(close);
     UIMaximizeText = rl.loadTextureFromImage(max);
     UIMinimizeText = rl.loadTextureFromImage(min);
+    const width: f32 = @floatFromInt(Config.vars.get(i32, "WindowWidth"));
+    const height: f32 = @floatFromInt(Config.vars.get(i32, "WindowHeight"));
     UICloseBtn = Button.init(
-        (@as(f32, @floatFromInt(Width)) - 46) / @as(f32, @floatFromInt(Width)),
+        (width - 46) / width,
         0.0,
         46,
         46,
@@ -112,7 +97,7 @@ fn initUiButtons() void {
     );
     UICloseBtn.colorHover = rl.Color.red;
     UIMaximizeBtn = Button.init(
-        (@as(f32, @floatFromInt(Width)) - (46 * 2)) / @as(f32, @floatFromInt(Width)),
+        (width - (46 * 2)) / width,
         0.0,
         46,
         46,
@@ -122,7 +107,7 @@ fn initUiButtons() void {
         null,
     );
     UIMinimizeBtn = Button.init(
-        (@as(f32, @floatFromInt(Width)) - (46 * 3)) / @as(f32, @floatFromInt(Width)),
+        (width - (46 * 3)) / width,
         0.0,
         46,
         46,
@@ -134,8 +119,8 @@ fn initUiButtons() void {
     UITitleBar = Button.init(
         0.0,
         0.0,
-        (@as(f32, @floatFromInt(Width)) - (46 * 3)) / @as(f32, @floatFromInt(Width)),
-        (@as(f32, @floatFromInt(Height)) - (@as(f32, @floatFromInt(Height)) - 46)) / @as(f32, @floatFromInt(Height)),
+        (width - (46 * 3)) / width,
+        (height - (height - 46)) / height,
         false,
         true,
         null,
@@ -269,22 +254,22 @@ pub fn toggleFullscreen() void {
 
 pub fn checkWindowResized() void {
     if (rl.isWindowResized()) {
-        Width = rl.getScreenWidth();
-        Height = rl.getScreenHeight();
+        const fWidth: f32 = @floatFromInt(Config.vars.get(i32, "WindowWidth"));
+        const fHeight: f32 = @floatFromInt(Config.vars.get(i32, "WindowHeight"));
         UICloseBtn.modifyFactor(
-            (@as(f32, @floatFromInt(Width)) - UICloseBtn.size.real.x) / @as(f32, @floatFromInt(Width)),
+            (fWidth - UICloseBtn.size.real.x) / fWidth,
             null,
             null,
             null,
         );
         UIMaximizeBtn.modifyFactor(
-            (@as(f32, @floatFromInt(Width)) - UIMaximizeBtn.size.real.x * 2) / @as(f32, @floatFromInt(Width)),
+            (fWidth - UIMaximizeBtn.size.real.x * 2) / fWidth,
             null,
             null,
             null,
         );
         UIMinimizeBtn.modifyFactor(
-            (@as(f32, @floatFromInt(Width)) - UIMinimizeBtn.size.real.x * 3) / @as(f32, @floatFromInt(Width)),
+            (fWidth - UIMinimizeBtn.size.real.x * 3) / fWidth,
             null,
             null,
             null,
@@ -292,8 +277,8 @@ pub fn checkWindowResized() void {
         UITitleBar.modifyFactor(
             null,
             null,
-            (@as(f32, @floatFromInt(Width)) - (46 * 3)) / @as(f32, @floatFromInt(Width)),
-            (@as(f32, @floatFromInt(Height)) - (@as(f32, @floatFromInt(Height)) - 46)) / @as(f32, @floatFromInt(Height)),
+            (fWidth - (46 * 3)) / fHeight,
+            (fHeight - (fHeight - 46)) / fHeight,
         );
     }
 }

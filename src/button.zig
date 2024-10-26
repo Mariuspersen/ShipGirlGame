@@ -1,6 +1,7 @@
 const rl = @import("raylib");
 const std = @import("std");
 const Common = @import("common.zig");
+const Config = @import("config.zig");
 const Self = @This();
 
 location: union(enum) {
@@ -35,8 +36,8 @@ pub fn init(
 }
 
 pub fn draw(self: *const Self) void {
-    const fWidth: f32 = @floatFromInt(Common.Width);
-    const fHeight: f32 = @floatFromInt(Common.Height);
+    const fWidth: f32 = @floatFromInt(Config.vars.get(i32, "WindowWidth"));
+    const fHeight: f32 = @floatFromInt(Config.vars.get(i32, "WindowHeight"));
     const trueLoc = switch (self.location) {
         .scale => |s| rl.Vector2.init(s.x * fWidth, s.y * fHeight),
         .real => |r| r,
@@ -93,8 +94,8 @@ pub fn pressed(self: *const Self) bool {
 
 fn hover(self: *const Self) bool {
     const mousePosition = rl.getMousePosition();
-    const fWidth: f32 = @floatFromInt(Common.Width);
-    const fHeight: f32 = @floatFromInt(Common.Height);
+    const fWidth: f32 = @floatFromInt(Config.vars.get(i32, "WindowWidth"));
+    const fHeight: f32 = @floatFromInt(Config.vars.get(i32, "WindowHeight"));
     const loc = switch (self.location) {
         .scale => |s| rl.Vector2.init(s.x * fWidth, s.y * fHeight),
         .real => |r| r,

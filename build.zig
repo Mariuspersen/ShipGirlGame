@@ -49,6 +49,14 @@ pub fn build(b: *std.Build) !void {
     }
     const run_step = b.step("run", "Run the app");
     run_step.dependOn(&run_cmd.step);
+
+    const config_cmd = b.addRunArtifact(configTool);
+    config_cmd.step.dependOn(b.getInstallStep());
+    if (b.args) |args| {
+        config_cmd.addArgs(args);
+    }
+    const run_config = b.step("config", "Add ConVars to config file");
+    run_config.dependOn(&config_cmd.step);
 }
 
 fn gitHash(allocator: std.mem.Allocator, buffer: *[7]u8) !void {

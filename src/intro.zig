@@ -4,6 +4,7 @@ const Assets = @import("assetManager.zig");
 const Colors = @import("colors.zig");
 const Result = @import("sceneList.zig").Result;
 const Scene = @import("sceneList.zig").Scene;
+const Config = @import("config.zig");
 
 const Menu = @import("menu.zig");
 
@@ -37,10 +38,12 @@ pub fn loop(self: *Self) !Result {
     const color = rl.fade(rl.Color.white, alpha);
 
     const offset = @divTrunc(rl.measureText(TEXT, Common.MenuTitleFontSize), 2);
+    const width = Config.vars.get(i32, "WindowWidth");
+    const height = Config.vars.get(i32, "WindowHeight");
     rl.drawText(
         TEXT,
-        @divTrunc(Common.Width, 2) - offset,
-        @divTrunc(Common.Height, 2) - Common.MenuTitleFontSize,
+        @divTrunc(width, 2) - offset,
+        @divTrunc(height, 2) - Common.MenuTitleFontSize,
         Common.MenuTitleFontSize,
         color,
     );

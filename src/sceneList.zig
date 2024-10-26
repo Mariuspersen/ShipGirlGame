@@ -19,7 +19,7 @@ pub const Scene = union(sceneList) {
     pub fn init(scene: sceneList) !Scene {
         return switch (scene) {
             .Intro => Scene{ .Intro = Intro.load() },
-            .MainMenu => Scene{ .MainMenu = Menu.load()},
+            .MainMenu => Scene{ .MainMenu = try Menu.load()},
             .Base => Scene{ .Base = try Base.load()},
             .Quit => Scene.Quit,
         };
@@ -38,7 +38,7 @@ pub const Result = union(ResultTag) {
     pub fn ok(scene: sceneList) !@This() {
         return .{ .ok = switch (scene) {
             .Intro => Scene{ .Intro = Intro.load()},
-            .MainMenu => Scene{ .MainMenu = Menu.load()},
+            .MainMenu => Scene{ .MainMenu = try Menu.load()},
             .Base => Scene{ .Base = try Base.load()},
             .Quit => Scene.Quit,
         }};

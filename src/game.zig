@@ -4,6 +4,7 @@ const Colors = @import("colors.zig");
 const Common = @import("common.zig");
 const Memory = @import("memory.zig");
 const sceneManager = @import("sceneManager.zig");
+const Config = @import("config.zig");
 
 const Self = @This();
 
@@ -13,7 +14,14 @@ pub fn Start() !void {
     Memory.initAllocator();
     defer Memory.deinitAllocator();
 
-    rl.initWindow(Common.Width, Common.Height, Common.Title);
+    try Config.init(Memory.Allocator);
+    defer Config.vars.deinit() catch {};
+
+    rl.initWindow(
+        Config.vars.get(i32, "WindowWidth"),
+        Config.vars.get(i32, "WindowHeight"),
+        Config.vars.get([:0]const u8, "WindowTitle"),
+    );
     defer rl.closeWindow();
 
     //Variables like settings and UI textures
