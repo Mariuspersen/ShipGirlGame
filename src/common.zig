@@ -8,7 +8,11 @@ const Scene = @import("sceneList.zig").sceneList;
 const Assets = @import("assetManager.zig");
 const Button = @import("button.zig");
 const Memory = @import("memory.zig");
+const Config = @import("config.zig");
+
 //Public Variables
+pub var ConVars: Config = undefined;
+pub var ConFile: std.fs.File = undefined;
 pub var Width: i32 = 1280;
 pub var Height: i32 = 720;
 pub var Framerate: i32 = 60;
@@ -39,7 +43,7 @@ pub const windowConfigFlags = rl.ConfigFlags{
     .window_always_run = true,
 };
 
-pub fn initVariables() void {
+pub fn initVariables() !void {
     switch (builtin.mode) {
         .Debug => {
             rl.setWindowSize(Width, Height);
@@ -53,12 +57,30 @@ pub fn initVariables() void {
             rl.setWindowSize(Width, Height);
         },
     }
+    ConVars = Config.init(Memory.Allocator);
+    ConFile = std.fs.cwd().openFile("config", .{ .mode = .read_write }) catch
+        try std.fs.cwd().createFile("config", .{ .read = true });
+    const conFileRead = ConFile.reader();
+    try ConVars.read(conFileRead);
     initUiButtons();
     rl.setWindowState(windowConfigFlags);
+    rl.setExitKey(.key_null);
     rl.setLoadFileDataCallback(Assets.loadDataCallback);
+
+    const fps = try ConVars.get("Framerate");
+    rl.setTargetFPS(@intCast(fps.data.number));
 }
 
 pub fn deinitVariables() void {
+    const conFileWrite = ConFile.writer();
+    ConFile.seekTo(0) catch |err| {
+        std.debug.print("ERROR: {any}", .{err});
+    };
+    ConVars.write(conFileWrite) catch |err| {
+        std.debug.print("ERROR: {any}", .{err});
+    };
+    ConVars.deinit();
+    ConFile.close();
     UiCloseText.unload();
     UIMaximizeText.unload();
     UIMinimizeText.unload();

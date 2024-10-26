@@ -33,6 +33,15 @@ pub fn build(b: *std.Build) !void {
 
     b.installArtifact(exe);
 
+    const configTool = b.addExecutable(.{
+        .name = "configTool",
+        .root_source_file = b.path("src/configTool.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    b.installArtifact(configTool);
+
     const run_cmd = b.addRunArtifact(exe);
     run_cmd.step.dependOn(b.getInstallStep());
     if (b.args) |args| {
