@@ -11,7 +11,6 @@ const Memory = @import("memory.zig");
 const Config = @import("config.zig");
 
 //Public Variables
-pub var Framerate: i32 = 60;
 pub var Fullscreen: bool = false;
 pub var UiCloseText: rl.Texture2D = undefined;
 pub var UIMaximizeText: rl.Texture2D = undefined;
@@ -20,16 +19,12 @@ pub var UICloseBtn: Button = undefined;
 pub var UIMaximizeBtn: Button = undefined;
 pub var UIMinimizeBtn: Button = undefined;
 pub var UITitleBar: Button = undefined;
-pub var TitleBarOffset: i32 = 46;
 
 //Public Constants
-pub const Title = "Project SHIP";
-pub const MenuTitleFontSize = 40;
-pub const NormalFontSize = 20;
 pub const Version = @embedFile("version");
 pub const Zero: usize = 0;
 pub const StartScene: Scene = switch (builtin.mode) {
-    .Debug => Scene.Base,
+    .Debug => Scene.Intro,
     else => Scene.Intro,
 };
 
@@ -39,7 +34,13 @@ pub const windowConfigFlags = rl.ConfigFlags{
     .window_always_run = true,
 };
 
-pub fn initVariables() !void {
+pub fn init() !void {
+    rl.initWindow(
+        Config.vars.get(i32, "WindowWidth"),
+        Config.vars.get(i32, "WindowHeight"),
+        Config.vars.get([:0]const u8, "WindowTitle"),
+    );
+
     switch (builtin.mode) {
         .Debug => {
             try Config.vars.add("WindowWidth", @as(i32, 1920));
@@ -51,9 +52,11 @@ pub fn initVariables() !void {
             try Config.vars.add("WindowWidth", rl.getMonitorWidth(monitor));
             try Config.vars.add("WindowHeight", rl.getMonitorHeight(monitor));
             try Config.vars.add("Framerate", rl.getMonitorRefreshRate(monitor));
-            toggleFullscreen();  
+            try toggleFullscreen();  
         },
     }
+
+    try Config.vars.add("TitleBarOffset", @as(i32, 0));
 
     initUiButtons();
     rl.setWindowState(windowConfigFlags);
@@ -63,10 +66,11 @@ pub fn initVariables() !void {
     rl.setTargetFPS(Config.vars.get(i32,"Framerate"));
 }
 
-pub fn deinitVariables() void {
+pub fn deinit() void {
     UiCloseText.unload();
     UIMaximizeText.unload();
     UIMinimizeText.unload();
+    rl.closeWindow();
 }
 
 fn initUiButtons() void {
@@ -124,7 +128,7 @@ fn initUiButtons() void {
         false,
         true,
         null,
-        Title,
+        Config.vars.get([:0]const u8, "WindowTitle"),
     );
     UITitleBar.colorHover = rl.Color.dark_gray;
 }
@@ -145,38 +149,40 @@ pub fn fade(t: anytype, fade_in: anytype, sustain: anytype, fade_out: anytype) @
 var debugPos: i32 = 0;
 var debugBuffer: [64]u8 = undefined;
 pub fn drawDebugInfo(camera: *rl.Camera3D) !void {
-    drawVersionNumber();
-    try drawPosition(camera);
-    try drawFPS();
+    const normalFontSize = Config.vars.get(i32, "NormalFontSize");
+    const titleBarOffset = Config.vars.get(i32, "TitleBarOffset");
+    drawVersionNumber(normalFontSize, titleBarOffset);
+    try drawPosition(camera,normalFontSize, titleBarOffset);
+    try drawFPS(normalFontSize, titleBarOffset);
     debugPos = 0;
 }
 
-pub fn drawVersionNumber() void {
+pub fn drawVersionNumber(normalFontSize: i32, titleBarOffset: i32) void {
     rl.drawText(
         "VERSION: " ++ Version,
         0,
-        (debugPos * NormalFontSize) + TitleBarOffset,
-        NormalFontSize,
+        (debugPos * normalFontSize) + titleBarOffset,
+        normalFontSize,
         rl.Color.white,
     );
     debugPos += 1;
 }
 
-pub fn drawFPS() !void {
+pub fn drawFPS(normalFontSize: i32, titleBarOffset: i32) !void {
     const fps = rl.getFPS();
     const frametime = rl.getFrameTime();
     const string = try std.fmt.bufPrintZ(&debugBuffer, "FPS: {d} Frametime: {d:>4}", .{ fps, frametime });
     rl.drawText(
         string,
         0,
-        (debugPos * NormalFontSize) + TitleBarOffset,
-        NormalFontSize,
+        (debugPos * normalFontSize) + titleBarOffset,
+        normalFontSize,
         rl.Color.white,
     );
     debugPos += 1;
 }
 
-pub fn drawPosition(camera: *rl.Camera3D) !void {
+pub fn drawPosition(camera: *rl.Camera3D, normalFontSize: i32, titleBarOffset: i32) !void {
     const string = try std.fmt.bufPrintZ(
         &debugBuffer,
         "PLAYER POS: X: {d}\tY: {d}\tZ: {d}",
@@ -189,14 +195,14 @@ pub fn drawPosition(camera: *rl.Camera3D) !void {
     rl.drawText(
         string,
         0,
-        (debugPos * NormalFontSize) + TitleBarOffset,
-        20,
+        (debugPos * normalFontSize) + titleBarOffset,
+        normalFontSize,
         rl.Color.white,
     );
     debugPos += 1;
 }
 
-pub fn initDrawLoadingMessage(name: [:0]const u8, count: *const usize) !void {
+pub fn initDrawLoadingMessage(name: [:0]const u8, count: usize, normalFontSize: i32, titleBarOffset: i32) !void {
     rl.beginDrawing();
     defer rl.endDrawing();
     rl.clearBackground(rl.Color.black);
@@ -205,25 +211,25 @@ pub fn initDrawLoadingMessage(name: [:0]const u8, count: *const usize) !void {
         &debugBuffer,
         "[ {d} ] Loading {s}",
         .{
-            count.*,
+            count,
             name,
         },
     );
     rl.drawText(
         string,
         0,
-        (0 * NormalFontSize) + TitleBarOffset,
+        (0 * normalFontSize) + titleBarOffset,
         20,
         rl.Color.white,
     );
 }
 
-pub fn drawTitleBar() bool {
+pub fn drawTitleBar() !bool {
     if (rl.getMousePosition().y > 50 and rl.isWindowMaximized()) {
-        TitleBarOffset = 0;
+        try Config.vars.add("TitleBarOffset", @as(i32, 0));
         return false;
     } else {
-        TitleBarOffset = 46;
+        try Config.vars.add("TitleBarOffset", @as(i32, 46));
     }
     UICloseBtn.draw();
     UIMaximizeBtn.draw();
@@ -242,18 +248,20 @@ pub fn drawTitleBar() bool {
         } else {
             rl.maximizeWindow();
         }
-        checkWindowResized();
+        try checkWindowResized();
     }
     return UICloseBtn.pressed();
 }
 
-pub fn toggleFullscreen() void {
+pub fn toggleFullscreen() !void {
     rl.toggleBorderlessWindowed();
-    checkWindowResized();
+    try checkWindowResized();
 }
 
-pub fn checkWindowResized() void {
+pub fn checkWindowResized() !void {
     if (rl.isWindowResized()) {
+        try Config.vars.add("WindowWidth", rl.getScreenWidth());
+        try Config.vars.add("WindowHeight", rl.getScreenHeight());
         const fWidth: f32 = @floatFromInt(Config.vars.get(i32, "WindowWidth"));
         const fHeight: f32 = @floatFromInt(Config.vars.get(i32, "WindowHeight"));
         UICloseBtn.modifyFactor(
@@ -263,13 +271,13 @@ pub fn checkWindowResized() void {
             null,
         );
         UIMaximizeBtn.modifyFactor(
-            (fWidth - UIMaximizeBtn.size.real.x * 2) / fWidth,
+            (fWidth - (UIMaximizeBtn.size.real.x * 2)) / fWidth,
             null,
             null,
             null,
         );
         UIMinimizeBtn.modifyFactor(
-            (fWidth - UIMinimizeBtn.size.real.x * 3) / fWidth,
+            (fWidth - (UIMinimizeBtn.size.real.x * 3)) / fWidth,
             null,
             null,
             null,
@@ -277,7 +285,7 @@ pub fn checkWindowResized() void {
         UITitleBar.modifyFactor(
             null,
             null,
-            (fWidth - (46 * 3)) / fHeight,
+            (fWidth - (46 * 3)) / fWidth,
             (fHeight - (fHeight - 46)) / fHeight,
         );
     }
@@ -288,4 +296,13 @@ pub fn drawSlider(value: *f32, x: f32, y: f32, width: f32, height: f32, text: [*
     const val = std.fmt.allocPrintZ(Memory.Allocator, "{d}", .{value.*}) catch return;
     defer Memory.Allocator.free(val);
     _ = rg.guiSlider(rect, text, val, value, 0.0, 1.0);
+}
+
+pub fn printError(err: anyerror) void {
+    const stderr = std.io.getStdErr().writer();
+    stderr.print("ERROR: {s}\n", .{@errorName(err)}) catch return;
+}
+
+pub fn alwaysError() !void {
+    return error.AlwaysError;
 }

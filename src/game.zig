@@ -9,22 +9,15 @@ const Config = @import("config.zig");
 const Self = @This();
 
 pub fn Start() !void {
+
     Memory.initAllocator();
     defer Memory.deinitAllocator();
 
     try Config.init(Memory.Allocator);
     defer Config.vars.deinit();
 
-    rl.initWindow(
-        Config.vars.get(i32, "WindowWidth"),
-        Config.vars.get(i32, "WindowHeight"),
-        Config.vars.get([:0]const u8, "WindowTitle"),
-    );
-    defer rl.closeWindow();
-
-    //Variables like settings and UI textures
-    try Common.initVariables();
-    defer Common.deinitVariables();
+    try Common.init();
+    defer Common.deinit();
 
     var scene = try sceneManager.init();
     while (!rl.windowShouldClose() and try scene.loop()) {}

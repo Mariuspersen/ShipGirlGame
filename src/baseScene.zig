@@ -4,6 +4,7 @@ const rg = @import("raygui");
 const builtin = @import("builtin");
 
 const Common = @import("common.zig");
+const Config = @import("config.zig");
 const Memory = @import("memory.zig");
 const Assets = @import("assetManager.zig");
 const Colors = @import("colors.zig");
@@ -15,6 +16,7 @@ const Ocean = @import("ocean.zig");
 
 const Self = @This();
 const Asset = Assets.Asset;
+const AssetList = Assets.AssetList;
 
 var amp: f32 = 0.25;
 var freq: f32 = 0.25;
@@ -23,7 +25,7 @@ skybox: Asset,
 lights: [Light.MAX_LIGHTS]Light,
 lightShader: rl.Shader,
 ocean: Ocean = undefined,
-oceanShader : rl.Shader,
+oceanShader: rl.Shader,
 assets: Assets.AssetList,
 debug: bool = switch (builtin.mode) {
     .Debug => true,
@@ -34,8 +36,14 @@ time: f32,
 
 pub fn load() !Self {
     var temp = Self{
-        .skybox = try Asset.init(&Assets.skySunset, -16.0, -16.0, -16.0, &Common.Zero),
-        .assets = Assets.AssetList.init(Memory.Allocator),
+        .skybox = try Asset.init(
+            &Assets.skySunset,
+            -16.0,
+            -16.0,
+            -16.0,
+            0
+        ),
+        .assets = AssetList.init(Memory.Allocator),
         .camera = std.mem.zeroInit(rl.Camera3D, .{}),
         .time = 0.0,
         .lightShader = Assets.lighting.loadShader(),
@@ -85,6 +93,8 @@ pub fn load() !Self {
         temp.lightShader,
     );
 
+    try Config.vars.add("TitleBarOffset", @as(i32, 0));
+
     try temp.assets.append(&Assets.guardHouse, -20, 20.5, -2.5);
     try temp.assets.append(&Assets.energydrink, 0.0, 8.0, 5.0);
     try temp.assets.append(&Assets.energydrink, 0.0, 8.0, 7.0);
@@ -106,6 +116,7 @@ pub fn load() !Self {
     temp.camera.fovy = 45.0;
     temp.camera.projection = .camera_perspective;
 
+    try Config.vars.add("TitleBarOffset", @as(i32, 46));
     return temp;
 }
 
@@ -150,7 +161,7 @@ pub fn loop(self: *Self) !Result {
             }
         },
         .key_f11 => {
-            Common.toggleFullscreen();
+            try Common.toggleFullscreen();
         },
         .key_null => {},
         else => |k| {
@@ -200,9 +211,11 @@ pub fn loop(self: *Self) !Result {
         try Common.drawDebugInfo(&self.camera);
     }
 
-    if (Common.drawTitleBar()) {
+    if (try Common.drawTitleBar()) {
         retValue = try Result.ok(.MainMenu);
     }
+
+    try Common.checkWindowResized();
 
     return retValue;
 }

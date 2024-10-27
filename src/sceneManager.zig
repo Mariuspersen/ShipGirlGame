@@ -22,8 +22,6 @@ pub fn loop(self: *Self) !bool {
     rl.beginDrawing();
     defer rl.endDrawing();
 
-    Common.checkWindowResized();
-
     switch (self.currentScene) {
         .Intro => |*intro| {
             switch (try intro.loop()) {

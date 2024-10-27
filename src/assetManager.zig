@@ -1,8 +1,9 @@
 const std = @import("std");
 const builtin = @import("builtin");
-
 const rl = @import("raylib");
+
 const Common = @import("common.zig");
+const Config = @import("config.zig");
 
 const fs = std.fs;
 
@@ -15,8 +16,15 @@ pub const Asset = struct {
     scale: f32 = 1.0,
     color: rl.Color = rl.Color.white,
 
-    pub fn init(model: *const embeddedGLB, x: f32, y: f32, z: f32, count: *const usize) !Asset {
-        try Common.initDrawLoadingMessage(model.name, count);
+    pub fn init(model: *const embeddedGLB, x: f32, y: f32, z: f32, count: usize) !Asset {
+        const normalFontSize = Config.vars.get(i32, "NormalFontSize");
+        const titleBarOffset = Config.vars.get(i32, "TitleBarOffset");
+        try Common.initDrawLoadingMessage(
+            model.name,
+            count,
+            normalFontSize,
+            titleBarOffset,
+        );
         return .{
             .model = try model.getModel(),
             .glb = model,
@@ -56,7 +64,7 @@ pub const AssetList = struct {
     }
 
     pub fn append(self: *AssetList, model: *const embeddedGLB, x: f32, y: f32, z: f32) !void {
-        try self.arrayList.append(try Asset.init(model, x, y, z, &self.arrayList.items.len));
+        try self.arrayList.append(try Asset.init(model, x, y, z, self.arrayList.items.len));
     }
 
     pub fn setTransformationMatrix(self: *AssetList, model: *const embeddedGLB, index: ?usize, x: f32, y: f32, z: f32) void {
@@ -152,7 +160,6 @@ pub const shed = embeddedGLB.init("assets/shed.glb");
 pub const energydrink = embeddedGLB.init("assets/databrus.glb");
 pub const draug = embeddedGLB.init("assets/KNM Draug.glb");
 pub const oceanModel = embeddedGLB.init("assets/Ocean.glb");
-
 
 //Shaders
 pub const lighting = embeddedShader.init("shaders/directional.vs", "shaders/directional.fs");

@@ -62,13 +62,15 @@ pub fn draw(self: *const Self) void {
         );
     }
 
+    const fontSize = Config.vars.get(i32, "NormalFontSize");
+
     if (self.text) |text| {
-        const width = rl.measureText(text, Common.NormalFontSize);
+        const width = rl.measureText(text, fontSize);
         rl.drawText(
             text,
             @intFromFloat(trueLoc.x + ((trueSize.x - @as(f32, @floatFromInt(width)))) / 2),
-            @intFromFloat(trueLoc.y + ((trueSize.y - @as(f32, Common.NormalFontSize))) / 2),
-            Common.NormalFontSize,
+            @intFromFloat(trueLoc.y + ((trueSize.y - @as(f32, @floatFromInt(fontSize)))) / 2),
+            fontSize,
             rl.Color.white,
         );
     }

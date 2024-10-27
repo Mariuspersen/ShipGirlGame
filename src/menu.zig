@@ -39,15 +39,21 @@ pub fn loop(self: *Self) !Result {
     //Texture Background
     rl.drawTexture(self.background, 0, 0, rl.Color.white);
 
-    //Title Text
-    const offset = @divTrunc(rl.measureText(Common.Title, Common.MenuTitleFontSize), 2);
+    const fontSize = Config.vars.get(i32, "MenuTitleFontSize");
+    const title = Config.vars.get([:0]const u8, "WindowTitle");
     const height = Config.vars.get(i32, "WindowHeight");
     const width = Config.vars.get(i32, "WindowWidth");
+
+    //Title Text
+    const offset = @divTrunc(rl.measureText(
+        title,
+        fontSize,
+    ), 2);
     rl.drawText(
-        Common.Title,
+        title,
         @divTrunc(width, 2) - offset,
         @divTrunc(height, 4),
-        Common.MenuTitleFontSize,
+        fontSize,
         Colors.WhiteGray,
     );
 
@@ -68,9 +74,11 @@ pub fn loop(self: *Self) !Result {
     const fade_in_color = rl.fade(rl.Color.black, alpha);
     defer rl.drawRectangle(0, 0, width, height, fade_in_color);
 
-    if (Common.drawTitleBar()) {
+    if (try Common.drawTitleBar()) {
         retValue = try Result.ok(.Quit);
     }
+
+    try Common.checkWindowResized();
 
     return retValue;
 }
