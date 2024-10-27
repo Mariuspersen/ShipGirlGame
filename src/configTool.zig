@@ -7,9 +7,7 @@ pub fn main() !void {
     defer Memory.deinitAllocator();
     
     try Config.init(Memory.Allocator);
-    defer Config.vars.deinit() catch |err| {
-        std.debug.print("ERROR: Unable to deinit Config because of {any}!\n", .{err});
-    };
+    defer Config.vars.deinit();
 
     var args = try std.process.argsWithAllocator(Memory.Allocator);
     _ = args.skip();
@@ -24,5 +22,4 @@ pub fn main() !void {
         'n' => try Config.vars.add(key, try std.fmt.parseInt(i32, value, 10)),
         else => return error.WrongDataType,
     }
-    
 }

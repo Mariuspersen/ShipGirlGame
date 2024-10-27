@@ -22,7 +22,7 @@ const conVar = struct {
 };
 
 pub var vars: Self = undefined;
-pub var file: std.fs.File = undefined;
+var file: std.fs.File = undefined;
 
 hashmap: std.StringHashMap(conVar),
 
@@ -141,10 +141,14 @@ fn readFloat(reader: anytype, comptime T: type) !T {
     return value;
 }
 
-pub fn deinit(self: *Self) !void {
+pub fn deinit(self: *Self) void {
     const conFileWrite = file.writer();
-    try file.seekTo(0);
-    try vars.write(conFileWrite);
+    file.seekTo(0) catch |err| {
+        std.debug.print("ERROR: Unable to seek to start of file because of {any}", .{err});
+    };
+    vars.write(conFileWrite) catch |err| {
+        std.debug.print("ERROR: Unable to write convars to file because of {any}", .{err});
+    };
     file.close();
 
     var it = self.hashmap.iterator();
@@ -159,4 +163,5 @@ pub fn deinit(self: *Self) !void {
         }
     }
     self.hashmap.deinit();
+    vars = undefined;
 }

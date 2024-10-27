@@ -8,14 +8,12 @@ const Config = @import("config.zig");
 
 const Self = @This();
 
-const STRING = "noalias source";
-
 pub fn Start() !void {
     Memory.initAllocator();
     defer Memory.deinitAllocator();
 
     try Config.init(Memory.Allocator);
-    defer Config.vars.deinit() catch {};
+    defer Config.vars.deinit();
 
     rl.initWindow(
         Config.vars.get(i32, "WindowWidth"),
