@@ -42,18 +42,8 @@ pub fn init() !void {
     );
 
     switch (builtin.mode) {
-        .Debug => {
-            try Config.vars.add("WindowWidth", @as(i32, 1920));
-            try Config.vars.add("WindowHeight", @as(i32, 1080));
-            try Config.vars.add("Framerate", @as(i32, 60));
-        },
-        else => {
-            const monitor = rl.getCurrentMonitor();
-            try Config.vars.add("WindowWidth", rl.getMonitorWidth(monitor));
-            try Config.vars.add("WindowHeight", rl.getMonitorHeight(monitor));
-            try Config.vars.add("Framerate", rl.getMonitorRefreshRate(monitor));
-            try toggleFullscreen();  
-        },
+        .Debug => {},
+        else => try toggleFullscreen(),
     }
 
     try Config.vars.add("TitleBarOffset", @as(i32, 0));
@@ -63,7 +53,7 @@ pub fn init() !void {
     rl.setExitKey(.key_null);
     rl.setLoadFileDataCallback(Assets.loadDataCallback);
 
-    rl.setTargetFPS(Config.vars.get(i32,"Framerate"));
+    rl.setTargetFPS(Config.vars.get(i32, "Framerate"));
 }
 
 pub fn deinit() void {
@@ -152,7 +142,7 @@ pub fn drawDebugInfo(camera: *rl.Camera3D) !void {
     const normalFontSize = Config.vars.get(i32, "NormalFontSize");
     const titleBarOffset = Config.vars.get(i32, "TitleBarOffset");
     drawVersionNumber(normalFontSize, titleBarOffset);
-    try drawPosition(camera,normalFontSize, titleBarOffset);
+    try drawPosition(camera, normalFontSize, titleBarOffset);
     try drawFPS(normalFontSize, titleBarOffset);
     debugPos = 0;
 }
@@ -224,6 +214,8 @@ pub fn initDrawLoadingMessage(name: [:0]const u8, count: usize, normalFontSize: 
     );
 }
 
+var offset: ?rl.Vector2 = null;
+
 pub fn drawTitleBar() !bool {
     if (rl.getMousePosition().y > 50 and rl.isWindowMaximized()) {
         try Config.vars.add("TitleBarOffset", @as(i32, 0));
@@ -249,6 +241,19 @@ pub fn drawTitleBar() !bool {
             rl.maximizeWindow();
         }
         try checkWindowResized();
+    }
+    if (UITitleBar.down() and UITitleBar.hover()) {
+        if (offset) |vOffset| {
+            const oldWPos = rl.getWindowPosition();
+            const rMousePos = rl.getMousePosition();
+            const gMousePos = rMousePos.add(oldWPos);
+            const wPos = gMousePos.subtract(vOffset);
+            rl.setWindowPosition(@intFromFloat(wPos.x), @intFromFloat(wPos.y));
+        } else {
+            offset = rl.getMousePosition();
+        } 
+    } else {
+        offset = null;
     }
     return UICloseBtn.pressed();
 }

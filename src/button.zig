@@ -94,7 +94,12 @@ pub fn pressed(self: *const Self) bool {
     return rl.isMouseButtonReleased(.mouse_button_left) and self.hover();
 }
 
-fn hover(self: *const Self) bool {
+pub fn down(self: *const Self) bool {
+    _ = self;
+    return rl.isMouseButtonDown(.mouse_button_left);
+}
+
+pub fn hover(self: *const Self) bool {
     const mousePosition = rl.getMousePosition();
     const fWidth: f32 = @floatFromInt(Config.vars.get(i32, "WindowWidth"));
     const fHeight: f32 = @floatFromInt(Config.vars.get(i32, "WindowHeight"));

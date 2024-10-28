@@ -18,8 +18,10 @@ pub fn main() !void {
 
     try Config.init(Memory.Allocator);
     defer Config.vars.deinit();
-
+    
     var args = try std.process.argsWithAllocator(Memory.Allocator);
+    defer args.deinit();
+    
     _ = args.skip();
 
     const operation = args.next() orelse return error.NotEnoughArguments;
