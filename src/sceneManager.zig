@@ -6,6 +6,8 @@ const Menu = @import("menu.zig");
 const Intro = @import("intro.zig");
 const Scene = @import("sceneList.zig").Scene;
 const Result = @import("sceneList.zig").Result;
+const Input = @import("input.zig");
+
 const Common = @import("common.zig");
 
 //TODO: write a scenemanager thats not ass
@@ -21,6 +23,9 @@ pub fn init() !Self {
 pub fn loop(self: *Self) !bool {
     rl.beginDrawing();
     defer rl.endDrawing();
+
+    Input.read();
+    defer Input.clear();
 
     switch (self.currentScene) {
         .Intro => |*intro| {

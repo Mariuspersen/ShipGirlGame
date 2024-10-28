@@ -13,6 +13,7 @@ const Scene = @import("sceneList.zig").Scene;
 const Intro = @import("intro.zig");
 const Light = @import("lights.zig");
 const Ocean = @import("ocean.zig");
+const Input = @import("input.zig");
 
 const Self = @This();
 const Asset = Assets.Asset;
@@ -36,13 +37,7 @@ time: f32,
 
 pub fn load() !Self {
     var temp = Self{
-        .skybox = try Asset.init(
-            &Assets.skySunset,
-            -16.0,
-            -16.0,
-            -16.0,
-            0
-        ),
+        .skybox = try Asset.init(&Assets.skySunset, -16.0, -16.0, -16.0, 0),
         .assets = AssetList.init(Memory.Allocator),
         .camera = std.mem.zeroInit(rl.Camera3D, .{}),
         .time = 0.0,
@@ -134,9 +129,8 @@ pub fn unload(self: *Self) void {
 
 pub fn loop(self: *Self) !Result {
     var retValue: Result = Result.loop;
-    const ctrlDown = rl.isKeyDown(.key_left_control);
-    //TODO: Make keyboard handling into a manager to handle input universally
-    if (ctrlDown) {
+
+    if (Input.modifierKey == .key_left_control) {
         if (rl.isCursorHidden()) {
             rl.enableCursor();
             rl.showCursor();
@@ -146,9 +140,10 @@ pub fn loop(self: *Self) !Result {
             rl.hideCursor();
             rl.disableCursor();
         }
+        rl.updateCamera(&self.camera, .camera_free);
     }
 
-    switch (rl.getKeyPressed()) {
+    switch (Input.currentKey) {
         .key_escape => {
             retValue = try Result.ok(.Quit);
         },
@@ -159,6 +154,13 @@ pub fn loop(self: *Self) !Result {
             inline for (&self.lights) |*light| {
                 light.enabled = if (light.enabled == 1) 0 else 1;
             }
+        },
+        .key_f5 => {
+            try Input.setKeyBind("fullscreen", .key_f11, .isKeyPressed);
+        },
+        .key_f6 => {
+            const key = Input.getKeyBind("fullscreen");
+            std.debug.print("{any}\n", .{key});
         },
         .key_f11 => {
             try Common.toggleFullscreen();
@@ -171,10 +173,6 @@ pub fn loop(self: *Self) !Result {
         },
     }
     rl.clearBackground(rl.Color.gray);
-
-    if (!ctrlDown) {
-        rl.updateCamera(&self.camera, .camera_free);
-    }
 
     rl.setShaderValue(
         self.lightShader,
