@@ -9,12 +9,11 @@ const Config = @import("config.zig");
 const Self = @This();
 
 pub fn Start() !void {
-
     Memory.initAllocator();
     defer Memory.deinitAllocator();
 
     try Config.init(Memory.Allocator);
-    defer Config.vars.deinit();
+    defer Config.deinit();
 
     try Common.init();
     defer Common.deinit();

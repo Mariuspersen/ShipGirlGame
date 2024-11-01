@@ -14,15 +14,15 @@ const conVar = union(enum) {
 
     pub fn init(data: anytype) conVar {
         return switch (@typeInfo(@TypeOf(data))) {
-            .Int => .{ .number = @as(i32,data) },
-            .Float => .{ .float = @as(f32,data) },
+            .Int => .{ .number = @as(i32, data) },
+            .Float => .{ .float = @as(f32, data) },
             .Pointer => .{ .string = data },
             else => @compileError("Not a valid datatype!"),
         };
     }
 };
 
-pub var vars: Self = undefined;
+var vars: Self = undefined;
 var file: std.fs.File = undefined;
 
 hashmap: std.StringHashMap(conVar),
@@ -31,60 +31,58 @@ pub fn init(allocator: std.mem.Allocator) !void {
     vars = Self{
         .hashmap = std.StringHashMap(conVar).init(allocator),
     };
-    if(fs.cwd().openFile("config", .{ .mode = .read_write })) |f| {
+    if (fs.cwd().openFile("config", .{ .mode = .read_write })) |f| {
         file = f;
-    }
-    else |_| {
+    } else |_| {
         file = try std.fs.cwd().createFile("config", .{ .read = true });
         const fWriter = file.writer();
         try fWriter.writeAll(Defaults);
         try file.seekTo(0);
     }
-        
+
     const conFileRead = file.reader();
-    try vars.read(conFileRead);
+    try read(conFileRead);
 }
 
-pub fn add(self: *Self, name: []const u8, value: anytype) !void {
+pub fn add(name: []const u8, value: anytype) !void {
     const cv: conVar = switch (@typeInfo(@TypeOf(value))) {
         .Int, .Float => conVar.init(value),
         .Pointer => blk: {
-            const buf = try self.hashmap.allocator.allocSentinel(u8, value.len,0);
+            const buf = try vars.hashmap.allocator.allocSentinel(u8, value.len, 0);
             @memcpy(buf, value);
             break :blk conVar.init(buf);
         },
         else => return error.InvalidConType,
     };
 
-    const buf = try self.hashmap.allocator.alloc(u8, name.len);
+    const buf = try vars.hashmap.allocator.alloc(u8, name.len);
     @memcpy(buf, name);
 
-    const res = try self.hashmap.getOrPut(buf);
+    const res = try vars.hashmap.getOrPut(buf);
     if (res.found_existing) {
-        const oldVar = self.hashmap.fetchRemove(buf) orelse return error.UnknownConvar;
+        const oldVar = vars.hashmap.fetchRemove(buf) orelse return error.UnknownConvar;
         switch (oldVar.value) {
             .number, .float => {
-                self.hashmap.allocator.free(oldVar.key);
+                vars.hashmap.allocator.free(oldVar.key);
             },
             .string => |s| {
-                self.hashmap.allocator.free(s);
-                self.hashmap.allocator.free(oldVar.key);
+                vars.hashmap.allocator.free(s);
+                vars.hashmap.allocator.free(oldVar.key);
             },
         }
     }
-    try self.hashmap.put(buf, cv);
+    try vars.hashmap.put(buf, cv);
 }
 
-pub fn get(self: *Self, T: type, name: []const u8) T {
-    if(self.hashmap.get(name)) |cv| {
+pub fn get(T: type, name: []const u8) T {
+    if (vars.hashmap.get(name)) |cv| {
         return switch (@typeInfo(T)) {
             .Float => cv.float,
             .Int => cv.number,
             .Pointer => cv.string,
             else => @as(T, 0),
         };
-    }
-    else {
+    } else {
         std.debug.print("Couldn't find {s}\n", .{name});
         return switch (@typeInfo(T)) {
             .Pointer => &.{},
@@ -93,24 +91,24 @@ pub fn get(self: *Self, T: type, name: []const u8) T {
     }
 }
 
-pub fn remove(self: *Self, name: []const u8) !void {
-    const res = try self.hashmap.getOrPut(name);
+pub fn remove(name: []const u8) !void {
+    const res = try vars.hashmap.getOrPut(name);
     if (res.found_existing) {
-        const oldVar = self.hashmap.fetchRemove(name) orelse return error.UnknownConvar;
+        const oldVar = vars.hashmap.fetchRemove(name) orelse return error.UnknownConvar;
         switch (oldVar.value) {
             .number, .float => {
-                self.hashmap.allocator.free(oldVar.key);
+                vars.hashmap.allocator.free(oldVar.key);
             },
             .string => |s| {
-                self.hashmap.allocator.free(s);
-                self.hashmap.allocator.free(oldVar.key);
+                vars.hashmap.allocator.free(s);
+                vars.hashmap.allocator.free(oldVar.key);
             },
         }
     }
 }
 
-pub fn write(self: *Self, writer: anytype) !void {
-    var it = self.hashmap.iterator();
+pub fn write(writer: anytype) !void {
+    var it = vars.hashmap.iterator();
     while (it.next()) |e| {
         try writer.writeInt(u8, @as(u8, @intCast(e.key_ptr.*.len)), .little);
         try writer.writeAll(e.key_ptr.*);
@@ -131,34 +129,34 @@ fn writeFloat(writer: anytype, comptime T: type, value: T) !void {
     return writer.writeAll(&bytes);
 }
 
-pub fn read(self: *Self, reader: anytype) !void {
+pub fn read(reader: anytype) !void {
     while (true) {
-        self.readInternal(reader) catch |err| switch (err) {
+        readInternal(reader) catch |err| switch (err) {
             error.EndOfStream => break,
             else => return err,
         };
     }
 }
 
-fn readInternal(self: *Self, reader: anytype) !void {
+fn readInternal(reader: anytype) !void {
     const name_length = try reader.readInt(u8, .little);
-    const name = try self.hashmap.allocator.alloc(u8, name_length);
+    const name = try vars.hashmap.allocator.alloc(u8, name_length);
     _ = try reader.readAtLeast(name, name_length);
     const conVarType = try reader.readInt(u8, .little);
     switch (conVarType) {
         @intFromEnum(conVar.string) => {
             const val_length = try reader.readInt(u8, .little);
-            const val = try self.hashmap.allocator.allocSentinel(u8, val_length,0);
+            const val = try vars.hashmap.allocator.allocSentinel(u8, val_length, 0);
             _ = try reader.readAtLeast(val, val_length);
-            try self.hashmap.put(name, conVar.init(val));
+            try vars.hashmap.put(name, conVar.init(val));
         },
         @intFromEnum(conVar.number) => {
             const number = try reader.readInt(i32, .little);
-            try self.hashmap.put(name, conVar.init(number));
+            try vars.hashmap.put(name, conVar.init(number));
         },
         @intFromEnum(conVar.float) => {
             const float = try readFloat(reader, f32);
-            try self.hashmap.put(name, conVar.init(float));
+            try vars.hashmap.put(name, conVar.init(float));
         },
         else => return error.InvalidType,
     }
@@ -170,26 +168,25 @@ fn readFloat(reader: anytype, comptime T: type) !T {
     return value;
 }
 
-pub fn deinit(self: *Self) void {
+pub fn deinit() void {
     const conFileWrite = file.writer();
     file.seekTo(0) catch |err| {
         Common.printError(err);
         return;
     };
-    vars.write(conFileWrite) catch |err| {
+    write(conFileWrite) catch |err| {
         Common.printError(err);
         return;
     };
 
-
-    var it = self.hashmap.iterator();
+    var it = vars.hashmap.iterator();
     it.index = 0;
     while (it.next()) |e| {
-        self.hashmap.allocator.free(e.key_ptr.*);
+        vars.hashmap.allocator.free(e.key_ptr.*);
         switch (e.value_ptr.*) {
             .number, .float => {},
             .string => |s| {
-                self.hashmap.allocator.free(s);
+                vars.hashmap.allocator.free(s);
             },
         }
     }
@@ -202,7 +199,7 @@ pub fn deinit(self: *Self) void {
         Common.printError(err);
         return;
     };
-    self.hashmap.deinit();
+    vars.hashmap.deinit();
     file.close();
     vars = undefined;
 }

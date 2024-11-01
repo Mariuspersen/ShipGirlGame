@@ -2,8 +2,7 @@ const rl = @import("raylib");
 const Common = @import("common.zig");
 const Assets = @import("assetManager.zig");
 const Colors = @import("colors.zig");
-const Result = @import("sceneList.zig").Result;
-const Scene = @import("sceneList.zig").Scene;
+const Scenes = @import("sceneManager.zig");
 const Config = @import("config.zig");
 
 const Menu = @import("menu.zig");
@@ -29,19 +28,18 @@ pub fn unload(self: *Self) void {
     _ = self;
 }
 
-pub fn loop(self: *Self) !Result {
-    var retValue: Result = Result.loop;
+pub fn loop(self: *Self) !void {
     defer rl.clearBackground(rl.Color.black);
 
     self.time += rl.getFrameTime();
     const alpha = Common.fade(self.time, FADE, SUSTAIN, FADE);
     const color = rl.fade(rl.Color.white, alpha);
 
-    const fontSize = Config.vars.get(i32, "MenuTitleFontSize");
+    const fontSize = Config.get(i32, "MenuTitleFontSize");
 
     const offset = @divTrunc(rl.measureText(TEXT, fontSize), 2);
-    const width = Config.vars.get(i32, "WindowWidth");
-    const height = Config.vars.get(i32, "WindowHeight");
+    const width = Config.get(i32, "WindowWidth");
+    const height = Config.get(i32, "WindowHeight");
     rl.drawText(
         TEXT,
         @divTrunc(width, 2) - offset,
@@ -51,7 +49,6 @@ pub fn loop(self: *Self) !Result {
     );
 
     if (self.time > SUSTAIN + FADE + FADE) {
-        retValue = try Result.ok(.MainMenu);
+        Scenes.returnVal = try Scenes.Result.ok(.MainMenu);
     }
-    return retValue;
 }

@@ -17,7 +17,7 @@ pub fn main() !void {
     }
 
     try Config.init(Memory.Allocator);
-    defer Config.vars.deinit();
+    defer Config.deinit();
     
     var args = try std.process.argsWithAllocator(Memory.Allocator);
     defer args.deinit();
@@ -32,13 +32,13 @@ pub fn main() !void {
     switch (operation[0]) {
         'a' => {
             switch (valType[0]) {
-                's' => try Config.vars.add(key, value),
-                'f' => try Config.vars.add(key, try std.fmt.parseFloat(f32, value)),
-                'n' => try Config.vars.add(key, try std.fmt.parseInt(i32, value, 10)),
+                's' => try Config.add(key, value),
+                'f' => try Config.add(key, try std.fmt.parseFloat(f32, value)),
+                'n' => try Config.add(key, try std.fmt.parseInt(i32, value, 10)),
                 else => return error.WrongDataType,
             }
         },
-        'r' => try Config.vars.remove(key),
+        'r' => try Config.remove(key),
         else => return error.WrongOperation,
     }
 }

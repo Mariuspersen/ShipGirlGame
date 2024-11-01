@@ -8,8 +8,7 @@ const Config = @import("config.zig");
 const Memory = @import("memory.zig");
 const Assets = @import("assetManager.zig");
 const Colors = @import("colors.zig");
-const Result = @import("sceneList.zig").Result;
-const Scene = @import("sceneList.zig").Scene;
+const Scenes = @import("sceneManager.zig");
 const Intro = @import("intro.zig");
 const Light = @import("lights.zig");
 const Ocean = @import("ocean.zig");
@@ -88,7 +87,7 @@ pub fn load() !Self {
         temp.lightShader,
     );
 
-    try Config.vars.add("TitleBarOffset", @as(i32, 0));
+    try Config.add("TitleBarOffset", @as(i32, 0));
 
     try temp.assets.append(&Assets.guardHouse, -20, 20.5, -2.5);
     try temp.assets.append(&Assets.energydrink, 0.0, 8.0, 5.0);
@@ -111,7 +110,7 @@ pub fn load() !Self {
     temp.camera.fovy = 45.0;
     temp.camera.projection = .camera_perspective;
 
-    try Config.vars.add("TitleBarOffset", @as(i32, 46));
+    try Config.add("TitleBarOffset", @as(i32, 46));
     return temp;
 }
 
@@ -127,9 +126,7 @@ pub fn unload(self: *Self) void {
     rl.memFree(self.oceanShader.locs);
 }
 
-pub fn loop(self: *Self) !Result {
-    var retValue: Result = Result.loop;
-
+pub fn loop(self: *Self) !void {
     if (Input.modifierKey == .key_left_control) {
         if (rl.isCursorHidden()) {
             rl.enableCursor();
@@ -138,14 +135,14 @@ pub fn loop(self: *Self) !Result {
     } else {
         if (!rl.isCursorHidden()) {
             rl.hideCursor();
-            rl.disableCursor();
+            //rl.disableCursor();
         }
         rl.updateCamera(&self.camera, .camera_free);
     }
 
     switch (Input.currentKey) {
         .key_escape => {
-            retValue = try Result.ok(.Quit);
+            Scenes.returnVal = try Scenes.Result.ok(.Quit);
         },
         .key_f3 => {
             self.debug = !self.debug;
@@ -210,10 +207,8 @@ pub fn loop(self: *Self) !Result {
     }
 
     if (try Common.drawTitleBar()) {
-        retValue = try Result.ok(.MainMenu);
+        Scenes.returnVal = try Scenes.Result.ok(.MainMenu);
     }
 
     try Common.checkWindowResized();
-
-    return retValue;
 }

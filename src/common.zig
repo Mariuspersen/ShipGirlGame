@@ -4,11 +4,13 @@ const builtin = @import("builtin");
 const rl = @import("raylib");
 const rg = @import("raygui");
 const math = std.math;
-const Scene = @import("sceneList.zig").sceneList;
+const SceneManager = @import("sceneManager.zig");
 const Assets = @import("assetManager.zig");
 const Button = @import("button.zig");
 const Memory = @import("memory.zig");
 const Config = @import("config.zig");
+
+const Scene = SceneManager.Scene;
 
 //Public Variables
 pub var Fullscreen: bool = false;
@@ -23,10 +25,6 @@ pub var UITitleBar: Button = undefined;
 //Public Constants
 pub const Version = @embedFile("version");
 pub const Zero: usize = 0;
-pub const StartScene: Scene = switch (builtin.mode) {
-    .Debug => Scene.Intro,
-    else => Scene.Intro,
-};
 
 pub const windowConfigFlags = rl.ConfigFlags{
     .window_resizable = true,
@@ -36,9 +34,9 @@ pub const windowConfigFlags = rl.ConfigFlags{
 
 pub fn init() !void {
     rl.initWindow(
-        Config.vars.get(i32, "WindowWidth"),
-        Config.vars.get(i32, "WindowHeight"),
-        Config.vars.get([:0]const u8, "WindowTitle"),
+        Config.get(i32, "WindowWidth"),
+        Config.get(i32, "WindowHeight"),
+        Config.get([:0]const u8, "WindowTitle"),
     );
 
     switch (builtin.mode) {
@@ -46,14 +44,14 @@ pub fn init() !void {
         else => try toggleFullscreen(),
     }
 
-    try Config.vars.add("TitleBarOffset", @as(i32, 0));
+    try Config.add("TitleBarOffset", @as(i32, 0));
 
     initUiButtons();
     rl.setWindowState(windowConfigFlags);
     rl.setExitKey(.key_null);
     rl.setLoadFileDataCallback(Assets.loadDataCallback);
 
-    rl.setTargetFPS(Config.vars.get(i32, "Framerate"));
+    rl.setTargetFPS(Config.get(i32, "Framerate"));
 }
 
 pub fn deinit() void {
@@ -77,8 +75,8 @@ fn initUiButtons() void {
     UiCloseText = rl.loadTextureFromImage(close);
     UIMaximizeText = rl.loadTextureFromImage(max);
     UIMinimizeText = rl.loadTextureFromImage(min);
-    const width: f32 = @floatFromInt(Config.vars.get(i32, "WindowWidth"));
-    const height: f32 = @floatFromInt(Config.vars.get(i32, "WindowHeight"));
+    const width: f32 = @floatFromInt(Config.get(i32, "WindowWidth"));
+    const height: f32 = @floatFromInt(Config.get(i32, "WindowHeight"));
     UICloseBtn = Button.init(
         (width - 46) / width,
         0.0,
@@ -118,7 +116,7 @@ fn initUiButtons() void {
         false,
         true,
         null,
-        Config.vars.get([:0]const u8, "WindowTitle"),
+        Config.get([:0]const u8, "WindowTitle"),
     );
     UITitleBar.colorHover = rl.Color.dark_gray;
 }
@@ -139,8 +137,8 @@ pub fn fade(t: anytype, fade_in: anytype, sustain: anytype, fade_out: anytype) @
 var debugPos: i32 = 0;
 var debugBuffer: [64]u8 = undefined;
 pub fn drawDebugInfo(camera: *rl.Camera3D) !void {
-    const normalFontSize = Config.vars.get(i32, "NormalFontSize");
-    const titleBarOffset = Config.vars.get(i32, "TitleBarOffset");
+    const normalFontSize = Config.get(i32, "NormalFontSize");
+    const titleBarOffset = Config.get(i32, "TitleBarOffset");
     drawVersionNumber(normalFontSize, titleBarOffset);
     try drawPosition(camera, normalFontSize, titleBarOffset);
     try drawFPS(normalFontSize, titleBarOffset);
@@ -218,10 +216,10 @@ var offset: ?rl.Vector2 = null;
 
 pub fn drawTitleBar() !bool {
     if (rl.getMousePosition().y > 50 and rl.isWindowMaximized()) {
-        try Config.vars.add("TitleBarOffset", @as(i32, 0));
+        try Config.add("TitleBarOffset", @as(i32, 0));
         return false;
     } else {
-        try Config.vars.add("TitleBarOffset", @as(i32, 46));
+        try Config.add("TitleBarOffset", @as(i32, 46));
     }
     UICloseBtn.draw();
     UIMaximizeBtn.draw();
@@ -251,7 +249,7 @@ pub fn drawTitleBar() !bool {
             rl.setWindowPosition(@intFromFloat(wPos.x), @intFromFloat(wPos.y));
         } else {
             offset = rl.getMousePosition();
-        } 
+        }
     } else {
         offset = null;
     }
@@ -265,10 +263,10 @@ pub fn toggleFullscreen() !void {
 
 pub fn checkWindowResized() !void {
     if (rl.isWindowResized()) {
-        try Config.vars.add("WindowWidth", rl.getScreenWidth());
-        try Config.vars.add("WindowHeight", rl.getScreenHeight());
-        const fWidth: f32 = @floatFromInt(Config.vars.get(i32, "WindowWidth"));
-        const fHeight: f32 = @floatFromInt(Config.vars.get(i32, "WindowHeight"));
+        try Config.add("WindowWidth", rl.getScreenWidth());
+        try Config.add("WindowHeight", rl.getScreenHeight());
+        const fWidth: f32 = @floatFromInt(Config.get(i32, "WindowWidth"));
+        const fHeight: f32 = @floatFromInt(Config.get(i32, "WindowHeight"));
         UICloseBtn.modifyFactor(
             (fWidth - UICloseBtn.size.real.x) / fWidth,
             null,
