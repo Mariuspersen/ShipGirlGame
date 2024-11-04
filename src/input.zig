@@ -19,9 +19,19 @@ const KeyFunction = enum {
     isKeyUp,
 };
 
-const Macro = struct {
+pub const Macro = struct {
     key: rl.KeyboardKey,
     func: KeyFunction,
+
+    pub fn handleMacro(self: *Macro) bool {
+        return switch (self.func) {
+            .isKeyUp => rl.isKeyUp(self.key),
+            .isKeyDown => rl.isKeyDown(self.key),
+            .isKeyPressed => rl.isKeyPressed(self.key),
+            .isKeyReleased => rl.isKeyReleased(self.key),
+            .isKeyPressedRepeat => rl.isKeyPressedRepeat(self.key),
+        };
+    }
 };
 
 pub fn read() void {

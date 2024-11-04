@@ -142,7 +142,7 @@ pub fn loop(self: *Self) !void {
 
     switch (Input.currentKey) {
         .key_escape => {
-            Scenes.returnVal = try Scenes.Result.ok(.Quit);
+            try Scenes.changeScene(.MainMenu);
         },
         .key_f3 => {
             self.debug = !self.debug;
@@ -207,7 +207,7 @@ pub fn loop(self: *Self) !void {
     }
 
     if (try Common.drawTitleBar()) {
-        Scenes.returnVal = try Scenes.Result.ok(.MainMenu);
+        try Scenes.changeScene(.MainMenu);
     }
 
     try Common.checkWindowResized();

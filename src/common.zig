@@ -50,7 +50,6 @@ pub fn init() !void {
     rl.setWindowState(windowConfigFlags);
     rl.setExitKey(.key_null);
     rl.setLoadFileDataCallback(Assets.loadDataCallback);
-
     rl.setTargetFPS(Config.get(i32, "Framerate"));
 }
 

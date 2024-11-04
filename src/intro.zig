@@ -49,6 +49,6 @@ pub fn loop(self: *Self) !void {
     );
 
     if (self.time > SUSTAIN + FADE + FADE) {
-        Scenes.returnVal = try Scenes.Result.ok(.MainMenu);
+        try Scenes.changeScene(.MainMenu);
     }
 }

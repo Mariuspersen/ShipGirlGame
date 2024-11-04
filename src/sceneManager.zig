@@ -9,6 +9,7 @@ const Intro = @import("intro.zig");
 const Input = @import("input.zig");
 const Base = @import("baseScene.zig");
 const Common = @import("common.zig");
+const Console = @import("console.zig");
 
 pub var returnVal: Result = undefined;
 const startScene: SceneId = switch (builtin.mode) {
@@ -19,11 +20,15 @@ const startScene: SceneId = switch (builtin.mode) {
 //TODO: write a scenemanager thats not ass
 
 currentScene: Scene,
+console: Console,
+consoleKey: Input.Macro,
 
 pub fn init() !Self {
     returnVal = .loop;
     return .{
+        .consoleKey = Input.getKeyBind("console"),
         .currentScene = try Scene.init(startScene),
+        .console = Console.init()
     };
 }
 
@@ -33,6 +38,12 @@ pub fn loop(self: *Self) !bool {
 
     Input.read();
     defer Input.clear();
+
+    if (self.consoleKey.handleMacro()) {
+        self.console.enabled = !self.console.enabled;
+    }
+
+    defer self.console.draw();
 
     switch (returnVal) {
         .ok => |newScene| self.switchScene(newScene),
@@ -105,3 +116,7 @@ pub const Result = union(enum) {
         } };
     }
 };
+
+pub fn changeScene(id: SceneId) !void {
+    returnVal = try Result.ok(id);
+}
