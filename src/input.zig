@@ -2,6 +2,7 @@ const rl = @import("raylib");
 const std = @import("std");
 
 const Config = @import("config.zig");
+const Memory = @import("memory.zig");
 const Common = @import("common.zig");
 
 pub var currentKey: rl.KeyboardKey = .key_null;
@@ -11,13 +12,31 @@ const KeyAction = union(enum) {
     fullscreen: @TypeOf(Common.toggleFullscreen),
 };
 
-const KeyFunction = enum {
+pub const KeyFunction = enum {
     isKeyDown,
     isKeyPressed,
     isKeyPressedRepeat,
     isKeyReleased,
     isKeyUp,
+
+    pub fn fromText(text: []const u8) !KeyFunction {
+        inline for (@typeInfo(KeyFunction).Enum.fields) |field| {
+            if (std.mem.eql(u8, text, field.name)) {
+                return @enumFromInt(field.value);
+            }
+        }
+        return error.InvalidKeyFunctionEnum;
+    }
 };
+
+pub fn keyboardKeyFromText(text: []const u8) !rl.KeyboardKey {
+    inline for (@typeInfo(rl.KeyboardKey).Enum.fields) |field| {
+            if (std.mem.eql(u8, text, field.name)) {
+                return @enumFromInt(field.value);
+            }
+    }
+    return error.InvalidKeyBoardKeyEnum;
+}
 
 pub const Macro = struct {
     key: rl.KeyboardKey,
@@ -57,16 +76,26 @@ pub fn clear() void {
 
 const bind_modifier = "k_";
 
-pub fn setKeyBind(comptime name: []const u8, key: rl.KeyboardKey, func: KeyFunction) !void {
+pub fn setKeyBind(name: []const u8, key: rl.KeyboardKey, func: KeyFunction) !void {
     const funcInt: u16 = @intFromEnum(func);
     const keyInt: u16 = @intCast(@intFromEnum(key));
     const compact: u32 = (funcInt << 15) | keyInt;
-    const fname = bind_modifier ++ name;
+    const fname = try std.mem.concat(
+        Memory.Allocator,
+        u8,
+        &.{ bind_modifier, name },
+    );
+    defer Memory.Allocator.free(fname);
     try Config.add(fname, @as(i32, @bitCast(compact)));
 }
 
-pub fn getKeyBind(comptime name: []const u8) Macro {
-    const fname = bind_modifier ++ name;
+pub fn getKeyBind(name: []const u8) !Macro {
+    const fname = try std.mem.concat(
+        Memory.Allocator,
+        u8,
+        &.{ bind_modifier, name },
+    );
+    defer Memory.Allocator.free(fname);
     const compact: u32 = @bitCast(Config.get(i32, fname));
     const funcInt: u16 = @intCast(compact >> 15);
     const keyInt: u16 = @intCast(compact & 0x7FFF);

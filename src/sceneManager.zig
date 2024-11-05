@@ -26,7 +26,7 @@ consoleKey: Input.Macro,
 pub fn init() !Self {
     returnVal = .loop;
     return .{
-        .consoleKey = Input.getKeyBind("console"),
+        .consoleKey = try Input.getKeyBind("console"),
         .currentScene = try Scene.init(startScene),
         .console = Console.init()
     };
