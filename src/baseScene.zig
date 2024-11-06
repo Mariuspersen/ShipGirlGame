@@ -140,12 +140,14 @@ pub fn loop(self: *Self) !void {
         rl.updateCamera(&self.camera, .camera_free);
     }
 
+    var macro = try Input.getKeyBind("debug_level");
+    if (macro.handleMacro()) {
+        self.debug = !self.debug;
+    }
+
     switch (Input.currentKey) {
         .key_escape => {
             try Scenes.changeScene(.MainMenu);
-        },
-        .key_f3 => {
-            self.debug = !self.debug;
         },
         .key_f4 => {
             inline for (&self.lights) |*light| {

@@ -103,6 +103,15 @@ pub const Scene = union(enum) {
 
 const ResultId = std.meta.Tag(Result);
 
+pub fn SceneIdfromText(text: []const u8) !SceneId {
+    inline for (@typeInfo(SceneId).Enum.fields) |field| {
+        if (std.mem.eql(u8, text, field.name)) {
+            return @enumFromInt(field.value);
+        }
+    }
+    return error.InvalidSceneId;
+}
+
 pub const Result = union(enum) {
     ok: Scene,
     loop: void,

@@ -4,15 +4,18 @@ const rg = @import("raygui");
 const Config = @import("config.zig");
 const Memory = @import("memory.zig");
 const Input = @import("input.zig");
+const Scenes = @import("sceneManager.zig");
 
 
 const Self = @This();
+
+const LENGTH = 400;
 
 position: rl.Vector2,
 size: rl.Vector2,
 enabled: bool = false,
 fontSize: i32,
-text: [100:0]u8,
+text: [LENGTH:0]u8,
 
 pub fn init() Self {
     const wHeight: f32 = @floatFromInt(Config.get(i32, "WindowHeight"));
@@ -25,7 +28,7 @@ pub fn init() Self {
             Config.get(f32, "ConsoleSizeX"),
             Config.get(f32, "ConsoleSizeY"),
         ),
-        .text = std.mem.zeroes([100:0]u8),
+        .text = std.mem.zeroes([LENGTH:0]u8),
         .fontSize = Config.get(i32, "ConsoleTextSize"),
     };
 }
@@ -33,8 +36,12 @@ pub fn init() Self {
 pub fn draw(self: *Self) void {
     if (!self.enabled) return;
     const r = rl.Rectangle.init(self.position.x, self.position.y, self.size.x, self.size.y);
-    const result = rg.guiTextBox(r, &self.text, self.fontSize, true);
+    const result = rg.guiTextBox(r, &self.text, LENGTH, true);
     if (result != 0) {
+        for (&self.text) |*c| if (c.* == 0) {
+            c.* = ' ';
+            break;
+        };
         self.parseText() catch |err| {
             _ = std.fmt.bufPrintZ(&self.text, "ERROR: {s}", .{@errorName(err)}) catch {};
         };
@@ -42,19 +49,33 @@ pub fn draw(self: *Self) void {
 }
 
 pub fn parseText(self: *Self) !void {
-    defer self.text = std.mem.zeroes([100:0]u8);
-    var it = std.mem.splitAny(u8, &self.text, " ");
+    defer self.text = std.mem.zeroes([LENGTH:0]u8);
+    var it = std.mem.splitAny(u8, &self.text, " \n\r");
 
-    const cmd = it.first();
+    const cmd = it.next() orelse return error.NoCommandEntered;
 
     if (std.mem.eql(u8, "bind", cmd)) {
+        const bindName = it.next() orelse return error.TooFewArguments;
         const keyFunction = it.next() orelse return error.TooFewArguments;
         const keyboardKey = it.next() orelse return error.TooFewArguments;
-        const macro = Input.Macro{
-            .func = try Input.KeyFunction.fromText(keyFunction),
-            .key = try Input.keyboardKeyFromText(keyboardKey),
-        };
-        _ = try std.fmt.bufPrintZ(&self.text, "{any}", .{macro});
+        try Input.setKeyBind(
+            bindName,
+            try Input.keyboardKeyFromText(keyboardKey),
+            try Input.KeyFunction.fromText(keyFunction),
+        );
+        return;
+    }
+
+    if (std.mem.eql(u8, "scene", cmd)) {
+        const arg = it.next() orelse return error.TooFewArguments;
+        const scene = try Scenes.SceneIdfromText(arg);
+        try Scenes.changeScene(scene);
+        return;
+    }
+
+    if (std.mem.eql(u8, "quit", cmd[0..4])) {
+        try Scenes.changeScene(.Quit);
+        return;
     }
 
     return error.NotACommand;
