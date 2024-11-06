@@ -73,7 +73,7 @@ fn gitHash(allocator: std.mem.Allocator, buffer: *[7]u8) !void {
     const data = try head.readToEndAlloc(allocator, stat.size);
     defer allocator.free(data);
 
-    //Get path to current HEAD's ref
+    //Get path to current HEAD's ref                                                Just like me fr
     const index = std.mem.indexOf(u8, data, " ") orelse return error.no_space_in_head;
     const ref_path = try std.fs.path.join(
         allocator,
