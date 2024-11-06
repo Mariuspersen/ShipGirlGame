@@ -73,7 +73,7 @@ pub fn parseText(self: *Self) !void {
         return;
     }
 
-    if (std.mem.eql(u8, "quit", cmd[0..4])) {
+    if (std.mem.eql(u8, "quit", cmd)) {
         try Scenes.changeScene(.Quit);
         return;
     }
