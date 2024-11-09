@@ -11,7 +11,7 @@ const Base = @import("baseScene.zig");
 const Common = @import("common.zig");
 const Console = @import("console.zig");
 
-pub var returnVal: Result = undefined;
+var returnVal: Result = undefined;
 const startScene: SceneId = switch (builtin.mode) {
         .Debug => .Base,
         else => .Intro,
