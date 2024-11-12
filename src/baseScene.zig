@@ -79,14 +79,6 @@ pub fn load() !Self {
         temp.lightShader,
     );
 
-    temp.lights[Light.LIGHT_COUNT] = try Light.CreateLight(
-        Light.POINT,
-        rl.Vector3.init(0.8, 7.1, 6.0),
-        rl.Vector3.init(0.0, 7.0, 7.0),
-        rl.Color.fromInt(0x00110011),
-        temp.lightShader,
-    );
-
     try Config.add("TitleBarOffset", @as(i32, 0));
 
     try temp.assets.append(&Assets.guardHouse, -20, 20.5, -2.5);
