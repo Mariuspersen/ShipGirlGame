@@ -74,21 +74,15 @@ pub fn add(name: []const u8, value: anytype) !void {
     try vars.hashmap.put(buf, cv);
 }
 
-pub fn get(T: type, name: []const u8) T {
+pub fn get(T: type, name: []const u8) !T {
     if (vars.hashmap.get(name)) |cv| {
         return switch (@typeInfo(T)) {
             .Float => cv.float,
             .Int => cv.number,
             .Pointer => cv.string,
-            else => @as(T, 0),
+            else => error.InvalidConvarType,
         };
-    } else {
-        std.debug.print("Couldn't find {s}\n", .{name});
-        return switch (@typeInfo(T)) {
-            .Pointer => &.{},
-            else => @as(T, 0),
-        };
-    }
+    } else return error.ConvarNotInConfig;
 }
 
 pub fn remove(name: []const u8) !void {

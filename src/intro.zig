@@ -35,11 +35,11 @@ pub fn loop(self: *Self) !void {
     const alpha = Common.fade(self.time, FADE, SUSTAIN, FADE);
     const color = rl.fade(rl.Color.white, alpha);
 
-    const fontSize = Config.get(i32, "MenuTitleFontSize");
+    const fontSize = try Config.get(i32, "MenuTitleFontSize");
 
     const offset = @divTrunc(rl.measureText(TEXT, fontSize), 2);
-    const width = Config.get(i32, "WindowWidth");
-    const height = Config.get(i32, "WindowHeight");
+    const width = try Config.get(i32, "WindowWidth");
+    const height = try Config.get(i32, "WindowHeight");
     rl.drawText(
         TEXT,
         @divTrunc(width, 2) - offset,

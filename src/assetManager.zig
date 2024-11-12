@@ -17,8 +17,8 @@ pub const Asset = struct {
     color: rl.Color = rl.Color.white,
 
     pub fn init(model: *const embeddedGLB, x: f32, y: f32, z: f32, count: usize) !Asset {
-        const normalFontSize = Config.get(i32, "NormalFontSize");
-        const titleBarOffset = Config.get(i32, "TitleBarOffset");
+        const normalFontSize = try Config.get(i32, "NormalFontSize");
+        const titleBarOffset = try Config.get(i32, "TitleBarOffset");
         try Common.initDrawLoadingMessage(
             model.name,
             count,

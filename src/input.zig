@@ -96,7 +96,8 @@ pub fn getKeyBind(name: []const u8) !Macro {
         &.{ bind_modifier, name },
     );
     defer Memory.Allocator.free(fname);
-    const compact: u32 = @bitCast(Config.get(i32, fname));
+    const convar = try Config.get(i32, fname);
+    const compact: u32 = @bitCast(convar);
     const funcInt: u16 = @intCast(compact >> 15);
     const keyInt: u16 = @intCast(compact & 0x7FFF);
     return .{

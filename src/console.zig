@@ -17,19 +17,20 @@ enabled: bool = false,
 fontSize: i32,
 text: [LENGTH:0]u8,
 
-pub fn init() Self {
-    const wHeight: f32 = @floatFromInt(Config.get(i32, "WindowHeight"));
+pub fn init() !Self {
+    const convarHeight = try Config.get(i32, "WindowHeight");
+    const wHeight: f32 = @floatFromInt(convarHeight);
     return .{
         .position = rl.Vector2.init(
-            Config.get(f32, "ConsolePosX"),
-            wHeight - Config.get(f32, "ConsolePosY") * 2,
+            try Config.get(f32, "ConsolePosX"),
+            wHeight - try Config.get(f32, "ConsolePosY") * 2,
         ),
         .size = rl.Vector2.init(
-            Config.get(f32, "ConsoleSizeX"),
-            Config.get(f32, "ConsoleSizeY"),
+            try Config.get(f32, "ConsoleSizeX"),
+            try Config.get(f32, "ConsoleSizeY"),
         ),
         .text = std.mem.zeroes([LENGTH:0]u8),
-        .fontSize = Config.get(i32, "ConsoleTextSize"),
+        .fontSize = try Config.get(i32, "ConsoleTextSize"),
     };
 }
 

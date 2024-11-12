@@ -35,9 +35,11 @@ pub fn init(
     };
 }
 
-pub fn draw(self: *const Self) void {
-    const fWidth: f32 = @floatFromInt(Config.get(i32, "WindowWidth"));
-    const fHeight: f32 = @floatFromInt(Config.get(i32, "WindowHeight"));
+pub fn draw(self: *const Self) !void {
+    const convarWidth = try Config.get(i32, "WindowWidth");
+    const convarHeight = try Config.get(i32, "WindowHeight");
+    const fWidth: f32 = @floatFromInt(convarWidth);
+    const fHeight: f32 = @floatFromInt(convarHeight);
     const trueLoc = switch (self.location) {
         .scale => |s| rl.Vector2.init(s.x * fWidth, s.y * fHeight),
         .real => |r| r,
@@ -51,7 +53,7 @@ pub fn draw(self: *const Self) void {
         @intFromFloat(trueLoc.y),
         @intFromFloat(trueSize.x),
         @intFromFloat(trueSize.y),
-        if (self.hover()) self.colorHover else self.color,
+        if (try self.hover()) self.colorHover else self.color,
     );
 
     if (self.icon) |icon| {
@@ -62,7 +64,7 @@ pub fn draw(self: *const Self) void {
         );
     }
 
-    const fontSize = Config.get(i32, "NormalFontSize");
+    const fontSize = try Config.get(i32, "NormalFontSize");
 
     if (self.text) |text| {
         const width = rl.measureText(text, fontSize);
@@ -90,8 +92,8 @@ fn getSizeVec(self: *const Self) rl.Vector2 {
     };
 }
 
-pub fn pressed(self: *const Self) bool {
-    return rl.isMouseButtonReleased(.mouse_button_left) and self.hover();
+pub fn pressed(self: *const Self) !bool {
+    return rl.isMouseButtonReleased(.mouse_button_left) and try self.hover();
 }
 
 pub fn down(self: *const Self) bool {
@@ -99,10 +101,12 @@ pub fn down(self: *const Self) bool {
     return rl.isMouseButtonDown(.mouse_button_left);
 }
 
-pub fn hover(self: *const Self) bool {
+pub fn hover(self: *const Self) !bool {
     const mousePosition = rl.getMousePosition();
-    const fWidth: f32 = @floatFromInt(Config.get(i32, "WindowWidth"));
-    const fHeight: f32 = @floatFromInt(Config.get(i32, "WindowHeight"));
+    const convarWidth = try Config.get(i32, "WindowWidth");
+    const convarHeight = try Config.get(i32, "WindowHeight");
+    const fWidth: f32 = @floatFromInt(convarWidth);
+    const fHeight: f32 = @floatFromInt(convarHeight);
     const loc = switch (self.location) {
         .scale => |s| rl.Vector2.init(s.x * fWidth, s.y * fHeight),
         .real => |r| r,

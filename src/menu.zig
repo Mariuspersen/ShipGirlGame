@@ -20,8 +20,8 @@ pub fn load() !Self {
         .time = 0.0,
     };
 
-    temp.background.height = Config.get(i32, "WindowHeight");
-    temp.background.width = Config.get(i32, "WindowWidth");
+    temp.background.height = try Config.get(i32, "WindowHeight");
+    temp.background.width = try Config.get(i32, "WindowWidth");
     return temp;
 }
 
@@ -36,10 +36,10 @@ pub fn loop(self: *Self) !void {
     //Texture Background
     rl.drawTexture(self.background, 0, 0, rl.Color.white);
 
-    const fontSize = Config.get(i32, "MenuTitleFontSize");
-    const title = Config.get([:0]const u8, "WindowTitle");
-    const height = Config.get(i32, "WindowHeight");
-    const width = Config.get(i32, "WindowWidth");
+    const fontSize = try Config.get(i32, "MenuTitleFontSize");
+    const title = try Config.get([:0]const u8, "WindowTitle");
+    const height = try Config.get(i32, "WindowHeight");
+    const width = try Config.get(i32, "WindowWidth");
 
     //Title Text
     const offset = @divTrunc(rl.measureText(

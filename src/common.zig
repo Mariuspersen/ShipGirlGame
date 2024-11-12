@@ -34,9 +34,9 @@ pub const windowConfigFlags = rl.ConfigFlags{
 
 pub fn init() !void {
     rl.initWindow(
-        Config.get(i32, "WindowWidth"),
-        Config.get(i32, "WindowHeight"),
-        Config.get([:0]const u8, "WindowTitle"),
+        try Config.get(i32, "WindowWidth"),
+        try Config.get(i32, "WindowHeight"),
+        try Config.get([:0]const u8, "WindowTitle"),
     );
 
     switch (builtin.mode) {
@@ -46,11 +46,11 @@ pub fn init() !void {
 
     try Config.add("TitleBarOffset", @as(i32, 0));
 
-    initUiButtons();
+    try initUiButtons();
     rl.setWindowState(windowConfigFlags);
     rl.setExitKey(.key_null);
     rl.setLoadFileDataCallback(Assets.loadDataCallback);
-    rl.setTargetFPS(Config.get(i32, "Framerate"));
+    rl.setTargetFPS(try Config.get(i32, "Framerate"));
 }
 
 pub fn deinit() void {
@@ -60,7 +60,7 @@ pub fn deinit() void {
     rl.closeWindow();
 }
 
-fn initUiButtons() void {
+fn initUiButtons() !void {
     var close = Assets.barIcons.getImage();
     var max = Assets.barIcons.getImage();
     var min = Assets.barIcons.getImage();
@@ -74,8 +74,12 @@ fn initUiButtons() void {
     UiCloseText = rl.loadTextureFromImage(close);
     UIMaximizeText = rl.loadTextureFromImage(max);
     UIMinimizeText = rl.loadTextureFromImage(min);
-    const width: f32 = @floatFromInt(Config.get(i32, "WindowWidth"));
-    const height: f32 = @floatFromInt(Config.get(i32, "WindowHeight"));
+
+    const convarWidth = try Config.get(i32, "WindowWidth");
+    const convarHeight = try Config.get(i32, "WindowHeight");
+    const width: f32 = @floatFromInt(convarWidth);
+    const height: f32 = @floatFromInt(convarHeight);
+
     UICloseBtn = Button.init(
         (width - 46) / width,
         0.0,
@@ -115,7 +119,7 @@ fn initUiButtons() void {
         false,
         true,
         null,
-        Config.get([:0]const u8, "WindowTitle"),
+        try Config.get([:0]const u8, "WindowTitle"),
     );
     UITitleBar.colorHover = rl.Color.dark_gray;
 }
@@ -136,8 +140,8 @@ pub fn fade(t: anytype, fade_in: anytype, sustain: anytype, fade_out: anytype) @
 var debugPos: i32 = 0;
 var debugBuffer: [64]u8 = undefined;
 pub fn drawDebugInfo(camera: *rl.Camera3D) !void {
-    const normalFontSize = Config.get(i32, "NormalFontSize");
-    const titleBarOffset = Config.get(i32, "TitleBarOffset");
+    const normalFontSize = try Config.get(i32, "NormalFontSize");
+    const titleBarOffset = try Config.get(i32, "TitleBarOffset");
     drawVersionNumber(normalFontSize, titleBarOffset);
     try drawPosition(camera, normalFontSize, titleBarOffset);
     try drawFPS(normalFontSize, titleBarOffset);
@@ -220,18 +224,18 @@ pub fn drawTitleBar() !bool {
     } else {
         try Config.add("TitleBarOffset", @as(i32, 46));
     }
-    UICloseBtn.draw();
-    UIMaximizeBtn.draw();
-    UIMinimizeBtn.draw();
-    UITitleBar.draw();
-    if (UIMinimizeBtn.pressed()) {
+    try UICloseBtn.draw();
+    try UIMaximizeBtn.draw();
+    try UIMinimizeBtn.draw();
+    try UITitleBar.draw();
+    if (try UIMinimizeBtn.pressed()) {
         if (rl.isWindowMinimized()) {
             rl.restoreWindow();
         } else {
             rl.minimizeWindow();
         }
     }
-    if (UIMaximizeBtn.pressed()) {
+    if (try UIMaximizeBtn.pressed()) {
         if (rl.isWindowMaximized()) {
             rl.restoreWindow();
         } else {
@@ -239,7 +243,7 @@ pub fn drawTitleBar() !bool {
         }
         try checkWindowResized();
     }
-    if (UITitleBar.down() and UITitleBar.hover()) {
+    if (UITitleBar.down() and try UITitleBar.hover()) {
         if (offset) |vOffset| {
             const oldWPos = rl.getWindowPosition();
             const rMousePos = rl.getMousePosition();
@@ -264,8 +268,10 @@ pub fn checkWindowResized() !void {
     if (rl.isWindowResized()) {
         try Config.add("WindowWidth", rl.getScreenWidth());
         try Config.add("WindowHeight", rl.getScreenHeight());
-        const fWidth: f32 = @floatFromInt(Config.get(i32, "WindowWidth"));
-        const fHeight: f32 = @floatFromInt(Config.get(i32, "WindowHeight"));
+        const convarWidth = try Config.get(i32, "WindowWidth");
+        const convarHeight = try Config.get(i32, "WindowHeight");
+        const fWidth: f32 = @floatFromInt(convarWidth);
+        const fHeight: f32 = @floatFromInt(convarHeight);
         UICloseBtn.modifyFactor(
             (fWidth - UICloseBtn.size.real.x) / fWidth,
             null,
