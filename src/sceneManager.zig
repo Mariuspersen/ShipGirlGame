@@ -91,7 +91,15 @@ pub const Scene = union(enum) {
     Base: Base,
     Quit: void,
 
-    pub fn init(scene: SceneId) !Scene {
+    pub fn init(scene: SceneId) !Scene { 
+        _ = switch (scene) {
+            .Quit => Scene.Quit,
+            inline else => |s| {
+                const T = std.meta.fieldInfo(Scene,s).type;
+                @compileLog(T);
+            },
+        };
+
         return switch (scene) {
             .Intro => Scene{ .Intro = Intro.load() },
             .MainMenu => Scene{ .MainMenu = try Menu.load() },
