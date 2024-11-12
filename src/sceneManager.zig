@@ -61,42 +61,14 @@ fn loopScene(self: *Self) !void {
             return error.quit;
         },
         //Comptime expand the switch
-        inline else => |*s| {
-            // Check to ensure the type has a `loop` function.
-            if (!std.meta.hasFn(@TypeOf(s.*), "loop")) {
-                @compileError("Type does not have a loop function!");
-            }
-
-            //Run the loop function
-            const looped = s.loop();
-
-            // Check if the loaded type is an error union and handle it accordingly.
-            return switch (@typeInfo(@TypeOf(looped))) {
-                .ErrorUnion => try looped,
-                else => looped,
-            };
-        },
+        inline else => |*s| try Scene.loopInner(s),
     }
 }
 
 fn switchScene(self: *Self, newScene: Scene) !void {
     switch (self.currentScene) {
         .Quit => {},
-        inline else => |*s| {
-            // Check to ensure the type has a `unload` function.
-            if (!std.meta.hasFn(@TypeOf(s.*), "unload")) {
-                @compileError("Type does not have a unload function!");
-            }
-
-            //Run the loop function
-            const unloaded = s.unload();
-
-            // Check if the loaded type is an error union and handle it accordingly.
-            switch (@typeInfo(@TypeOf(unloaded))) {
-                .ErrorUnion => try unloaded,
-                else => unloaded,
-            }
-        },
+        inline else => |*s| try Scene.unloadInner(s),
     }
     self.currentScene = newScene;
     returnVal = .loop;
@@ -113,25 +85,60 @@ pub const Scene = union(enum) {
     pub fn init(scene: SceneId) !Scene {
         return switch (scene) {
             .Quit => Scene.Quit,
-
             //Comptime expand the switch
-            inline else => |s| {
-                const field = std.meta.fieldInfo(Scene, s);
+            inline else => |s| loadInner(s),
+        };
+    }
 
-                // Check to ensure the type has a `load` function.
-                if (!std.meta.hasFn(field.type, "load")) {
-                    @compileError("Type does not have a load function!");
-                }
+    pub fn loadInner(comptime scene: SceneId) !Scene {
+        const field = std.meta.fieldInfo(Scene, scene);
 
-                // Call the `load` function on the type associated with the scene variant.
-                const loaded = field.type.load();
+        // Check to ensure the type has a `load` function.
+        if (!std.meta.hasFn(field.type, "load")) {
+            @compileError("Type does not have a load function!");
+        }
 
-                // Check if the loaded type is an error union and handle it accordingly.
-                return switch (@typeInfo(@TypeOf(loaded))) {
-                    .ErrorUnion => @unionInit(Scene, field.name, try loaded),
-                    else => @unionInit(Scene, field.name, loaded),
-                };
-            },
+        // Call the `load` function on the type associated with the scene variant.
+        const loaded = field.type.load();
+
+        // Check if the loaded type is an error union and handle it accordingly.
+        return switch (@typeInfo(@TypeOf(loaded))) {
+            .ErrorUnion => @unionInit(Scene, field.name, try loaded),
+            else => @unionInit(Scene, field.name, loaded),
+        };
+    }
+
+    pub fn unloadInner(scene: anytype) !void {
+        {
+            // Check to ensure the type has a `unload` function.
+            if (!std.meta.hasFn(@TypeOf(scene.*), "unload")) {
+                @compileError("Type does not have a unload function!");
+            }
+
+            //Run the loop function
+            const unloaded = scene.unload();
+
+            // Check if the loaded type is an error union and handle it accordingly.
+            switch (@typeInfo(@TypeOf(unloaded))) {
+                .ErrorUnion => try unloaded,
+                else => unloaded,
+            }
+        }
+    }
+
+    pub fn loopInner(scene: anytype) !void {
+        // Check to ensure the type has a `loop` function.
+        if (!std.meta.hasFn(@TypeOf(scene.*), "loop")) {
+            @compileError("Type does not have a loop function!");
+        }
+
+        //Run the loop function
+        const looped = scene.loop();
+
+        // Check if the loaded type is an error union and handle it accordingly.
+        return switch (@typeInfo(@TypeOf(looped))) {
+            .ErrorUnion => try looped,
+            else => looped,
         };
     }
 };
@@ -152,12 +159,13 @@ pub const Result = union(enum) {
     loop: void,
 
     pub fn ok(scene: SceneId) !@This() {
-        return .{ .ok = switch (scene) {
-            .Intro => Scene{ .Intro = Intro.load() },
-            .MainMenu => Scene{ .MainMenu = try Menu.load() },
-            .Base => Scene{ .Base = try Base.load() },
-            .Quit => Scene.Quit,
-        } };
+        return .{
+            .ok = switch (scene) {
+                .Quit => Scene.Quit,
+                //Comptime expand the switch
+                inline else => |s| try Scene.loadInner(s),
+            },
+        };
     }
 };
 
