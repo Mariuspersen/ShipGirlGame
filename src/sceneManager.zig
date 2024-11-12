@@ -46,7 +46,7 @@ pub fn loop(self: *Self) !bool {
     defer self.console.draw();
 
     switch (returnVal) {
-        .ok => |newScene| self.switchScene(newScene),
+        .ok => |newScene| try self.switchScene(newScene),
         .loop => self.loopScene() catch |err| switch (err) {
             error.quit => return false,
             else => return err,
@@ -79,7 +79,7 @@ fn loopScene(self: *Self) !void {
     }
 }
 
-fn switchScene(self: *Self, newScene: Scene) void {
+fn switchScene(self: *Self, newScene: Scene) !void {
     switch (self.currentScene) {
         .Quit => {},
         inline else => |*s| {
