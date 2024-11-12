@@ -63,7 +63,7 @@ pub fn loop(self: *Self) !void {
     const play_btn = rg.guiButton(rectangle, "Play");
 
     if (play_btn == 1) {
-        Scenes.returnVal = try Scenes.Result.ok(.Base);
+        try Scenes.changeScene(.Base);
     }
 
     //Intro Fade
@@ -72,7 +72,7 @@ pub fn loop(self: *Self) !void {
     defer rl.drawRectangle(0, 0, width, height, fade_in_color);
 
     if (try Common.drawTitleBar()) {
-        Scenes.returnVal = try Scenes.Result.ok(.Quit);
+        try Scenes.changeScene(.Quit);
     }
 
     try Common.checkWindowResized();
