@@ -2,6 +2,8 @@ const std = @import("std");
 const rl = @import("raylib");
 const rg = @import("raygui");
 const Config = @import("config.zig");
+const Common = @import("common.zig");
+
 const Memory = @import("memory.zig");
 const Input = @import("input.zig");
 const Scenes = @import("sceneManager.zig");
@@ -71,6 +73,21 @@ pub fn parseText(self: *Self) !void {
         const arg = it.next() orelse return error.TooFewArguments;
         const scene = try Scenes.SceneIdfromText(arg);
         try Scenes.changeScene(scene);
+        return;
+    }
+
+    if (std.mem.eql(u8, "w_decorations", cmd)) {
+        const arg = it.next() orelse return error.TooFewArguments;
+        if (arg[0] == '1') {
+            Common.windowConfigFlags.window_undecorated = false;
+        }
+        else if (arg[0] == '0') {
+            Common.windowConfigFlags.window_undecorated = true;
+        }
+        else return error.NotAValidNumber;
+
+        rl.setWindowState(Common.windowConfigFlags);
+
         return;
     }
 
