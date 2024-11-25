@@ -28,7 +28,7 @@ pub const Zero: usize = 0;
 
 pub var windowConfigFlags = rl.ConfigFlags{
     .window_resizable = true,
-    .window_undecorated = false,
+    .window_undecorated = true,
     .window_always_run = true,
 };
 
