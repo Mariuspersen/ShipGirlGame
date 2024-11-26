@@ -81,9 +81,10 @@ pub fn load() !Self {
 
     try Config.add("TitleBarOffset", @as(i32, 0));
 
-    try temp.assets.append(&Assets.guardHouse, -20, 20.5, -2.5);
+    try temp.assets.append(&Assets.guardHouse, -20, 21.5, -2.5);
     try temp.assets.append(&Assets.energydrink, 0.0, 8.0, 5.0);
     try temp.assets.append(&Assets.energydrink, 0.0, 8.0, 7.0);
+    try temp.assets.append(&Assets.sandIsland, 0.0, 2.0, 0.0);
     //try temp.assets.append(&Assets.shed, 5.0, 5.0, 5.0);
     try temp.assets.append(&Assets.draug, 30.0, 5.0, 10);
 

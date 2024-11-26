@@ -160,6 +160,7 @@ pub const shed = embeddedGLB.init("assets/shed.glb");
 pub const energydrink = embeddedGLB.init("assets/databrus.glb");
 pub const draug = embeddedGLB.init("assets/KNM Draug.glb");
 pub const oceanModel = embeddedGLB.init("assets/Ocean.glb");
+pub const sandIsland = embeddedGLB.init("assets/Island.glb");
 
 //Shaders
 pub const lighting = embeddedShader.init("shaders/directional.vs", "shaders/directional.fs");
