@@ -47,8 +47,8 @@ pub fn load() !Self {
 
     //Weird bug where a black bar around the window appears
     //Is this a raylib issue? No clue!
-    Common.windowConfigFlags.window_undecorated = true;
-    rl.setWindowState(Common.windowConfigFlags);
+    //Common.windowConfigFlags.window_undecorated = true;
+    //rl.setWindowState(Common.windowConfigFlags);
 
     temp.ocean = try Ocean.init(temp.oceanShader);
 

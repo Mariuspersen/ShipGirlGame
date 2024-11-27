@@ -76,7 +76,7 @@ pub fn parseText(self: *Self) !void {
         return;
     }
 
-    if (std.mem.eql(u8, "w_decorations", cmd)) {
+    if (std.mem.eql(u8, "decorations", cmd)) {
         const arg = it.next() orelse return error.TooFewArguments;
         if (arg[0] == '1') {
             Common.windowConfigFlags.window_undecorated = false;
