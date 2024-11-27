@@ -28,7 +28,7 @@ pub const Zero: usize = 0;
 
 pub var windowConfigFlags = rl.ConfigFlags{
     .window_resizable = true,
-    .window_undecorated = false,
+    .window_undecorated = true,
     .window_always_run = true,
 };
 
@@ -47,7 +47,7 @@ pub fn init() !void {
     try Config.add("TitleBarOffset", @as(i32, 0));
 
     try initUiButtons();
-
+    rl.setWindowState(windowConfigFlags);
     rl.setExitKey(.key_null);
     rl.setLoadFileDataCallback(Assets.loadDataCallback);
     rl.setTargetFPS(try Config.get(i32, "Framerate"));
