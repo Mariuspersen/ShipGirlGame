@@ -95,6 +95,7 @@ pub fn parseText(self: *Self) !void {
         try Scenes.changeScene(.Quit);
         return;
     }
+    
 
     return error.NotACommand;
 }

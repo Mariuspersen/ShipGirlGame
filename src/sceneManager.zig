@@ -17,8 +17,6 @@ const startScene: SceneId = switch (builtin.mode) {
     else => .Intro,
 };
 
-//TODO: write a scenemanager thats not ass
-
 currentScene: Scene,
 console: Console,
 consoleKey: Input.Macro,
@@ -115,10 +113,10 @@ pub const Scene = union(enum) {
                 @compileError("Type does not have a unload function!");
             }
 
-            //Run the loop function
+            //Run the unload function
             const unloaded = scene.unload();
 
-            // Check if the loaded type is an error union and handle it accordingly.
+            // Check if the unloaded type is an error union and handle it accordingly.
             switch (@typeInfo(@TypeOf(unloaded))) {
                 .ErrorUnion => try unloaded,
                 else => unloaded,
@@ -135,7 +133,7 @@ pub const Scene = union(enum) {
         //Run the loop function
         const looped = scene.loop();
 
-        // Check if the loaded type is an error union and handle it accordingly.
+        // Check if the looped type is an error union and handle it accordingly.
         return switch (@typeInfo(@TypeOf(looped))) {
             .ErrorUnion => try looped,
             else => looped,

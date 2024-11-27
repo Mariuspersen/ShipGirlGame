@@ -45,11 +45,6 @@ pub fn load() !Self {
         .oceanShader = Assets.ocean.loadShader(),
     };
 
-    //Weird bug where a black bar around the window appears
-    //Is this a raylib issue? No clue!
-    //Common.windowConfigFlags.window_undecorated = true;
-    //rl.setWindowState(Common.windowConfigFlags);
-
     temp.ocean = try Ocean.init(temp.oceanShader);
 
     temp.lightShader.locs[@intFromEnum(rl.ShaderLocationIndex.shader_loc_vector_view)] = rl.getShaderLocation(
@@ -86,7 +81,7 @@ pub fn load() !Self {
 
     try Config.add("TitleBarOffset", @as(i32, 0));
 
-    try temp.assets.append(&Assets.guardHouse, -20, 21.5, -2.5);
+    try temp.assets.append(&Assets.guardHouse, -14.0, 21.5, -20.0);
     try temp.assets.append(&Assets.energydrink, 0.0, 8.0, 5.0);
     try temp.assets.append(&Assets.energydrink, 0.0, 8.0, 7.0);
     try temp.assets.append(&Assets.sandIsland, 0.0, 2.0, 0.0);
