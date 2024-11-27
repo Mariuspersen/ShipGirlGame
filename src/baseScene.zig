@@ -133,7 +133,7 @@ pub fn loop(self: *Self) !void {
     } else {
         if (!rl.isCursorHidden()) {
             rl.hideCursor();
-            //rl.disableCursor();
+            rl.disableCursor();
         }
         rl.updateCamera(&self.camera, .camera_free);
     }
