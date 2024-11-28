@@ -13,7 +13,7 @@ const Console = @import("console.zig");
 
 var returnVal: Result = undefined;
 const startScene: SceneId = switch (builtin.mode) {
-    .Debug => .Base,
+    .Debug => .MainMenu,
     else => .Intro,
 };
 
@@ -28,6 +28,10 @@ pub fn init() !Self {
         .currentScene = try Scene.init(startScene),
         .console = try Console.init(),
     };
+}
+
+pub fn deinit(self: *Self) void {
+    self.console.deinit();
 }
 
 pub fn loop(self: *Self) !bool {

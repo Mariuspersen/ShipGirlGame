@@ -19,5 +19,7 @@ pub fn Start() !void {
     defer Common.deinit();
 
     var scene = try sceneManager.init();
+    defer scene.deinit();
+    
     while (!rl.windowShouldClose() and try scene.loop()) {}
 }

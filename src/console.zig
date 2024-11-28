@@ -8,7 +8,6 @@ const Memory = @import("memory.zig");
 const Input = @import("input.zig");
 const Scenes = @import("sceneManager.zig");
 
-
 const Self = @This();
 
 const LENGTH = 400;
@@ -18,6 +17,7 @@ size: rl.Vector2,
 enabled: bool = false,
 fontSize: i32,
 text: [LENGTH:0]u8,
+buffer: std.ArrayList(u8),
 
 pub fn init() !Self {
     const convarHeight = try Config.get(i32, "WindowHeight");
@@ -33,11 +33,29 @@ pub fn init() !Self {
         ),
         .text = std.mem.zeroes([LENGTH:0]u8),
         .fontSize = try Config.get(i32, "ConsoleTextSize"),
+        .buffer = std.ArrayList(u8).init(Memory.Allocator),
     };
+}
+
+pub fn deinit(self: *Self) void {
+    self.buffer.deinit();
 }
 
 pub fn draw(self: *Self) void {
     if (!self.enabled) return;
+    var it = std.mem.splitAny(u8, self.buffer.items, "\n\r");
+    var offset: i32 = 1;
+    while (it.next()) |line| : (offset += self.fontSize) {
+        const lineSentinel = std.fmt.allocPrintZ(Memory.Allocator, "{s}", .{line}) catch return;
+        defer Memory.Allocator.free(lineSentinel);
+        rl.drawText(
+            lineSentinel,
+            @intFromFloat(self.position.x),
+            @as(i32, @intFromFloat(self.position.y)) - offset,
+            self.fontSize,
+            rl.Color.white,
+        );
+    }
     const r = rl.Rectangle.init(self.position.x, self.position.y, self.size.x, self.size.y);
     const result = rg.guiTextBox(r, &self.text, LENGTH, true);
     if (result != 0) {
@@ -80,13 +98,56 @@ pub fn parseText(self: *Self) !void {
         const arg = it.next() orelse return error.TooFewArguments;
         if (arg[0] == '1') {
             Common.windowConfigFlags.window_undecorated = false;
-        }
-        else if (arg[0] == '0') {
+        } else if (arg[0] == '0') {
             Common.windowConfigFlags.window_undecorated = true;
-        }
-        else return error.NotAValidNumber;
+        } else return error.NotAValidNumber;
 
         rl.setWindowState(Common.windowConfigFlags);
+
+        return;
+    }
+
+    if (std.mem.eql(u8, "config", cmd)) {
+        const operation = it.next() orelse return error.TooFewArguments;
+        const name = it.next() orelse return error.TooFewArguments;
+
+        if (std.mem.eql(u8, "add", operation)) {
+            const value = it.next() orelse return error.TooFewArguments;
+
+            const truth = std.mem.eql(u8, "true", value);
+            if (truth or std.mem.eql(u8, "false", value)) {
+                try Config.add(name, truth);
+                return;
+            }
+
+            if (std.fmt.parseInt(i32, value, 10)) |number| {
+                try Config.add(name, number);
+                return;
+            } else |_| {}
+
+            if (std.fmt.parseFloat(f32, value)) |number| {
+                try Config.add(name, number);
+                return;
+            } else |_| {}
+
+            try Config.add(name, value);
+        } else if (std.mem.eql(u8, "get", operation)) {
+            const typeText = it.next() orelse return error.TooFewArguments;
+            const info = @typeInfo(Config.conVar);
+            inline for (info.Union.fields) |field| {
+                if (std.mem.eql(u8, typeText, field.name)) {
+                    const T = if (field.type == u8) bool else field.type;
+                    const convar = try Config.get(T, name);
+                    _ = try std.fmt.bufPrintZ(
+                        &self.text,
+                        if (T == [:0]const u8) "{s}: {s}\n" else "{s}: {any}\n",
+                        .{ name, convar },
+                    );
+                    try self.buffer.appendSlice(&self.text);
+                    return;
+                }
+            }
+        }
 
         return;
     }
@@ -95,7 +156,6 @@ pub fn parseText(self: *Self) !void {
         try Scenes.changeScene(.Quit);
         return;
     }
-    
 
     return error.NotACommand;
 }

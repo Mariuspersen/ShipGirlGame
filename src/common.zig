@@ -314,3 +314,9 @@ pub fn printError(err: anyerror) void {
 pub fn alwaysError() !void {
     return error.AlwaysError;
 }
+
+pub fn contains(comptime T: type, haystack: []const T, needle: []const T) bool {
+    if (std.mem.indexOf(T, haystack, needle)) |_| {
+        return true;
+    } else return false;
+}

@@ -7,20 +7,34 @@ const Self = @This();
 
 const Defaults = @embedFile("defaults");
 
-const conVar = union(enum) {
+pub const conVar = union(enum) {
     number: i32,
     float: f32,
     string: [:0]const u8,
+    flag: u8,
 
     pub fn init(data: anytype) conVar {
         return switch (@typeInfo(@TypeOf(data))) {
             .Int => .{ .number = @as(i32, data) },
             .Float => .{ .float = @as(f32, data) },
+            .Bool => .{ .flag = @intFromBool(data)},
             .Pointer => .{ .string = data },
             else => @compileError("Not a valid datatype!"),
         };
     }
+
+    
 };
+
+pub fn typeFromText(text: []const u8) !type {
+    const info = @typeInfo(conVar);
+    inline for (info.Union.fields) |field| {
+        if (std.mem.eql(u8, text, field.name)) {
+            return field.type;
+        }
+    }
+    return error.UnknownConvarType;
+}
 
 var vars: Self = undefined;
 var file: std.fs.File = undefined;
@@ -46,7 +60,7 @@ pub fn init(allocator: std.mem.Allocator) !void {
 
 pub fn add(name: []const u8, value: anytype) !void {
     const cv: conVar = switch (@typeInfo(@TypeOf(value))) {
-        .Int, .Float => conVar.init(value),
+        .Int, .Float, .Bool => conVar.init(value),
         .Pointer => blk: {
             const buf = try vars.hashmap.allocator.allocSentinel(u8, value.len, 0);
             @memcpy(buf, value);
@@ -62,7 +76,7 @@ pub fn add(name: []const u8, value: anytype) !void {
     if (res.found_existing) {
         const oldVar = vars.hashmap.fetchRemove(buf) orelse return error.UnknownConvar;
         switch (oldVar.value) {
-            .number, .float => {
+            .number, .float, .flag => {
                 vars.hashmap.allocator.free(oldVar.key);
             },
             .string => |s| {
@@ -80,6 +94,7 @@ pub fn get(T: type, name: []const u8) !T {
             .Float => cv.float,
             .Int => cv.number,
             .Pointer => cv.string,
+            .Bool => cv.flag == 1,
             else => error.InvalidConvarType,
         };
     } else return error.ConvarNotInConfig;
@@ -90,7 +105,7 @@ pub fn remove(name: []const u8) !void {
     if (res.found_existing) {
         const oldVar = vars.hashmap.fetchRemove(name) orelse return error.UnknownConvar;
         switch (oldVar.value) {
-            .number, .float => {
+            .number, .float, .flag => {
                 vars.hashmap.allocator.free(oldVar.key);
             },
             .string => |s| {
@@ -114,6 +129,7 @@ pub fn write(writer: anytype) !void {
             },
             .number => |n| try writer.writeInt(i32, n, .little),
             .float => |f| try writeFloat(writer, f32, f),
+            .flag => |f| try writer.writeInt(u8, f, .little)
         }
     }
 }
@@ -152,6 +168,10 @@ fn readInternal(reader: anytype) !void {
             const float = try readFloat(reader, f32);
             try vars.hashmap.put(name, conVar.init(float));
         },
+        @intFromEnum(conVar.flag) => {
+            const flag = try reader.readInt(u8, .little);
+            try vars.hashmap.put(name, conVar.init(flag == 1));
+        },
         else => return error.InvalidType,
     }
 }
@@ -178,7 +198,7 @@ pub fn deinit() void {
     while (it.next()) |e| {
         vars.hashmap.allocator.free(e.key_ptr.*);
         switch (e.value_ptr.*) {
-            .number, .float => {},
+            .number, .float, .flag => {},
             .string => |s| {
                 vars.hashmap.allocator.free(s);
             },
