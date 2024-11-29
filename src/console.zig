@@ -46,7 +46,8 @@ pub fn draw(self: *Self) void {
     var it = std.mem.splitAny(u8, self.buffer.items, "\n\r");
     var offset: i32 = 1;
     while (it.next()) |line| : (offset += self.fontSize) {
-        const lineSentinel = std.fmt.allocPrintZ(Memory.Allocator, "{s}", .{line}) catch return;
+        if (it.rest().len == 0) break;
+        const lineSentinel: [:0]u8 = std.fmt.allocPrintZ(Memory.Allocator, "{s}", .{line}) catch @panic("OOPS");
         defer Memory.Allocator.free(lineSentinel);
         rl.drawText(
             lineSentinel,
