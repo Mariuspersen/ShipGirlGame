@@ -18,7 +18,7 @@ pub fn build(b: *std.Build) !void {
 
     raylib_artifact.defineCMacro("SUPPORT_FILEFORMAT_JPG", null);
 
-    includeHeader(&raylib_artifact.root_module, "src/memory.h");
+    //includeHeader(&raylib_artifact.root_module, "src/memory.h");
 
     const exe = b.addExecutable(.{
         .name = "projectboat",

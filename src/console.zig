@@ -45,14 +45,16 @@ pub fn draw(self: *Self) void {
     if (!self.enabled) return;
     var it = std.mem.splitAny(u8, self.buffer.items, "\n\r");
     var offset: i32 = 1;
-    while (it.next()) |line| : (offset += self.fontSize) {
-        if (it.rest().len == 0) break;
-        const lineSentinel: [:0]u8 = std.fmt.allocPrintZ(Memory.Allocator, "{s}", .{line}) catch @panic("OOPS");
-        defer Memory.Allocator.free(lineSentinel);
+    while (it.next()) |line| {
+        offset += self.fontSize;
+        var lineSentinel: [LENGTH:0]u8 = std.mem.zeroes([LENGTH:0]u8);
+        _ = std.fmt.bufPrintZ(&lineSentinel, "{s}", .{line}) catch {};
+        const xpos: i32 = @intFromFloat(self.position.x);
+        const ypos: i32 = @intFromFloat(self.position.y);
         rl.drawText(
-            lineSentinel,
-            @intFromFloat(self.position.x),
-            @as(i32, @intFromFloat(self.position.y)) - offset,
+            &lineSentinel,
+            xpos,
+            ypos - offset,
             self.fontSize,
             rl.Color.white,
         );
@@ -139,12 +141,10 @@ pub fn parseText(self: *Self) !void {
                 if (std.mem.eql(u8, typeText, field.name)) {
                     const T = if (field.type == u8) bool else field.type;
                     const convar = try Config.get(T, name);
-                    _ = try std.fmt.bufPrintZ(
-                        &self.text,
+                    try self.buffer.writer().print(
                         if (T == [:0]const u8) "{s}: {s}\n" else "{s}: {any}\n",
                         .{ name, convar },
                     );
-                    try self.buffer.appendSlice(&self.text);
                     return;
                 }
             }
