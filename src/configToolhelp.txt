@@ -1,0 +1,24 @@
+Usage:
+    configTool {operation} {value} {type}
+    zig build config -- {operation} {value} {type}
+
+Operations:
+    a - for add
+    r - for remove
+
+Value Types:
+    s - for strings
+    n - for integer numbers
+    f - for floats
+    b - for booleans
+
+Examples:
+    configTool a MenuFadeInTime 10 n
+    zig build config -- a isFullscreen true b
+    zig build config -- d isFullscreen 0 0
+
+Caveats:
+    Always requires 4 arguments, 
+    even in the event they are not used
+    just supply dummy arguments
+    

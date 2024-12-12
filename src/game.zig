@@ -6,8 +6,6 @@ const Memory = @import("memory.zig");
 const sceneManager = @import("sceneManager.zig");
 const Config = @import("config.zig");
 
-const Self = @This();
-
 pub fn Start() !void {
     Memory.initAllocator();
     defer Memory.deinitAllocator();

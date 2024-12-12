@@ -114,7 +114,7 @@ pub fn parseText(self: *Self) !void {
         const operation = it.next() orelse return error.TooFewArguments;
         const name = it.next() orelse return error.TooFewArguments;
 
-        if (std.mem.eql(u8, "add", operation)) {
+        if (std.mem.eql(u8, "set", operation)) {
             const value = it.next() orelse return error.TooFewArguments;
 
             const truth = std.mem.eql(u8, "true", value);

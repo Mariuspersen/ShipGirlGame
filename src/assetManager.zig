@@ -189,12 +189,5 @@ pub fn loadData(filename: [:0]const u8, size: [*c]c_uint) ![*]u8 {
             return data;
         }
     }
-
-    //Otherwise load from file
-    const f = try std.fs.cwd().openFileZ(filename, .{});
-    const stat = try f.stat();
-    size.* = @intCast(stat.size);
-    var data: [*]u8 = @ptrCast(rl.memAlloc(@intCast(stat.size)));
-    _ = try f.readAll(data[0..stat.size]);
-    return data;
+    return error.NotFound;
 }

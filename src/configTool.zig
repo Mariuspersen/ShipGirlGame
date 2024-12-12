@@ -4,6 +4,8 @@ const fs = std.fs;
 const Config = @import("config.zig");
 const Memory = @import("memory.zig");
 
+const help = @embedFile("configToolhelp.txt");
+
 pub fn main() !void {
     Memory.initAllocator();
     defer Memory.deinitAllocator();
@@ -24,7 +26,10 @@ pub fn main() !void {
     
     _ = args.skip();
 
-    const operation = args.next() orelse return error.NotEnoughArguments;
+    const operation = args.next() orelse {
+        try printHelp();
+        return error.NotEnoughArguments;
+    };
     const key = args.next() orelse return error.NotEnoughArguments;
     const value = args.next() orelse return error.NotEnoughArguments;
     const valType = args.next() orelse return error.NotEnoughArguments;
@@ -35,10 +40,22 @@ pub fn main() !void {
                 's' => try Config.add(key, value),
                 'f' => try Config.add(key, try std.fmt.parseFloat(f32, value)),
                 'n' => try Config.add(key, try std.fmt.parseInt(i32, value, 10)),
-                else => return error.WrongDataType,
+                'b' => try Config.add(key, std.mem.eql(u8, "true", value)),
+                else => {
+                    try printHelp();
+                    return error.WrongDataType;
+                },
             }
         },
         'r' => try Config.remove(key),
-        else => return error.WrongOperation,
+        else => {
+            try printHelp();
+            return error.WrongOperation;
+        },
     }
+}
+
+fn printHelp() !void {
+    const stderr = std.io.getStdErr().writer();
+    try stderr.writeAll(help); 
 }
